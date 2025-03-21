@@ -1,0 +1,1 @@
+export const EXCLUED_PATHS = ['/', '/login', '/forgot-password','/sign-up', '/reset-password'];
