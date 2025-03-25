@@ -14,6 +14,7 @@ export const loginUser = async (loginData) => {
         });
         if (error) return { error: "Invalid email or password." };
         localStorage.setItem("token", data.session.access_token);
+        localStorage.setItem("email", loginData.email);
 
         return data;
     } catch (error) {
