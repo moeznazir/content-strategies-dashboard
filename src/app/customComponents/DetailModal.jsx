@@ -1,7 +1,6 @@
 import { FaTimes } from "react-icons/fa";
 
 const Modal = ({ data, onClose }) => {
-    // Exclude unnecessary fields
     const filteredData = Object.entries(data).filter(
         ([key]) => key !== "Avatar" && key !== "id" && !key.includes("Rating (1-5 stars by the user)")
     );
