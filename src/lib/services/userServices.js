@@ -13,10 +13,14 @@ export const loginUser = async (loginData) => {
             password: loginData.password,
         });
         if (error) return { error: "Invalid email or password." };
+        const userId = data?.user?.id;
         localStorage.setItem("token", data.session.access_token);
         localStorage.setItem("email", loginData.email);
-
+        localStorage.setItem("current_user_id", userId);
+        console.log("dataaaaaa",data);
         return data;
+
+        
     } catch (error) {
         return { error: error.message };
     }
