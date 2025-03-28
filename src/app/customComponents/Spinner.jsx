@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-export const Spinner = ({ className,width=80,height=80 }) => {
+export const CustomSpinner = ({ className,width=80,height=80 }) => {
   return (
     <Image
       src="/loading.svg" 
