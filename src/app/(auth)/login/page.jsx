@@ -1,9 +1,130 @@
-import React from 'react'
+
+'use client';
+import React, { useState } from "react";
+import CustomButton from "@/app/customComponents/CustomButton";
+import CustomInput from "@/app/customComponents/CustomInput";
+import { useRouter } from "next/navigation";
+import { isValidEmail, isValidPassword } from "@/lib/utils";
+import { loginUser } from "@/lib/services/userServices";
+import Link from "next/link";
+
 
 const SignInPage = () => {
-    return (
-        <div>SignInPage</div>
-    )
-}
+    const router = useRouter();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [successMessage, setSuccessMessage] = useState(""); 
 
-export default SignInPage
+    const handleSignIn = async (e) => {
+        e.preventDefault();
+        setError("");
+        setSuccessMessage("");
+        setEmailError("");
+        setPasswordError("");
+
+        if (!email || !password) {
+            setError("Email and password are required");
+            return;
+        }
+
+        let isValid = true;
+        if (!isValidEmail(email)) {
+            setEmailError("Please enter a valid email address.");
+            isValid = false;
+        }
+
+        if (!isValidPassword(password)) {
+            setPasswordError("Password must be at least 6 characters long.");
+            isValid = false;
+        }
+
+        if (!isValid) return;
+        setLoading(true);
+
+        try {
+            const response = await loginUser({ email, password });
+            if (response.error) {
+                setError(response.error || "Login failed. Please try again.");
+            } else {
+                setSuccessMessage("Login successful! Redirecting...");  
+                setTimeout(() => {
+                    router.push("/dashboard");  
+                }, 2000);
+            }
+        } catch (err) {
+            setError("An error occurred. Please check your credentials.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-[#ffffff] to-[#C0C0C0]">
+            <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-100">
+                <h2 className="text-2xl font-bold text-center mb-4">
+                    <span className="border-l-4 border-[#c7b740] pl-2">Content Strategies</span>
+                </h2>
+                <p className="text-center text-[#32503e] mb-4">
+                    Sign Into The WOW24-7 Podcast Database
+                </p>
+
+                {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+
+                <form onSubmit={handleSignIn}>
+                    <CustomInput
+                        label="Email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={`w-full ${emailError ? "border-red-500" : ""} mb-2`}
+                        disabled={loading}
+                    />
+                    {emailError && <p className="text-red-500 text-sm mb-2 mt-0">{emailError}</p>}
+
+                    <CustomInput
+                        label="Password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={`w-full ${passwordError ? "border-red-500" : ""} mb-2`}
+                        disabled={loading}
+                    />
+
+
+                    {passwordError && <p className="text-red-500 text-sm mb-0 mt-0">{passwordError}</p>}
+                    <div className="w-full flex justify-end mt-0 underline">
+                        <Link
+                            href="/forgot-password"
+                            className="text-sm font-medium text-[#c7b740] hover:text-[#32503e] transition mr-1"
+                        >
+                            Forgot Password?
+                        </Link>
+                    </div>
+
+                    <CustomButton
+                        title={loading ? "Signing in..." : "SIGN IN"}
+                        className="w-full bg-[#c7b740] hover:bg-[#32503e] text-white font-bold py-2 rounded-md transition mb-4 mt-4"
+                        disabled={loading}
+                    />
+                    {successMessage && <p className="text-green-500 text-sm text-center mb-4">{successMessage}</p>}
+                </form>
+
+
+                <div className="flex justify-center items-center">
+                    <p className="text-sm font-medium text-gray-600">Don't have an account?</p>
+                    <Link href="/sign-up" className="ml-2 text-sm font-medium text-[#c7b740] hover:text-[#32503e] transition">
+                        Create a new account
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default SignInPage;
