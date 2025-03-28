@@ -9,7 +9,6 @@ const Modal = ({ data, onClose }) => {
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg w-1/3 max-h-[80vh] overflow-y-auto shadow-lg">
-                {/* Sticky Header */}
                 <div className="sticky top-0 bg-white py-2 flex justify-between items-center border rounded p-2 z-10">
                     <h2 className="text-lg font-bold">User Details</h2>
                     <button onClick={onClose} className="text-red-500">
