@@ -49,18 +49,22 @@ const Signup = () => {
       const signUpData = {
         email,
         password,
-        title_roles: selectedTitles.map((title) => title), 
-
+        title_roles: selectedTitles.map((title) => title),
       };
-
+    
       const response = await signUpUser(signUpData, email);
-
+    
       if (response.error) {
         setServerError(response.error);
       } else {
-        console.log("User signed up successfully:", response);
-        setEmailSentMessage("We have sent a verification email. Please verify your email.");
-
+        const user = response.user;
+    
+        if (user?.user_metadata?.email_verified === undefined) {
+          setServerError("This email is already registered and verified. Try signing in.");
+        } else {
+          console.log("User signed up successfully:", response);
+          setEmailSentMessage("We have sent a verification email. Please check your inbox.");
+        }
       }
     } catch (error) {
       setServerError("An unexpected error occurred.");
