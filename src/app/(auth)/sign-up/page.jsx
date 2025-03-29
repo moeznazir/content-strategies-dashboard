@@ -20,6 +20,7 @@ const Signup = () => {
   const [titleError, setTitleError] = useState("");
 
   const handleSignUp = async (e) => {
+    
     e.preventDefault();
     setEmailError("");
     setPasswordError("");
