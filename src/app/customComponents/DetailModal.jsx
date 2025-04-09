@@ -1,4 +1,6 @@
 import { FaTimes } from "react-icons/fa";
+import CustomInput from "./CustomInput";
+import { appColors } from "@/lib/theme";
 
 const Modal = ({ data, onClose }) => {
     const filteredData = Object.entries(data).filter(
@@ -7,8 +9,8 @@ const Modal = ({ data, onClose }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg w-1/3 max-h-[80vh] overflow-y-auto shadow-lg">
-                <div className="sticky top-0 bg-white py-2 flex justify-between items-center border rounded p-2 z-10">
+            <div className="bg-white p-6 rounded-lg w-1/3 max-h-[80vh] overflow-y-auto shadow-lg" style={{ backgroundColor: appColors.primaryColor }}>
+                <div className="sticky top-0 py-2 flex justify-between items-center border rounded p-2 z-10">
                     <h2 className="text-lg font-bold">User Details</h2>
                     <button onClick={onClose} className="text-red-500">
                         <FaTimes size={18} />
@@ -28,16 +30,16 @@ const Modal = ({ data, onClose }) => {
 
                 {/* User Details */}
                 <div className="space-y-4">
-                    {filteredData.map(([key, value]) => (
+                    {filteredData?.map(([key, value]) => (
                         <div key={key}>
                             <label className="block text-sm font-semibold text-gray-600">
                                 {key === "Text comments for the rating (OPTIONAL input from the user)" ? "First Rating Comment" : key}
                             </label>
-                            <input
+                            <CustomInput
                                 type="text"
                                 value={value || "-"}
                                 readOnly
-                                className="w-full border border-gray-300 p-2 rounded-md bg-gray-100"
+                                className="w-full border border-gray-300 p-2 rounded-md"
                             />
                         </div>
                     ))}

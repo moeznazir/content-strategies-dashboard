@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { isValidEmail, isValidPassword } from "@/lib/utils";
 import { loginUser } from "@/lib/services/userServices";
 import Link from "next/link";
+import { appColors } from "@/lib/theme";
 
 
 const SignInPage = () => {
@@ -63,12 +64,12 @@ const SignInPage = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-[#ffffff] to-[#C0C0C0]">
+        <div className="flex items-center justify-center min-h-screen" style={{ color: appColors.textHeadingColor }}>
             <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-100">
                 <h2 className="text-2xl font-bold text-center mb-4">
-                    <span className="border-l-4 border-[#c7b740] pl-2">Content Strategies</span>
+                    <span className="border-l-4 border-[#1a1b41] pl-2">Content Strategies</span>
                 </h2>
-                <p className="text-center text-[#32503e] mb-4">
+                <p className="text-center  mb-4">
                     Sign Into The WOW24-7 Podcast Database
                 </p>
 
@@ -101,7 +102,7 @@ const SignInPage = () => {
                     <div className="w-full flex justify-end mt-0 underline">
                         <Link
                             href="/forgot-password"
-                            className="text-sm font-medium text-[#c7b740] hover:text-[#32503e] transition mr-1"
+                            className="text-sm font-medium text-[#1a1b41] hover:text-gray-400 transition mr-1"
                         >
                             Forgot Password?
                         </Link>
@@ -109,7 +110,7 @@ const SignInPage = () => {
 
                     <CustomButton
                         title={loading ? "Signing in..." : "SIGN IN"}
-                        className="w-full bg-[#c7b740] hover:bg-[#32503e] text-white font-bold py-2 rounded-md transition mb-4 mt-4"
+                        className="w-full bg-[#1a1b41] hover:bg-gray-600 text-white font-bold py-2 rounded-md transition mb-4 mt-4"
                         disabled={loading}
                     />
                     {successMessage && <p className="text-green-500 text-sm text-center mb-4">{successMessage}</p>}
@@ -118,7 +119,7 @@ const SignInPage = () => {
 
                 <div className="flex justify-center items-center">
                     <p className="text-sm font-medium text-gray-600">Don't have an account?</p>
-                    <Link href="/sign-up" className="ml-2 text-sm font-medium text-[#c7b740] hover:text-[#32503e] transition">
+                    <Link href="/sign-up" className="ml-2 text-sm font-medium text-[#1a1b41] hover:text-gray-400 transition">
                         Create a new account
                     </Link>
                 </div>

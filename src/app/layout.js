@@ -6,6 +6,7 @@ import AuthGuard from "./customComponents/AuthGurad";
 import NavigationMenu from "./customComponents/NavigationMenu";
 import Alert from "./customComponents/Alert";
 import { ToastContainer } from "react-toastify";
+import { appColors } from "@/lib/theme";
 
 export const metadata = {
   title: "Content Strategies",
@@ -14,8 +15,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body cz-shortcut-listen="true">
+    <html lang="en" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor}}>
+      <body cz-shortcut-listen="true" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
 
         <Suspense fallback={< Spinner />}>
           <Alert />

@@ -6,6 +6,7 @@ import CustomSelect from "@/app/customComponents/CustomSelect";
 import { isValidEmail, isValidPassword } from "@/lib/utils";
 import { signUpUser } from "@/lib/services/userServices";
 import Link from "next/link";
+import { appColors } from "@/lib/theme";
 
 
 const Signup = () => {
@@ -20,7 +21,7 @@ const Signup = () => {
   const [titleError, setTitleError] = useState("");
 
   const handleSignUp = async (e) => {
-    
+
     e.preventDefault();
     setEmailError("");
     setPasswordError("");
@@ -76,13 +77,13 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-[#ffffff] to-[#C0C0C0]">
+    <div className="flex items-center justify-center min-h-screen" style={{ color: appColors.textHeadingColor }}>
      <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-100">
         <form onSubmit={handleSignUp}>
           <h2 className="text-2xl font-bold text-center mb-4">
-            <span className="border-l-4 border-[#c7b740] pl-2">Content Strategies</span>
+            <span className="border-l-4 border-[#1a1b41] pl-2">Content Strategies</span>
           </h2>
-          <p className="text-center text-[#32503e] mb-4 w-[100%]">
+          <p className="text-center  mb-4 w-[100%]">
           Sign Up For A WOW24-7 Podcast Database
           </p>
 
@@ -132,13 +133,13 @@ const Signup = () => {
 
           <CustomButton
             title={loading ? "Signing up..." : "SIGN UP"}
-            className="w-full bg-[#c7b740] hover:bg-[#32503e] text-white font-bold py-2 rounded-md transition mb-4 mt-4"
+            className="w-full bg-[#1a1b41] hover:bg-gray-600  font-bold py-2 rounded-md transition mb-4 mt-4"
             disabled={loading}
           />
 
           <div className="flex justify-center items-center">
             <p className="text-sm font-medium text-gray-600">Already have an account?</p>
-            <Link href="/login" className="ml-2 text-sm font-medium text-[#c7b740] hover:text-[#32503e] transition">
+            <Link href="/login" className="ml-2 text-sm font-medium text-[#1a1b41] hover:text-gray-400 transition">
               Sign in
             </Link>
           </div>

@@ -14,9 +14,11 @@ export const loginUser = async (loginData) => {
         });
         if (error) return { error: "Invalid email or password." };
         const userId = data?.user?.id;
+        const system_roles = data?.user?.user_metadata?.system_roles;
         localStorage.setItem("token", data.session.access_token);
         localStorage.setItem("email", loginData.email);
         localStorage.setItem("current_user_id", userId);
+        localStorage.setItem("system_roles", system_roles);
         console.log("dataaaaaa",data);
         return data;
 

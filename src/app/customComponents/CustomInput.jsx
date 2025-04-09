@@ -1,5 +1,6 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
+import { appColors } from '@/lib/theme';
 
 export default function CustomInput({
     id,
@@ -15,7 +16,7 @@ export default function CustomInput({
     return (
         <div className='w-full'>
             {label && (
-                <label htmlFor={id} className="block text-sm font-bold text-gray-700 mb-1">
+                <label htmlFor={id} className="block text-sm font-bold mb-1" style={{ color: appColors.textColor }}>
                     {label}
                 </label>
             )}
@@ -28,9 +29,14 @@ export default function CustomInput({
                 disabled={disabled}
                 {...props}
                 className={`w-full px-3 py-2 border border-gray-300 rounded-md 
-    focus:outline-none focus:ring-2 focus:ring-[#c7b740] 
-    focus:border-[#c7b740] hover:border-[#c7b740] transition ${className}`}
+    focus:outline-none focus:ring-1 focus:ring-[#1a1b41] 
+    focus:border-gray-300  transition ${className}`}
+                style={{
+
+                    backgroundColor: appColors.primaryColor,
+                }}
             />
+
 
 
         </div>
