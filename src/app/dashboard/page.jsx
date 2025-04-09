@@ -219,11 +219,11 @@ const Dashboard = () => {
     }
 
 
-  }, [currentPage, resetSearch, searchText,isSearchActive]);
+  }, [currentPage, totalPages, resetSearch, searchText, isSearchActive]);
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers, currentPage, resetSearch, searchText,isSearchActive]);
+  }, [fetchUsers, currentPage, totalPages, resetSearch, searchText, isSearchActive]);
 
 
   useEffect(() => {
@@ -369,7 +369,7 @@ const Dashboard = () => {
   const handleGeneralSearch = useCallback(async (searchValue) => {
     setLoading(true);
     setIsSearchActive(true);
-    setCurrentPage(1); 
+    setCurrentPage(1);
     const searchConditions = [
       `Guest.ilike.%${searchText}%`,
       `Video Title.ilike.%${searchText}%`,

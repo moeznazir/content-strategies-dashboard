@@ -34,6 +34,7 @@ export default function CustomInput({
                 style={{
 
                     backgroundColor: appColors.primaryColor,
+                    color: appColors.textColor
                 }}
             />
 

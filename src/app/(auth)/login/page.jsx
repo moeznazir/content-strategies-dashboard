@@ -65,7 +65,7 @@ const SignInPage = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen" style={{ color: appColors.textHeadingColor }}>
-            <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-100">
+            <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-100" >
                 <h2 className="text-2xl font-bold text-center mb-4">
                     <span className="border-l-4 border-[#1a1b41] pl-2">Content Strategies</span>
                 </h2>
@@ -75,14 +75,14 @@ const SignInPage = () => {
 
                 {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
 
-                <form onSubmit={handleSignIn}>
+                <form onSubmit={handleSignIn} >
                     <CustomInput
                         label="Email"
                         type="email"
                         placeholder="Enter your email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`w-full ${emailError ? "border-red-500" : ""} mb-2`}
+                        className={`w-full ${emailError ? "border-red-500" : ""} mb-2 `}
                         disabled={loading}
                     />
                     {emailError && <p className="text-red-500 text-sm mb-2 mt-0">{emailError}</p>}
