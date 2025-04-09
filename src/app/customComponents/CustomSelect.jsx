@@ -2,6 +2,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
+import { appColors } from "@/lib/theme";
 
 // Import react-select dynamically to prevent hydration issues
 const Select = dynamic(() => import("react-select"), { ssr: false });
@@ -43,11 +44,50 @@ export default function CustomSelect({
                 styles={{
                     control: (provided, state) => ({
                         ...provided,
-                        borderColor: state.isFocused ? "#c7b740" : "#d1d5db", 
-                        boxShadow: state.isFocused ? "0 0 0 1.5px #c7b740" : "none",
-                        "&:hover": { borderColor: "#c7b740" },
+                        backgroundColor: state.isFocused ? appColors.hoverColor : "transparent",
+                        borderColor: state.isFocused ? appColors.borderColor : appColors.borderColor,
+                        boxShadow: "none",
+                        "&:hover": {
+                            backgroundColor: appColors.hoverColor,
+                            borderColor: appColors.borderColor,
+                        },
+                        color: "white",
+                    }),
+                    menu: (provided) => ({
+                        ...provided,
+                        backgroundColor: appColors.primaryColor,
+                        color: "white",
+                        zIndex: 9999,
+                    }),
+                    menuList: (provided) => ({
+                        ...provided,
+                        backgroundColor: appColors.primaryColor,
+                        color: "white",
+                    }),
+                    option: (provided, state) => ({
+                        ...provided,
+                        backgroundColor: state.isFocused
+                            ? appColors.hoverColor
+                            : appColors.primaryColor,
+                        color: "white",
+                        "&:active": {
+                            backgroundColor: appColors.alternativePrimaryColor,
+                        },
+                    }),
+                    singleValue: (provided) => ({
+                        ...provided,
+                        color: "white",
+                    }),
+                    placeholder: (provided) => ({
+                        ...provided,
+                        color: "#aaa",
+                    }),
+                    input: (provided) => ({
+                        ...provided,
+                        color: "white",
                     }),
                 }}
+
             />
         </div>
     );

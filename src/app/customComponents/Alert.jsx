@@ -48,19 +48,19 @@ const Alert = () => {
     };
 
     return (
-        <Dialog open={isVisible} onOpenChange={() => { }} trapFocus={true}>
+        <Dialog open={isVisible} onOpenChange={() => { }} trapFocus={true} >
             <DialogOverlay className="fixed inset-0 bg-black bg-black flex justify-center items-center" />
 
-            <DialogContent className="z-50 max-w-sm w-full bg-white rounded-lg shadow-lg p-6 space-y-4">
+            <DialogContent className="z-50 max-w-sm w-full rounded-lg shadow-lg p-4 space-y-4" style={{ backgroundColor: appColors.primaryColor }} >
                 {/* Header */}
                 {title && (
-                    <DialogHeader className="text-lg  border-b   font-semibold text-center">
+                    <DialogHeader className="text-lg  border-b font-semibold text-center">
                         <DialogTitle>{title}</DialogTitle>
                     </DialogHeader>
                 )}
 
                 {/* Message & Child UI */}
-                {message && <p className="text-gray-700 text-center">{message}</p>}
+                {message && <p className="text-center">{message}</p>}
                 {childUI && <div className="w-full">{childUI}</div>}
 
                 {/* Footer (Buttons) */}

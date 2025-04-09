@@ -8,7 +8,12 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
-
+html, body {
+  height: 100%;
+  /* background-color: #1a1b41;  */
+  margin: 0;
+  padding: 0;
+}
 
 
 @layer base {

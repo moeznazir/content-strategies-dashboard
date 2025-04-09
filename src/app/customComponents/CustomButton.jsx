@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button";
 // import { Spinner } from "./Spinner";
 import clsx from "clsx";
 import { appColors } from "@/lib/theme";
+import Spinner from "../loading";
 
 export default function CustomButton({
     onClick,
     loading,
     disabled,
     title,
-    buttonColor = appColors.buttonColor,
+    // buttonColor = appColors.buttonColor,
     className,
     style,
     type,
@@ -19,10 +20,10 @@ export default function CustomButton({
         <Button
             onClick={!loading && !disabled ? onClick : null}
             disabled={loading || disabled}
-            style={{ backgroundColor: buttonColor, ...style }}
+            style={{ ...style }}
             type={type}
             className={clsx(
-                "w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2",
+                "w-full bg-[#3a86ff] hover:bg-[#2f6fcb]  text-white font-bold py-2 rounded-md transition mb-4 mt-4",
                 className
             )}
         >

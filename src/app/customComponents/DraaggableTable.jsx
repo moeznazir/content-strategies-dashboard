@@ -6,8 +6,9 @@ import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import { getRandomColor } from "../constants/constant";
 import { CustomSpinner } from "./Spinner";
-import { FaExpandAlt } from "react-icons/fa";
+import { FaCommentDots, FaEdit, FaExpandAlt, FaTrash } from "react-icons/fa";
 import Modal from "./DetailModal";
+import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
 
 const ItemType = "COLUMN";
@@ -36,9 +37,9 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
     return (
         <th
             ref={(node) => ref(drop(node))}
-            className={`px-6 py-[0px] text-white text-left relative group w-[50px]`}
+            className={`px-6 py-3 text-white text-left text-xs font-medium text-gray-500 border-b uppercase tracking-wider`}
             style={{
-                backgroundColor: appColors.tableHeaderColor,
+
                 cursor: isResizing ? "col-resize" : "",
                 opacity: isDragging ? 0.5 : 1,
                 overflow: "hidden",
@@ -47,8 +48,8 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
             }}
         >
             <ResizableBox
-                width={250}
-                height={52}
+                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'Guest' || column.id === 'action') ? 80 : 250}
+                height={20}
                 minConstraints={[50]}
                 maxConstraints={[1000]}
                 resizeHandles={column.id !== "action" ? ["e"] : []}
@@ -57,7 +58,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
                 onResizeStop={() => setIsResizing(false)}
                 handle={
                     <span
-                        className="absolute top-0 right-0 h-full w-[5px] cursor-col-resize z-10 bg-transparent border-r-4 border-white"
+                        className="absolute top-0 right-0 h-[50px] -mt-4 w-[5px] cursor-col-resize z-10 bg-transparent border-r-4 border-gray-600"
                         style={{ marginRight: "-25px" }}
                     />
                 }
@@ -74,12 +75,15 @@ const DraggableTable = ({
     arrayFields,
     showActions = true,
     loading,
+    onEdit,
+    onDelete
 }) => {
     const [columns, setColumns] = useState(initialColumns);
     const [selectedRow, setSelectedRow] = useState(null);
+    const [commentRow, setCommentRow] = useState(null);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
-    
+
     const moveColumn = (fromIndex, toIndex) => {
         const updatedColumns = [...columns];
         const [movedColumn] = updatedColumns.splice(fromIndex, 1);
@@ -89,38 +93,38 @@ const DraggableTable = ({
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="overflow-x-auto relative">
-                <table className="min-w-full bg-white border border-gray-300">
-                    <thead>
+            <div className="overflow-x-auto rounded-[15px] ">
+                <table className="min-w-full divide-y divide-gray-300 ">
+
+                    <thead className="bg-white/10">
                         <tr>
                             {columns.map((column, index) => (
                                 <DraggableHeader key={column.id} column={column} index={index} moveColumn={moveColumn} />
                             ))}
-                            <th>Expand</th>
                         </tr>
 
                     </thead>
 
-                    <tbody>
+                    <tbody className="bg-white/10 text-white divide-y divide-gray-600">
                         {loading && (
                             <tr>
                                 <td
                                     colSpan={columns.length + (showActions ? 1 : 0)}
                                     className="py-6 text-center"
                                 >
-                                    <div className="fixed top-3/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
-                                        <CustomSpinner className="w-8 h-8 text-gray-500" />
+                                    <div className="fixed top-3/2 left-1/2 transform translate-x-[100px] -translate-y-1/2 z-50">
+                                        <CustomSpinner className="w-8 h-8 text-gray-500  " />
                                     </div>
                                 </td>
                             </tr>
                         )}
-                        {!loading && data.length === 0 ? (
-                            <tr>
+                        {!loading && data?.length === 0 ? (
+                            <tr >
                                 <td
                                     colSpan={columns.length + (showActions ? 1 : 0)}
                                     className="py-6 text-center"
                                 >
-                                    <div className="fixed top-3/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+                                    <div className="fixed top-3/2 left-1/2 transform translate-x-1/2 -translate-y-1/2 z-50">
                                         <p className="text-gray-500 text-center">
                                             No record found
                                         </p>
@@ -128,15 +132,15 @@ const DraggableTable = ({
                                 </td>
                             </tr>
                         ) : (
-                            data.map((row, rowIndex) => (
+                            data?.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
-                                    className="group cursor-pointer px-6 py-4 text-sm border-b"
+                                    className="group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10"
                                 >
                                     {columns.map((column) => (
                                         <td
                                             key={column.id}
-                                            className="px-6 py-1 text-sm border-b max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap"
+                                            className="px-6 py-1 text-sm divide-y divide-gray-600 max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap"
                                         >
                                             {column.id === "Avatar" ? (
                                                 <div className="flex items-center">
@@ -165,17 +169,53 @@ const DraggableTable = ({
                                                         </span>
                                                     ))
                                             ) : column.id === "Likes" ? (
-                                                <LikeButton user_name ={row?.Guest} user_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
+                                                <LikeButton user_name={row?.Guest} user_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
+                                            ) : column.id === "Comments" ? (
+                                                <div onClick={() => setCommentRow(row)} className="text-blue-500">
+                                                    <FaCommentDots size={18} />
+                                                </div>
+                                            ) : column.id === "action" ? (
+                                                <div className="absolute right-4 gap-2 flex transform -translate-x-1/2  -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    {showActions && (
+                                                        <>
+                                                            {onEdit  && (
+                                                                <div
+                                                                    className="opacity-0 group-hover:opacity-100 bg-white p-2 rounded-full transition-opacity duration-300 cursor-pointer flex items-center"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        onEdit(row);
+                                                                    }}
+                                                                >
+                                                                    <FaEdit className="w-4 h-4" style={{ color: appColors.primaryColor }} />
+                                                                </div>
+                                                            )}
+                                                            {onDelete && (
+                                                                <div
+                                                                    className="opacity-0 group-hover:opacity-100 bg-white p-2 rounded-full transition-opacity duration-300 cursor-pointer flex items-center"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        onDelete(row.id);
+                                                                    }}
+                                                                >
+                                                                    <FaTrash className="w-4 h-4" style={{ color: appColors.primaryColor }} />
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
                                             ) : (
                                                 row[column.id] || "-"
                                             )}
-                                            
                                         </td>
                                     ))}
 
                                 </tr>
+
                             ))
+
+
                         )}
+
                     </tbody>
                 </table>
             </div>
@@ -184,8 +224,14 @@ const DraggableTable = ({
             {selectedRow && (
                 <Modal data={selectedRow} onClose={() => setSelectedRow(null)} />
             )}
+            {/* Comment Modal (For Comments) */}
+            {commentRow && <CommentModal row={commentRow} onClose={() => setCommentRow(null)} />}
+
         </DndProvider>
     );
+
 };
+
+
 
 export default DraggableTable;
