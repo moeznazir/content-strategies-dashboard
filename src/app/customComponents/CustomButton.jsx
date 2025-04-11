@@ -20,10 +20,10 @@ export default function CustomButton({
         <Button
             onClick={!loading && !disabled ? onClick : null}
             disabled={loading || disabled}
-            style={{ ...style }}
+            style={{ ...style  }}
             type={type}
             className={clsx(
-                "w-full bg-[#3a86ff] hover:bg-[#2f6fcb]  text-white font-bold py-2 rounded-md transition mb-4 mt-4",
+                "w-full bg-[#3a86ff] hover:bg-[#2f6fcb] !hover:cursor-pointer  text-white font-bold py-2 rounded-md transition mb-4 mt-4",
                 className
             )}
         >

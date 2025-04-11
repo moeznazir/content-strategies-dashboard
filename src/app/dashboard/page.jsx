@@ -10,6 +10,7 @@ import SearchByDateModal from "../customComponents/SearchByDateModal";
 import CustomSelect from "../customComponents/CustomSelect";
 import CustomInput from "../customComponents/CustomInput";
 import { debounce } from "@/lib/utils";
+import MultiSelectDropdown from "../customComponents/CustomMultiSeect";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -27,13 +28,14 @@ const Dashboard = () => {
   const [searchText, setSearchText] = useState("");
   const [resetSearch, setResetSearch] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [loginUserEmail, setLoginUserEmail] = useState("");
+  const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [showEditDashboardModal, setShowEditDashboardModal] = useState(false);
   const [currentEditingDashboard, setCurrentEditingDashboard] = useState(null);
   const [showCreateDashboardModal, setShowCreateDashboardModal] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   const columns = [
     { label: "Avatar", id: "Avatar" },
@@ -49,7 +51,7 @@ const Dashboard = () => {
     { label: "Client", id: "Client" },
     { label: "Date Recorded", id: "Date Recorded" },
     { label: "Employee", id: "Employee" },
-    { label: "Episode #", id: "Episode #" },
+    { label: "Episode #", id: "Episode_Number" },
     { label: "Episode Title", id: "Episode Title" },
     { label: "Guest Company", id: "Guest Company" },
     { label: "Guest Industry", id: "Guest Industry" },
@@ -80,7 +82,7 @@ const Dashboard = () => {
   ];
   const dashboardCrudDetails = [
     { label: "Video ID", key: "Video ID", placeholder: "Enter Video ID" },
-    // { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
+    { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
     { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
     { label: "Text comments for the rating (OPTIONAL input from the user)", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Video Description", key: "Video Description", placeholder: "Enter Video Description" },
@@ -89,19 +91,19 @@ const Dashboard = () => {
     { label: "Guest", key: "Guest", placeholder: "Enter Guest Name" },
     { label: "Guest Title", key: "Guest Title", placeholder: "Enter Guest Title" },
     { label: "Guest Company", key: "Guest Company", placeholder: "Enter Guest Company" },
-    // { label: "Guest Industry", key: "Guest Industry", placeholder: "Select Guest Industry", type: "multiselect" },
+    { label: "Guest Industry", key: "Guest Industry", placeholder: "Select Guest Industry", type: "multiselect" },
     { label: "Episode Title", key: "Episode Title", placeholder: "Enter Episode Title" },
-    { label: "Episode #", key: "Episode #", placeholder: "Enter Episode Number", type: "number" },
-    // { label: "Video Type", key: "Video Type", placeholder: "Select Video Type", type: "multiselect" },
+    { label: "Episode #", key: "Episode_Number", placeholder: "Enter Episode Number", type: "number" },
+    { label: "Video Type", key: "Video Type", placeholder: "Select Video Type", type: "multiselect" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Video Length", key: "Video Length", placeholder: "Enter Video Length" },
-    // { label: "Themes/Triggers", key: "Themes/Triggers", placeholder: "Select Themes/Triggers", type: "multiselect" },
-    // { label: "Tags", key: "Tags", placeholder: "Select Tags", type: "multiselect" },
+    { label: "Themes/Triggers", key: "Themes/Triggers", placeholder: "Select Themes/Triggers", type: "multiselect" },
+    { label: "Tags", key: "Tags", placeholder: "Select Tags", type: "multiselect" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
     { label: "Client", key: "Client", placeholder: "Select Client", type: "select" },
     { label: "Employee", key: "Employee", placeholder: "Enter Employee" },
-    // { label: "Validations", key: "Validations", placeholder: "Select Validations", type: "multiselect" },
-    // { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
+    { label: "Validations", key: "Validations", placeholder: "Select Validations", type: "multiselect" },
+    { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
     { label: "YouTube Link", key: "YouTube Link", placeholder: "Enter YouTube Link", type: "url" },
     { label: "Podbook Link", key: "Podbook Link", placeholder: "Enter Podbook Link", type: "url" },
     { label: "Article - Extended Media", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
@@ -114,14 +116,119 @@ const Dashboard = () => {
     { label: "Blog Post 1,2 & 3", key: "Blog Post 1,2 & 3", placeholder: "Enter Blog Posts" },
   ];
 
+  const [selectedFilters, setSelectedFilters] = useState({
+    "Video Type": [],
+    "Classifications": [],
+    "Themes/Triggers": [],
+    "Objections": [],
+    "Validations": [],
+    "Insights": []
+  });
+  const filteredOptions = {
+    "Video Type": [
+      { value: "Summary Video", label: "Summary Video", count: 0 },
+      { value: "Full Episode", label: "Full Episode", count: 0 },
+      { value: "Case Study", label: "Case Study", count: 0 },
+      { value: "ICP Advice", label: "ICP Advice", count: 0 },
+      { value: "Post-Podcast", label: "Post-Podcast", count: 0 },
+      { value: "Guest Introduction", label: "Guest Introduction", count: 0 },
+      { value: "Sales Insights", label: "Sales Insights", count: 0 },
+      { value: "Challenge Questions", label: "Challenge Questions", count: 0 },
+      { value: "My Liked", label: "My Liked", count: 0 },
+      { value: "All Liked", label: "All Liked", count: 0 },
+    ],
+    "Classifications": [
+      { value: "Mentioned", label: "Mentioned", count: 0 },
+      { value: "Client", label: "Client", count: 0 },
+      { value: "Employee", label: "Employee", count: 0 },
+      { value: "Public", label: "Public", count: 0 },
+      { value: "Private", label: "Private", count: 0 },
+    ],
+    "Themes/Triggers": [
+      { "value": "Agent Trends & Impact", "label": "Agent Trends & Impact" },
+      { "value": "BPO Services", "label": "BPO Services" },
+      { "value": "Cost Center vs. Value Centers", "label": "Cost Center vs. Value Centers" },
+      { "value": "Culture/Career Progression", "label": "Culture/Career Progression" },
+      { "value": "Impact: Contact Center Insights", "label": "Impact: Contact Center Insights" },
+      { "value": "Importance of the Agent", "label": "Importance of the Agent" },
+      { "value": "Insights & Strategy Contributions", "label": "Insights & Strategy Contributions" },
+      { "value": "KPI Trends", "label": "KPI Trends" },
+      { "value": "Revenue & Growth", "label": "Revenue & Growth" },
+      { "value": "The Role of AI", "label": "The Role of AI" },
+      { "value": "Trigger: Expanding Markets", "label": "Trigger: Expanding Markets" },
+      { "value": "The Role of Data", "label": "The Role of Data" },
+      { "value": "CX as the New Competitive Advantage", "label": "CX as the New Competitive Advantage" },
+      { "value": "Contact Center’s Role in Driving Revenue & Growth", "label": "Contact Center’s Role in Driving Revenue & Growth" },
+      { "value": "Customer Experience (CX) as a Competitive Advantage", "label": "Customer Experience (CX) as a Competitive Advantage" },
+      { "value": "Cost Center vs. Value Center Perceptions", "label": "Cost Center vs. Value Center Perceptions" }
+    ],
+    "Objections": [
+      { "value": "Maintaining Quality", "label": "Maintaining Quality" },
+      { "value": "BPO Value Perceptions", "label": "BPO Value Perceptions" },
+      { "value": "Mitigating Risk", "label": "Mitigating Risk" }
+    ],
+    "Validations": [
+      { value: "Cross-Department Integration", label: "Cross-Department Integration" },
+      { value: "Impact on Revenue & Growth", label: "Impact on Revenue & Growth" },
+      { value: "Insights influencing Company Growth", label: "Insights Influencing Company Growth" },
+      { value: "Agent Turnover Impact", label: "Agent Turnover Impact" },
+      { value: "BPO Success Strategies", label: "BPO Success Strategies" },
+      { value: "Contact Centers as Growth Drivers", label: "Contact Centers as Growth Drivers" },
+      { value: "Role as Consultant/Partner", label: "Role as Consultant/Partner" },
+      { value: "Importance of the Agent", label: "Importance of the Agent" },
+      { value: "The Importance of Culture", label: "The Importance of Culture" },
+      { value: "Agent Quality Trends", label: "Agent Quality Trends" },
+      { value: "Are Agents Here To Stay?", label: "Are Agents Here To Stay?" },
+
+    ],
+    "Insights": [
+      { value: "Insight 1", label: "Insight 1" },
+      { value: "Insight 2", label: "Insight 2" },
+    ],
+  };
+  const [filteredOptionsWithCounts, setFilteredOptionsWithCounts] = useState(filteredOptions);
+
   const totalPages = useMemo(() => Math.ceil(totalRecords / ITEMS_PER_PAGE), [totalRecords]);
+  const [filterCounts, setFilterCounts] = useState({
+    "Video Type": {},
+    "Classifications": {},
+    "Themes/Triggers": {},
+    "Objections": {},
+    "Validations": {},
+    "Insights": {}
+  });
+
+  console.log('idddddd', loginUserId);
+
+  const fetchRPCFilteredRecords = async () => {
+    const toJsonb = (arr) => (arr?.length ? arr : null);
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_filtered_results', {
+      video_types_json: toJsonb(selectedFilters["Video Type"]),
+      themes_json: toJsonb(selectedFilters["Themes/Triggers"]),
+      objections_json: toJsonb(selectedFilters["Objections"]),
+      validations_json: toJsonb(selectedFilters["Validations"]),
+      classifications_json: toJsonb(selectedFilters["Classifications"]),
+      current_user_id: localStorage.getItem('current_user_id'),
+      page_num: 1,
+      page_size: 10000
+    });
+
+    if (rpcError) throw rpcError;
+
+    return rpcData || [];
+  };
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase.from("users_record").select("*", { count: "exact", head: true })
-        .order('id_order', { ascending: false });
+      const rpcFilteredData = await fetchRPCFilteredRecords();
+      const allowedIds = new Set(rpcFilteredData.map((item) => item.id));
 
+      let query = supabase.from("users_record").select("*", { count: "exact", head: true })
+        .order('id_order', { ascending: false }).in("id", [...allowedIds]);
+
+
+      console.log("Initial query:", query);
       if (searchText.trim() && !resetSearch) {
         const searchConditions = [
           `Guest.ilike.%${searchText}%`,
@@ -146,36 +253,25 @@ const Dashboard = () => {
       if (toDate) {
         query = query.lte("Date Recorded", toDate);
       }
-      // Apply filters
-      //  Object.entries(selectedFilters).forEach(([field, values]) => {
-      //   if (values && values.length > 0 && values.every(v => v !== undefined)) {
-      //     query = query.contains(field, values);
-      //   }
-      // });
 
       const { count, error: countError } = await query;
       if (countError) throw countError;
 
       setTotalRecords(count || 0);
 
-      // Reset to first page if this is a new search
-      if (isSearchActive && currentPage !== 1) {
-        setCurrentPage(1);
-        return; // Early return, useEffect will trigger again with page=1
-      }
+      // // Reset to first page if this is a new search
+      // if (isSearchActive && currentPage !== 1) {
+      //   setCurrentPage(1);
+      //   return; // Early return, useEffect will trigger again with page=1
+      // }
 
 
       const start = (currentPage - 1) * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE - 1;
 
       let dataQuery = supabase.from("users_record").select("*")
-        .order('id_order', { ascending: false });
+        .order('id_order', { ascending: false }).in("id", [...allowedIds]);
 
-      // Object.entries(selectedFilters).forEach(([field, values]) => {
-      //   if (values && values.length > 0) {
-      //     dataQuery = dataQuery.contains(field, values);
-      //   }
-      // });
       if (searchText.trim() && !resetSearch) {
         const searchConditions = [
           `Guest.ilike.%${searchText}%`,
@@ -194,6 +290,9 @@ const Dashboard = () => {
 
         dataQuery = dataQuery.or(searchConditions);
       }
+
+
+
       if (fromDate) {
         dataQuery = dataQuery.gte("Date Recorded", fromDate);
       }
@@ -211,7 +310,13 @@ const Dashboard = () => {
       setUsers(data);
       setFilteredUsers(data);
     } catch (err) {
-      console.error("Error fetching users:", err.message || err);
+      console.error("Detailed fetch error:", {
+        message: err.message,
+        code: err.code,
+        details: err.details,
+        hint: err.hint
+      });
+      console.log("Full error object:", JSON.stringify(err, null, 2));
     } finally {
       setLoading(false);
       setResetSearch(false);
@@ -219,19 +324,67 @@ const Dashboard = () => {
     }
 
 
-  }, [currentPage, totalPages, resetSearch, searchText, isSearchActive]);
+  }, [currentPage, totalPages, selectedFilters, isSearchActive,fromDate, toDate]);
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers, currentPage, totalPages, resetSearch, searchText, isSearchActive]);
+  }, [currentPage, totalPages, isSearchActive, selectedFilters]);
 
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const email = localStorage.getItem("email") || "";
-      setLoginUserEmail(email);
+  const fetchAllFilterCounts = useCallback(async () => {
+    try {
+
+      const { data, error } = await supabase.rpc('get_filter_counts', {
+        current_user_id: localStorage.getItem('current_user_id')
+      });
+
+      if (error) {
+        console.error("Error fetching filter counts:", error);
+        return;
+      }
+      const counts = {
+        "Video Type": {},
+        "Classifications": {},
+        "Themes/Triggers": {},
+        "Objections": {},
+        "Validations": {},
+      };
+
+      // Assuming the RPC returns an array of {category, value, count}
+      data.forEach(({ category, value, count }) => {
+        if (counts[category]) {
+          counts[category][value] = count;
+        }
+      });
+
+      setFilterCounts(counts);
+    } catch (err) {
+      console.error("Error calculating filter counts:", err);
     }
   }, []);
+
+  useEffect(() => {
+    const updatedOptions = { ...filteredOptions };
+    for (const filterType in filteredOptions) {
+      updatedOptions[filterType] = filteredOptions[filterType].map(option => ({
+        ...option,
+        count: filterCounts[filterType]?.[option.value] || 0
+      }));
+    }
+    setFilteredOptionsWithCounts(updatedOptions);
+  }, [filterCounts]);
+
+  useEffect(() => {
+    fetchAllFilterCounts();
+  }, [fetchAllFilterCounts, users]);
+  const handleFilterSelect = (filterType, values) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterType]: values
+    }));
+    setIsSearchActive(true);
+    setCurrentPage(1); // Always reset to first page when filters change
+  };
 
   const handleCreateDashboardSubmit = () => {
     setShowCreateDashboardModal(false);
@@ -358,10 +511,12 @@ const Dashboard = () => {
       if (searchValue.trim()) {
         handleGeneralSearch(searchValue);
       } else {
-        clearSearch();
+        setSearchText("");
+        setIsSearchActive(true); 
+        setCurrentPage(1);
       }
-    }, 500), // 500ms delay after typing stops
-    [] // Empty dependency array means this is created once
+    }, 500),
+    []
   );
 
 
@@ -369,20 +524,20 @@ const Dashboard = () => {
   const handleGeneralSearch = useCallback(async (searchValue) => {
     setLoading(true);
     setIsSearchActive(true);
-    setCurrentPage(1);
+    // setCurrentPage(1);
     const searchConditions = [
-      `Guest.ilike.%${searchText}%`,
-      `Video Title.ilike.%${searchText}%`,
-      `"Video Description".ilike.%${searchText}%`,
-      `Transcript.ilike.%${searchText}%`,
-      `"Text comments for the rating (OPTIONAL input from the user)".ilike.%${searchText}%`,
-      `"Episode Title".ilike.%${searchText}%`,
-      `"Guest Company".ilike.%${searchText}%`,
-      `Quote.ilike.%${searchText}%`,
-      `"Video Length".ilike.%${searchText}%`,
-      `Mentions.ilike.%${searchText}%`,
-      `Client.ilike.%${searchText}%`,
-      `Employee.ilike.%${searchText}%`
+      `Guest.ilike.%${searchValue}%`,
+      `Video Title.ilike.%${searchValue}%`,
+      `"Video Description".ilike.%${searchValue}%`,
+      `Transcript.ilike.%${searchValue}%`,
+      `"Text comments for the rating (OPTIONAL input from the user)".ilike.%${searchValue}%`,
+      `"Episode Title".ilike.%${searchValue}%`,
+      `"Guest Company".ilike.%${searchValue}%`,
+      `Quote.ilike.%${searchValue}%`,
+      `"Video Length".ilike.%${searchValue}%`,
+      `Mentions.ilike.%${searchValue}%`,
+      `Client.ilike.%${searchValue}%`,
+      `Employee.ilike.%${searchValue}%`
     ].filter(Boolean).join(',');
 
     try {
@@ -410,7 +565,7 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchText]);
+  }, []);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -418,30 +573,35 @@ const Dashboard = () => {
 
   const clearSearch = async () => {
     setSearchText("");
-    setFilteredUsers([]);
+    setSelectedFilters({
+      "Video Type": [],
+      "Classifications": [],
+      "Themes/Triggers": [],
+      "Objections": [],
+      "Validations": [],
+      "Insights": []
+    });
     setFromDate("");
     setToDate("");
     setResetSearch(true);
     setDateSearchApplied(false);
-    // setCurrentPage(1);
+    setCurrentPage(1);
+    setOpenDropdown(false)
     fetchUsers();
   };
 
 
-
   return (
     <div className="overflow-x-hidden py-0 p-4 relative">
-
       {/* Search & divs Section */}
       <div className="py-3 px-6 mt-[-10px] flex justify-between items-center">
-
         {/* Search Bar */}
         <div className=" p-0 w-full">
           <div className="mx-auto -mt-2">
             <h1 className="text-2xl font-bold mt-6 mb-4">The Contact Center Perspectives Podcast</h1>
 
             {/* Search Bar */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:cursor-pointer">
               <div className="relative flex-grow max-w-2xl">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <HiOutlineSearch className="text-gray-400" />
@@ -458,7 +618,7 @@ const Dashboard = () => {
                   placeholder="Search episodes keywords..."
                 />
               </div>
-              <div className="flex gap-2 flex-wrap transform -translate-y-[1px]">
+              <div className="flex gap-2 flex-wrap transform -translate-y-[1px] ">
                 {["Search By Date", "Share Search Link", "Clear Search", "Add Record"].map((text, i) => {
                   const getIcon = (label) => {
                     switch (label) {
@@ -508,35 +668,24 @@ const Dashboard = () => {
       <hr className="border-gray-500 mb-6 mt-[10px] -mx-12" />
       {/* Filter Section */}
       <div className="flex">
-        <aside className="w-full md:w-64  px-6 rounded-full ">
-
-          {[
-            "Video Type",
-            "Objections",
-            "Classifications",
-            "Validations",
-            "Themes/Triggers",
-            "Insights"
-          ].map((filter) => (
-            <div key={filter} className="relative mb-4">
-              <select
-                defaultValue=""
-                className="w-[230px] text-sm  bg-white/10 p-2 pr-10 border border-gray-200 rounded-full focus:ring-blue-500 focus:border-gray-200 appearance-none"
-              >
-                <option value="" disabled>
-                  Search By {filter}
-                </option>
-                <option value="option1">Option 1</option>
-                <option value="option2">Option 2</option>
-                {/* Add more options if needed */}
-              </select>
-              <div className="pointer-events-none absolute right-0 top-1/2 transform -translate-y-1/2  text-sm">
-                ▼
-              </div>
-            </div>
+        <aside className=" flex  flex-col gap-2 w-full md:w-64 px-6">
+          {Object.keys(filteredOptionsWithCounts).map((field) => (
+            <MultiSelectDropdown
+              key={field}
+              label={`Search By ${field}`}
+              options={filteredOptionsWithCounts[field]}
+              selectedValues={selectedFilters[field] || []}
+              onSelect={(values) => {
+                handleFilterSelect(field, values);
+              }}
+              isOpen={openDropdown === field}
+              onToggle={() =>
+                setOpenDropdown(openDropdown === field ? null : field)
+              }
+            />
           ))}
         </aside>
-        <div className="hidden md:block h-[585px] overflow-y-hidden w-px bg-gray-600 mx-4 -mt-6"></div>
+        <div className="hidden md:block h-[585px] overflow-y-hidden w-px bg-gray-600 mx-4 ml-6 -mt-6"></div>
         {/* Table */}
         <main className="flex-1 px-6 overflow-x-auto">
           <div className="overflow-x-auto">
