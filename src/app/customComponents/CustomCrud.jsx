@@ -7,6 +7,7 @@ import CustomInput from "./CustomInput";
 import CustomButton from "./CustomButton";
 import { appColors } from "@/lib/theme";
 import Alert from "./Alert";
+import { ShowCustomToast } from "./CustomToastify";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_API_URL,
@@ -55,10 +56,18 @@ const OPTIONS = {
         { value: "AI", label: "AI" },
     ],
     "Validations": [
+        { value: "Cross-Department Integration", label: "Cross-Department Integration" },
         { value: "Impact on Revenue & Growth", label: "Impact on Revenue & Growth" },
-        { value: "Insights Influencing Company Growth", label: "Insights Influencing Company Growth" },
+        { value: "Insights influencing Company Growth", label: "Insights Influencing Company Growth" },
+        { value: "Agent Turnover Impact", label: "Agent Turnover Impact" },
         { value: "BPO Success Strategies", label: "BPO Success Strategies" },
         { value: "Contact Centers as Growth Drivers", label: "Contact Centers as Growth Drivers" },
+        { value: "Role as Consultant/Partner", label: "Role as Consultant/Partner" },
+        { value: "Importance of the Agent", label: "Importance of the Agent" },
+        { value: "The Importance of Culture", label: "The Importance of Culture" },
+        { value: "Agent Quality Trends", label: "Agent Quality Trends" },
+        { value: "Are Agents Here To Stay?", label: "Are Agents Here To Stay?" },
+
     ],
     "Mentions": [
         { value: "Yes", label: "Yes" },
@@ -111,8 +120,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         displayFields.reduce((schema, field) => {
             if (MULTISELECT_FIELDS.includes(field.key)) {
                 schema[field.key] = Yup.array().of(Yup.string())
-                .min(1, `${field.label} is required`);
-                // .required(`${field.label} is required`);
+                    .min(1, `${field.label} is required`);
             } else if (SINGLESELECT_FIELDS.includes(field.key)) {
                 schema[field.key] = Yup.string().required(`${field.label} is required`);
             } else if (field.type === "number") {
@@ -254,11 +262,19 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
 
     });
+    const handleFormSubmit = async () => {
+        const errors = await formik.validateForm();
+        if (Object.keys(errors).length > 0) {
+            ShowCustomToast("Please fill all required fields.", 'info',2000);
+            return;
+        }
+        formik.handleSubmit();
+    };
     return (
         <>
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50" onClick={onClose} />
             <div className="fixed inset-0 flex items-center justify-center z-50 ">
-                <div className="shadow-lg p-4 border border-gray-300 rounded-lg w-[40%]" style={{backgroundColor: appColors.primaryColor, color:appColors.textColor}}>
+                <div className="shadow-lg p-4 border border-gray-300 rounded-lg w-[40%]" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
                     <h2 className="text-[20px] font-bold mt-[2px] p-0 w-full">
                         {isEditMode ? "Edit Record" : "Create Record"}
                         <hr className="border-t border-gray-300 mb-6 mt-[10px] -mx-4" />
@@ -327,6 +343,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 title={isEditMode ? "Update" : "Save"}
                                 loading={formik.isSubmitting}
                                 disabled={formik.isSubmitting}
+                                onClick={handleFormSubmit}
                                 className="mb-0 w-[100px] -mt-2"
                             />
                             <CustomButton

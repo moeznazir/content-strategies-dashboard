@@ -48,7 +48,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
             }}
         >
             <ResizableBox
-                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'Guest' || column.id === 'action') ? 80 : 250}
+                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action') ? 75 : 250}
                 height={20}
                 minConstraints={[50]}
                 maxConstraints={[1000]}
