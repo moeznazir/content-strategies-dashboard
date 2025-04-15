@@ -47,7 +47,7 @@ const NavigationMenu = () => {
                         text: "OK",
                         primary: true,
                         onPress: () => {
-                            if (user?.role === 'admin' || user?.role === 'user') {
+                            if (user?.role === 'admin' || user?.role === 'end-user') {
                                 router.push('/dashboard');
                             }
                         },
