@@ -7,7 +7,8 @@ export const appColors = {
     accentColor: "#facc15",             // Yellow-gold (calls to action)
     warningColor: "#f97316",
     textColor: "#FFFFFF"  ,
-    textHeadingColor:'#1a1b41'    // Orange (alerts/warnings)
+    textHeadingColor:'#1a1b41' , 
+    hoverColor :'#FFFFFF1A' // Orange (alerts/warnings)
 };
 
 export const appColorsLight = {

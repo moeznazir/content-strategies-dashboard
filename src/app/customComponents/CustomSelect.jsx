@@ -24,7 +24,7 @@ export default function CustomSelect({
             {title && (
                 <label
                     htmlFor={id}
-                    className="block text-sm font-bold text-gray-700 mb-1"
+                    className="block text-sm font-bold text-gray-300 mb-1"
                 >
                     {title}
                 </label>

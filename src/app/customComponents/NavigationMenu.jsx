@@ -21,7 +21,7 @@ const NavigationMenu = () => {
     const router = useRouter();
 
     const user = {
-        role: "user",
+        role: "end-user",
     };
     const shouldShowDashboard = !EXCLUED_PATHS.includes(pathname);
 

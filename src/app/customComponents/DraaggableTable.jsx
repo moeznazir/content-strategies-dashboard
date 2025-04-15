@@ -93,7 +93,15 @@ const DraggableTable = ({
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="overflow-x-auto rounded-[15px] ">
+            <div className="relative flex-1 overflow-x-auto rounded-[15px]"
+                style={{
+                    height: 'calc(100vh - 18rem)',
+                    minHeight: '450px',
+                    maxHeight: '750px',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
                 <table className="min-w-full divide-y divide-gray-300 ">
 
                     <thead className="bg-white/10">
@@ -178,7 +186,7 @@ const DraggableTable = ({
                                                 <div className="absolute right-4 gap-2 flex transform -translate-x-1/2  -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                     {showActions && (
                                                         <>
-                                                            {onEdit  && (
+                                                            {onEdit && (
                                                                 <div
                                                                     className="opacity-0 group-hover:opacity-100 bg-white p-2 rounded-full transition-opacity duration-300 cursor-pointer flex items-center"
                                                                     onClick={(e) => {

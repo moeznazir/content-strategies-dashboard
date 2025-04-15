@@ -22,12 +22,16 @@ const CommentModal = ({ row, onClose }) => {
 
     // Get user email & roles from localStorage
     const userEmail = localStorage.getItem("email");
-    const systemRoles = (localStorage.getItem("system_roles") || "[]");
 
     // Check role permissions
-    const isAdmin = systemRoles.includes("admin");
-    console.log("isADMINNN", isAdmin);
+    const storedRoles = localStorage.getItem("system_roles"); // e.g., "admin,editor"
+    const systemRoles = storedRoles ? storedRoles.split(",") : [];
+    
+    const isAdmin = systemRoles.includes("admin") || systemRoles.includes("editor");
+    
+    console.log("storedRoles", storedRoles);
     console.log("systemRoles", systemRoles);
+    console.log("isAdmin", isAdmin);
 
     // Fetch Comments on the basis of record id when modal is opened
     useEffect(() => {
