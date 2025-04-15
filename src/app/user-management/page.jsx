@@ -10,7 +10,7 @@ import CustomButton from "../customComponents/CustomButton";
 import CustomSelect from "../customComponents/CustomSelect";
 import { appColors } from "@/lib/theme";
 
-const ITEMS_PER_PAGE = 10000000000;
+const ITEMS_PER_PAGE = 10;
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -148,14 +148,14 @@ const UserManagement = () => {
     setCurrentPage(page);
   };
 
-  return ( true ? null :
+  return (
     <div className="w-[90%] mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">User Management</h1>
       </div>
 
       <div className="max-w-full mx-auto">
-        <div className="overflow-x-auto rounded-[15px] overflow-y-auto">
+        <div className="overflow-y-auto overflow-x-auto shadow-md rounded-lg">
           <DraggableTable
             columns={columns}
             data={paginatedUsers}
@@ -163,13 +163,53 @@ const UserManagement = () => {
             loading={loading}
             onEdit={handleEditClick}
             showActions={true}
-            currentPage={currentPage}
-            ITEMS_PER_PAGE={ITEMS_PER_PAGE}
-            totalRecords={totalRecords}
-            showPagination={true}
           />
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4 px-4 py-2 sm:px-6">
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <span className="text-[#6c757d] text-sm font-sm flex items-center gap-1">
+              Showing
+              <span className="text-sm text-[#6c757d]">{currentPage * ITEMS_PER_PAGE - ITEMS_PER_PAGE + 1}</span> -
+              <span className="text-sm text-[#6c757d]">{Math.min(currentPage * ITEMS_PER_PAGE, totalRecords)}</span>
+              of
+              <span className="text-sm text-[#6c757d]">{totalRecords}</span>
+            </span>
+            <div>
+              <nav className="relative z-0 inline-flex gap-2 rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button
+                  onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-white/10'}`}                >
+                  <FaChevronLeft />
+                </button>
+
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-3 py-1 rounded-md ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <div
+                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === totalPages ? 'text-gray-300 bg-white/10 cursor-not-allowed' : 'text-gray-500 hover:bg-white/10 cursor-pointer'}`}
+                >
+                  <span className="sr-only ">Next</span>
+                  <FaChevronRight className="h-4 w-4" aria-hidden="true" />
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit User Modal */}
       {showEditModal && currentUser && (
