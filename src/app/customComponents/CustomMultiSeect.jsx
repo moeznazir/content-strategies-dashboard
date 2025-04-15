@@ -1,6 +1,8 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+
 const MultiSelectDropdown = ({ label, options, selectedValues, onToggle, isOpen, onSelect }) => {
+    const dropdownRef = useRef(null);
 
     const toggleOption = (value) => {
         const newSelected = selectedValues.includes(value)
@@ -9,8 +11,28 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onToggle, isOpen,
         onSelect(newSelected);
     };
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                if (isOpen) {
+                    onToggle();
+                }
+            }
+        };
+
+        // Add when the dropdown is open
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        // Clean up
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen, onToggle]);
+
     return (
-        <div className="relative mb-4 cursor-pointer">
+        <div className="relative mb-4 cursor-pointer" ref={dropdownRef}>
             <div
                 onClick={onToggle}
                 className="w-[240px] cursor-pointer text-sm bg-white/10 p-2 pr-10 border border-gray-200 rounded-full focus:ring-blue-500 focus:border-gray-200 text-left flex justify-between items-center"
@@ -24,7 +46,6 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onToggle, isOpen,
             {isOpen && (
                 <div className="absolute cursor-pointer z-10 mt-1 w-[230px] bg-[#1a1b41] border border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
                     {options.map((option) => {
-                        // Ensure count is always a number
                         const count = typeof option.count === 'number' ? option.count : 0;
 
                         return (
@@ -46,6 +67,5 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onToggle, isOpen,
         </div>
     );
 };
-
 
 export default MultiSelectDropdown

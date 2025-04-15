@@ -4,6 +4,7 @@ import CustomInput from './CustomInput'
 import { appColors } from '@/lib/theme'
 
 const SearchByDateModal = ({ fromDate, setToDate, setFromDate, setShowDateModal, handleDateSearch, toDate }) => {
+    
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center" >
             <div className="p-6 rounded-lg shadow-md w-96" style={{ backgroundColor: appColors.primaryColor }}>

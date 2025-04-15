@@ -6,6 +6,25 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+// const supabaseAdmin = createClient(
+//     process.env.NEXT_PUBLIC_API_URL,
+//     process.env.SUPABASE_SERVICE_ROLE_KEY
+// );
+
+// export const getAllUsers = async () => {
+//     try {
+//         // Fetch all users from Supabase
+//         const { data, error } = await supabaseAdmin.auth.admin.listUsers();
+
+//         if (error) {
+//             return { error: error.message };
+//         }
+//         console.log("admin", data);
+//         return { users: data.users }; // Return the clean users list
+//     } catch (error) {
+//         return { error: error.message };
+//     }
+// };
 export const loginUser = async (loginData) => {
     try {
         const { data, error } = await supabase.auth.signInWithPassword({

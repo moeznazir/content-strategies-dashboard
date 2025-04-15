@@ -7,7 +7,6 @@ import { FaChevronLeft, FaChevronRight, FaUser, FaClock, FaLink, FaTimes, FaPlus
 import CustomCrudForm from "../customComponents/CustomCrud";
 import Alert from "../customComponents/Alert";
 import SearchByDateModal from "../customComponents/SearchByDateModal";
-import CustomSelect from "../customComponents/CustomSelect";
 import CustomInput from "../customComponents/CustomInput";
 import { debounce } from "@/lib/utils";
 import MultiSelectDropdown from "../customComponents/CustomMultiSeect";
@@ -17,7 +16,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_API_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 100;
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [showDateModal, setShowDateModal] = useState(false);
@@ -26,9 +25,7 @@ const Dashboard = () => {
   const [dateSearchApplied, setDateSearchApplied] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [resetSearch, setResetSearch] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -198,136 +195,47 @@ const Dashboard = () => {
     "Insights": {}
   });
 
-  console.log('idddddd', loginUserId);
-
-  const fetchRPCFilteredRecords = async () => {
-    const toJsonb = (arr) => (arr?.length ? arr : null);
-    const { data: rpcData, error: rpcError } = await supabase.rpc('get_filtered_results', {
-      video_types_json: toJsonb(selectedFilters["Video Type"]),
-      themes_json: toJsonb(selectedFilters["Themes/Triggers"]),
-      objections_json: toJsonb(selectedFilters["Objections"]),
-      validations_json: toJsonb(selectedFilters["Validations"]),
-      classifications_json: toJsonb(selectedFilters["Classifications"]),
-      current_user_id: localStorage.getItem('current_user_id'),
-      page_num: 1,
-      page_size: 10000
-    });
-
-    if (rpcError) throw rpcError;
-
-    return rpcData || [];
-  };
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const rpcFilteredData = await fetchRPCFilteredRecords();
-      const allowedIds = new Set(rpcFilteredData.map((item) => item.id));
+      const fromDateISO = fromDate ? new Date(fromDate).toISOString() : null;
+      const toDateISO = toDate ? new Date(toDate).toISOString() : null;
 
-      let query = supabase.from("users_record").select("*", { count: "exact", head: true })
-        .order('id_order', { ascending: false }).in("id", [...allowedIds]);
-
-
-      console.log("Initial query:", query);
-      if (searchText.trim() && !resetSearch) {
-        const searchConditions = [
-          `Guest.ilike.%${searchText}%`,
-          `Video Title.ilike.%${searchText}%`,
-          `"Video Description".ilike.%${searchText}%`,
-          `Transcript.ilike.%${searchText}%`,
-          `"Text comments for the rating (OPTIONAL input from the user)".ilike.%${searchText}%`,
-          `"Episode Title".ilike.%${searchText}%`,
-          `"Guest Company".ilike.%${searchText}%`,
-          `Quote.ilike.%${searchText}%`,
-          `"Video Length".ilike.%${searchText}%`,
-          `Mentions.ilike.%${searchText}%`,
-          `Client.ilike.%${searchText}%`,
-          `Employee.ilike.%${searchText}%`
-        ].filter(Boolean).join(',');
-
-        query = query.or(searchConditions);
-      }
-      if (fromDate) {
-        query = query.gte("Date Recorded", fromDate);
-      }
-      if (toDate) {
-        query = query.lte("Date Recorded", toDate);
-      }
-
-      const { count, error: countError } = await query;
-      if (countError) throw countError;
-
-      setTotalRecords(count || 0);
-
-      // // Reset to first page if this is a new search
-      // if (isSearchActive && currentPage !== 1) {
-      //   setCurrentPage(1);
-      //   return; // Early return, useEffect will trigger again with page=1
-      // }
-
-
-      const start = (currentPage - 1) * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE - 1;
-
-      let dataQuery = supabase.from("users_record").select("*")
-        .order('id_order', { ascending: false }).in("id", [...allowedIds]);
-
-      if (searchText.trim() && !resetSearch) {
-        const searchConditions = [
-          `Guest.ilike.%${searchText}%`,
-          `Video Title.ilike.%${searchText}%`,
-          `"Video Description".ilike.%${searchText}%`,
-          `Transcript.ilike.%${searchText}%`,
-          `"Text comments for the rating (OPTIONAL input from the user)".ilike.%${searchText}%`,
-          `"Episode Title".ilike.%${searchText}%`,
-          `"Guest Company".ilike.%${searchText}%`,
-          `Quote.ilike.%${searchText}%`,
-          `"Video Length".ilike.%${searchText}%`,
-          `Mentions.ilike.%${searchText}%`,
-          `Client.ilike.%${searchText}%`,
-          `Employee.ilike.%${searchText}%`
-        ].filter(Boolean).join(',');
-
-        dataQuery = dataQuery.or(searchConditions);
-      }
-
-
-
-      if (fromDate) {
-        dataQuery = dataQuery.gte("Date Recorded", fromDate);
-      }
-      if (toDate) {
-        dataQuery = dataQuery.lte("Date Recorded", toDate);
-      }
-
-
-      const { data, error } = await dataQuery
-        .order("Date Recorded", { ascending: false })
-        .range(start, end);
+      const { data, error } = await supabase.rpc('combined_search', {
+        search_term: searchText.trim() || null,
+        video_types_json: selectedFilters["Video Type"]?.length ? selectedFilters["Video Type"] : null,
+        themes_json: selectedFilters["Themes/Triggers"]?.length ? selectedFilters["Themes/Triggers"] : null,
+        objections_json: selectedFilters["Objections"]?.length ? selectedFilters["Objections"] : null,
+        validations_json: selectedFilters["Validations"]?.length ? selectedFilters["Validations"] : null,
+        classifications_json: selectedFilters["Classifications"]?.length ? selectedFilters["Classifications"] : null,
+        from_date: fromDateISO ? fromDateISO : null,
+        to_date: toDateISO ? toDateISO : null,
+        current_user_id: localStorage.getItem('current_user_id'),
+        page_num: currentPage,
+        page_size: ITEMS_PER_PAGE
+      });
 
       if (error) throw error;
 
-      setUsers(data);
-      setFilteredUsers(data);
+      // The RPC should return both data and total_count
+      setUsers(data || []);
+      setFilteredUsers(data || []);
+      setTotalRecords(data[0]?.total_count || 0);
+
     } catch (err) {
-      console.error("Detailed fetch error:", {
+      console.error("Fetch error:", {
         message: err.message,
-        code: err.code,
         details: err.details,
-        hint: err.hint
       });
-      console.log("Full error object:", JSON.stringify(err, null, 2));
     } finally {
       setLoading(false);
-      setResetSearch(false);
       setIsSearchActive(false);
     }
-
-
-  }, [currentPage, totalPages, selectedFilters, isSearchActive,fromDate, toDate]);
-
+  }, [currentPage, selectedFilters, isSearchActive, fromDate, toDate, searchText]);
   useEffect(() => {
     fetchUsers();
+    // getAllUsers();
   }, [currentPage, totalPages, isSearchActive, selectedFilters]);
 
 
@@ -347,7 +255,7 @@ const Dashboard = () => {
         "Classifications": {},
         "Themes/Triggers": {},
         "Objections": {},
-        "Validations": {},
+        "Validations": {}
       };
 
       // Assuming the RPC returns an array of {category, value, count}
@@ -460,112 +368,21 @@ const Dashboard = () => {
 
   // Function to handle date filtering
   const handleDateSearch = async () => {
-    setLoading(true);
-    setDateSearchApplied(true)
-    try {
-
-      let query = supabase.from("users_record").select("*", { count: "exact", head: true });
-
-      if (fromDate) {
-        query = query.gte("Date Recorded", fromDate);
-      }
-      if (toDate) {
-        query = query.lte("Date Recorded", toDate);
-      }
-      const { count, error: countError } = await query;
-      if (countError) throw countError;
-
-      setTotalRecords(count || 0);
-      setCurrentPage(1);
-
-      const start = 0;
-      const end = ITEMS_PER_PAGE - 1;
-
-      let filteredQuery = supabase.from("users_record").select("*");
-
-      if (fromDate) {
-        filteredQuery = filteredQuery.gte("Date Recorded", fromDate);
-      }
-      if (toDate) {
-        filteredQuery = filteredQuery.lte("Date Recorded", toDate);
-      }
-
-      const { data, error } = await filteredQuery
-        .order("Date Recorded", { ascending: false })
-        .range(start, end);
-
-      if (error) throw error;
-
-      setFilteredUsers(data);
-      setShowDateModal(false);
-    } catch (err) {
-      console.error("Error fetching data:", err.message);
-    } finally {
-      setLoading(false);
-    }
+    setDateSearchApplied(true);
+    setIsSearchActive(true);
+    setCurrentPage(1);
+    setShowDateModal(false)
+    fetchUsers();
   };
   const debouncedSearch = useMemo(() =>
     debounce((searchValue) => {
       setSearchText(searchValue);
       setIsSearchActive(true);
-      if (searchValue.trim()) {
-        handleGeneralSearch(searchValue);
-      } else {
-        setSearchText("");
-        setIsSearchActive(true); 
-        setCurrentPage(1);
-      }
+      setCurrentPage(1);
     }, 500),
     []
   );
 
-
-  // Update handleGeneralSearch to accept searchText as parameter
-  const handleGeneralSearch = useCallback(async (searchValue) => {
-    setLoading(true);
-    setIsSearchActive(true);
-    // setCurrentPage(1);
-    const searchConditions = [
-      `Guest.ilike.%${searchValue}%`,
-      `Video Title.ilike.%${searchValue}%`,
-      `"Video Description".ilike.%${searchValue}%`,
-      `Transcript.ilike.%${searchValue}%`,
-      `"Text comments for the rating (OPTIONAL input from the user)".ilike.%${searchValue}%`,
-      `"Episode Title".ilike.%${searchValue}%`,
-      `"Guest Company".ilike.%${searchValue}%`,
-      `Quote.ilike.%${searchValue}%`,
-      `"Video Length".ilike.%${searchValue}%`,
-      `Mentions.ilike.%${searchValue}%`,
-      `Client.ilike.%${searchValue}%`,
-      `Employee.ilike.%${searchValue}%`
-    ].filter(Boolean).join(',');
-
-    try {
-      const { data, error } = await supabase
-        .from("users_record")
-        .select("*")
-        .or(searchConditions)
-        .order('id_order', { ascending: false })
-        .range(0, ITEMS_PER_PAGE - 1);
-
-      if (error) throw error;
-
-      // Update the count for pagination
-      const { count } = await supabase
-        .from("users_record")
-        .select('*', { count: 'exact', head: true })
-        .or(searchConditions);
-
-      setTotalRecords(count || 0);
-      setFilteredUsers(data || []);
-      setUsers(data || []);
-
-    } catch (err) {
-      console.error("Error during search:", err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -583,7 +400,6 @@ const Dashboard = () => {
     });
     setFromDate("");
     setToDate("");
-    setResetSearch(true);
     setDateSearchApplied(false);
     setCurrentPage(1);
     setOpenDropdown(false)
