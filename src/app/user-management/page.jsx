@@ -10,7 +10,7 @@ import CustomButton from "../customComponents/CustomButton";
 import CustomSelect from "../customComponents/CustomSelect";
 import { appColors } from "@/lib/theme";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 10000000000;
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -168,7 +168,7 @@ const UserManagement = () => {
       </div>
 
       {/* Pagination Controls */}
-      {totalPages > 1 && (
+      {/* {totalPages > 1 && ( */}
         <div className="flex items-center justify-between mt-4 px-4 py-2 sm:px-6">
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <span className="text-[#6c757d] text-sm font-sm flex items-center gap-1">
@@ -209,7 +209,7 @@ const UserManagement = () => {
             </div>
           </div>
         </div>
-      )}
+ 
 
       {/* Edit User Modal */}
       {showEditModal && currentUser && (
