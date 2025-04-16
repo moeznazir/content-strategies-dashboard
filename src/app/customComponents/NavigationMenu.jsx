@@ -27,7 +27,7 @@ const NavigationMenu = () => {
 
 
     const menuItems = [
-        { name: "Dashboard", href: "/dashboard", allowedRoles: ["user", "admin"] },
+        { name: "Dashboard", href: "/dashboard", allowedRoles: ["end-user", "admin"] },
         { name: "User Management", href: "/user-management", allowedRoles: ["admin"] }
     ];
 
