@@ -6,10 +6,11 @@ import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import { getRandomColor } from "../constants/constant";
 import { CustomSpinner } from "./Spinner";
-import { FaCommentDots, FaEdit, FaExpandAlt, FaPlus, FaTrash } from "react-icons/fa";
+import { FaCommentDots, FaEdit, FaExpandAlt, FaPlus, FaSortDown, FaTrash } from "react-icons/fa";
 import Modal from "./DetailModal";
 import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
+import { ChevronDown } from "lucide-react";
 
 const ItemType = "COLUMN";
 
@@ -250,7 +251,7 @@ const DraggableTable = ({
                                     onClick={onLoadMore}
                                 >
                                     <div className="sticky left-1/2 transform -translate-x-1/2 ml-[300px] z-50 w-max mx-auto">
-                                        <div className="flex items-center justify-center gap-2 text-blue-500">
+                                        <div className="flex items-center justify-center gap-2 text-black font-bold">
                                             {loadingMore ? (
                                                 <>
                                                     <CustomSpinner className="w-4 h-4" />
@@ -258,8 +259,9 @@ const DraggableTable = ({
                                                 </>
                                             ) : (
                                                 <>
-                                                    <FaPlus className="w-4 h-4" />
-                                                    <span>Show More</span>
+                                                <span>Show More</span>
+                                                    <FaSortDown className="-mt-2 w-6 h-6" />
+                                                    
                                                 </>
                                             )}
                                         </div>
