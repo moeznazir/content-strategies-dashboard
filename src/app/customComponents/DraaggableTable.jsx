@@ -183,7 +183,7 @@ const DraggableTable = ({
                                                     <FaCommentDots size={18} />
                                                 </div>
                                             ) : column.id === "action" ? (
-                                                <div className="fixed right-4 gap-2 flex transform -translate-x-1/2  -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <div className="fixed right-4 gap-2 flex transform -translate-x-1/2  -translate-y-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                     {showActions && (
                                                         <>
                                                             {onEdit && (
