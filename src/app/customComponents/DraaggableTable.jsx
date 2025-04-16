@@ -6,7 +6,7 @@ import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import { getRandomColor } from "../constants/constant";
 import { CustomSpinner } from "./Spinner";
-import { FaCommentDots, FaEdit, FaExpandAlt, FaTrash } from "react-icons/fa";
+import { FaCommentDots, FaEdit, FaExpandAlt, FaPlus, FaTrash } from "react-icons/fa";
 import Modal from "./DetailModal";
 import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
@@ -34,6 +34,12 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
         },
     });
 
+    const shouldResizeColumn = (columnId) => {
+        // Disable separator for these specific columns
+        return !['Guest Industry', 'Objections', 'Tags', 'Themes/Triggers', 'Validations', 'Video Type', 'action'].includes(columnId);
+    };
+
+
     return (
         <th
             ref={(node) => ref(drop(node))}
@@ -52,7 +58,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
                 height={20}
                 minConstraints={[50]}
                 maxConstraints={[1000]}
-                resizeHandles={column.id !== "action" ? ["e"] : []}
+                resizeHandles={shouldResizeColumn(column.id) ? ["e"] : []}
                 axis="x"
                 onResizeStart={() => setIsResizing(true)}
                 onResizeStop={() => setIsResizing(false)}
@@ -76,7 +82,10 @@ const DraggableTable = ({
     showActions = true,
     loading,
     onEdit,
-    onDelete
+    onDelete,
+    hasMoreRecords,
+    onLoadMore,
+    loadingMore
 }) => {
     const [columns, setColumns] = useState(initialColumns);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -93,7 +102,7 @@ const DraggableTable = ({
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="overflow-x-auto rounded-[15px]"
+            <div className="overflow-x-auto rounded-[15px] relative"
                 style={{
                     height: 'calc(100vh - 18rem)',
                     minHeight: '450px',
@@ -143,12 +152,18 @@ const DraggableTable = ({
                             data?.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
-                                    className="group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10"
+                                    className="group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10 relative"
                                 >
                                     {columns.map((column) => (
                                         <td
                                             key={column.id}
-                                            className="px-6 py-1 text-sm divide-y divide-gray-600 max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap"
+                                            className={`
+                                       px-6 py-1 text-sm divide-y divide-gray-600 whitespace-nowrap
+                                       ${['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Video Type'].includes(column.label)
+                                                    ? 'w-auto max-w-max'
+                                                    : 'max-w-[250px] overflow-hidden text-ellipsis'
+                                                }
+                                     `}
                                         >
                                             {column.id === "Avatar" ? (
                                                 <div className="flex items-center">
@@ -182,45 +197,75 @@ const DraggableTable = ({
                                                 <div onClick={() => setCommentRow(row)} className="text-blue-500">
                                                     <FaCommentDots size={18} />
                                                 </div>
-                                            ) : column.id === "action" ? (
-                                                <div className="fixed right-4 gap-2 flex transform -translate-x-1/2  -translate-y-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    {showActions && (
-                                                        <>
-                                                            {onEdit && (
-                                                                <div
-                                                                    className="opacity-0 group-hover:opacity-100 bg-white p-2 rounded-full transition-opacity duration-300 cursor-pointer flex items-center"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        onEdit(row);
-                                                                    }}
-                                                                >
-                                                                    <FaEdit className="w-4 h-4" style={{ color: appColors.primaryColor }} />
-                                                                </div>
-                                                            )}
-                                                            {onDelete && (
-                                                                <div
-                                                                    className="opacity-0 group-hover:opacity-100 bg-white p-2 rounded-full transition-opacity duration-300 cursor-pointer flex items-center"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        onDelete(row.id);
-                                                                    }}
-                                                                >
-                                                                    <FaTrash className="w-4 h-4" style={{ color: appColors.primaryColor }} />
-                                                                </div>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
                                             ) : (
                                                 row[column.id] || "-"
                                             )}
                                         </td>
                                     ))}
+                                    <td className="sticky right-0  px-0 z-10">
+                                        <div className="flex gap-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            {showActions && (
+                                                <>
+                                                    {onEdit && (
+                                                        <button
+                                                            className="p-2 rounded-full bg-white hover:bg-gray-200 transition-colors"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onEdit(row);
+                                                            }}
+                                                            aria-label="Edit"
+                                                        >
+                                                            <FaEdit className="w-4 h-4" style={{ color: appColors.primaryColor }} />
+                                                        </button>
+                                                    )}
+                                                    {onDelete && (
+                                                        <button
+                                                            className="p-2 rounded-full bg-white hover:bg-gray-200 transition-colors"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onDelete(row.id);
+                                                            }}
+                                                            aria-label="Delete"
+                                                        >
+                                                            <FaTrash className="w-4 h-4" style={{ color: appColors.primaryColor }} />
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    </td>
 
                                 </tr>
 
                             ))
 
+
+                        )}
+                        {/* Show More row - only visible if there are more records to load */}
+                        {hasMoreRecords && !loading && (
+                            <tr className="hover:bg-white/10">
+                                <td
+                                    colSpan={columns.length + 1} // +1 for the action column
+                                    className="relative py-3 text-center cursor-pointer"
+                                    onClick={onLoadMore}
+                                >
+                                    <div className="sticky left-1/2 transform -translate-x-1/2 ml-[300px] z-50 w-max mx-auto">
+                                        <div className="flex items-center justify-center gap-2 text-blue-500">
+                                            {loadingMore ? (
+                                                <>
+                                                    <CustomSpinner className="w-4 h-4" />
+                                                    <span>Loading...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FaPlus className="w-4 h-4" />
+                                                    <span>Show More</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
 
                         )}
 
