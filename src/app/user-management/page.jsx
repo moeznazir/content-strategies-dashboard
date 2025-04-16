@@ -10,7 +10,7 @@ import CustomButton from "../customComponents/CustomButton";
 import CustomSelect from "../customComponents/CustomSelect";
 import { appColors } from "@/lib/theme";
 
-const ITEMS_PER_PAGE = 10000000000;
+const ITEMS_PER_PAGE = 100;
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -72,7 +72,7 @@ const UserManagement = () => {
           title_roles: titleRoles.map((item, idx) => (
             <span
               key={idx}
-              className={`inline-block px-2 py-1 my-2 text-xs font-semibold rounded-lg mr-1 ${getRandomColor(idx)}`}
+              className={`inline-block px-2 py-1 my-2 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
             >
               {item}
             </span>
@@ -80,7 +80,7 @@ const UserManagement = () => {
           system_roles: systemRoles.map((item, idx) => (
             <span
               key={idx}
-              className={`inline-block px-2 py-1 my-2 text-xs font-semibold rounded-lg mr-1 ${getRandomColor(idx)}`}
+              className={`inline-block px-2 py-1 my-2 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
             >
               {item}
             </span>
@@ -148,7 +148,7 @@ const UserManagement = () => {
     setCurrentPage(page);
   };
 
-  return (
+  return ( true ? null :
     <div className="w-[90%] mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">User Management</h1>
@@ -169,7 +169,7 @@ const UserManagement = () => {
 
       {/* Pagination Controls */}
       {/* {totalPages > 1 && ( */}
-        <div className="flex items-center justify-between mt-4 px-4 py-2 sm:px-6">
+        {/* <div className="flex items-center justify-between mt-4 px-4 py-2 sm:px-6">
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <span className="text-[#6c757d] text-sm font-sm flex items-center gap-1">
               Showing
@@ -208,7 +208,7 @@ const UserManagement = () => {
               </nav>
             </div>
           </div>
-        </div>
+        </div> */}
  
 
       {/* Edit User Modal */}

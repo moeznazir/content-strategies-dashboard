@@ -15,8 +15,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor}} >
-      <body cz-shortcut-listen="true" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+    <html  lang="en" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor}} >
+      <body cz-shortcut-listen="true"  style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
 
         <Suspense fallback={< Spinner />}>
           <Alert />

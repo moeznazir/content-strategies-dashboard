@@ -93,7 +93,7 @@ const DraggableTable = ({
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="relative flex-1 overflow-x-auto rounded-[15px]"
+            <div className="overflow-x-auto rounded-[15px]"
                 style={{
                     height: 'calc(100vh - 18rem)',
                     minHeight: '450px',
@@ -183,7 +183,7 @@ const DraggableTable = ({
                                                     <FaCommentDots size={18} />
                                                 </div>
                                             ) : column.id === "action" ? (
-                                                <div className="absolute right-4 gap-2 flex transform -translate-x-1/2  -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <div className="fixed right-4 gap-2 flex transform -translate-x-1/2  -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                     {showActions && (
                                                         <>
                                                             {onEdit && (
