@@ -16,7 +16,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_API_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
-const ITEMS_PER_PAGE = 100;
+const ITEMS_PER_PAGE = 20;
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [showDateModal, setShowDateModal] = useState(false);
@@ -33,6 +33,7 @@ const Dashboard = () => {
   const [currentEditingDashboard, setCurrentEditingDashboard] = useState(null);
   const [showCreateDashboardModal, setShowCreateDashboardModal] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const columns = [
     { label: "Avatar", id: "Avatar" },
@@ -54,7 +55,7 @@ const Dashboard = () => {
     { label: "Guest Company", id: "Guest Company" },
     { label: "Guest Industry", id: "Guest Industry" },
     { label: "Tags", id: "Tags" },
-    { label: "Themes/Triggers", id: "Themes/Triggers" },
+    { label: "Themes", id: "Themes/Triggers" },
     { label: "Video Type", id: "Video Type" },
     { label: "Validations", id: "Validations" },
     { label: "Objections", id: "Objections" },
@@ -74,7 +75,7 @@ const Dashboard = () => {
     "Guest Industry",
     "Objections",
     "Tags",
-    "Themes/Triggers",
+    "Themes",
     "Validations",
     "Video Type"
   ];
@@ -96,7 +97,7 @@ const Dashboard = () => {
     { label: "Video Type", key: "Video Type", placeholder: "Select Video Type", type: "multiselect" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Video Length", key: "Video Length", placeholder: "Enter Video Length" },
-    { label: "Themes/Triggers", key: "Themes/Triggers", placeholder: "Select Themes/Triggers", type: "multiselect" },
+    { label: "Themes", key: "Themes/Triggers", placeholder: "Select Themes/Triggers", type: "multiselect" },
     { label: "Tags", key: "Tags", placeholder: "Select Tags", type: "multiselect" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
     { label: "Client", key: "Client", placeholder: "Select Client", type: "select" },
@@ -198,8 +199,13 @@ const Dashboard = () => {
   });
 
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
+  const fetchUsers = useCallback(async (page = 1, isLoadMore = false) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const fromDateISO = fromDate ? new Date(fromDate).toISOString() : null;
       const toDateISO = toDate ? new Date(toDate).toISOString() : null;
@@ -214,15 +220,20 @@ const Dashboard = () => {
         from_date: fromDateISO ? fromDateISO : null,
         to_date: toDateISO ? toDateISO : null,
         current_user_id: localStorage.getItem('current_user_id'),
-        page_num: currentPage,
+        page_num: page,
         page_size: ITEMS_PER_PAGE
       });
 
       if (error) throw error;
 
-      // The RPC should return both data and total_count
-      setUsers(data || []);
-      setFilteredUsers(data || []);
+      if (isLoadMore) {
+        setUsers(prev => [...prev, ...data]);
+        setFilteredUsers(prev => [...prev, ...data]);
+      } else {
+        setUsers(data || []);
+        setFilteredUsers(data || []);
+      }
+  
       setTotalRecords(data[0]?.total_count || 0);
 
     } catch (err) {
@@ -230,15 +241,28 @@ const Dashboard = () => {
         message: err.message,
         details: err.details,
       });
-    } finally {
-      setLoading(false);
-      setIsSearchActive(false);
+    }finally {
+      if (isLoadMore) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+        setIsSearchActive(false);
+      }
     }
-  }, [currentPage, selectedFilters, isSearchActive, fromDate, toDate, searchText]);
+  }, [selectedFilters, isSearchActive, fromDate, toDate, searchText]);
   useEffect(() => {
-    fetchUsers();
-    // getAllUsers();
-  }, [currentPage, totalPages, isSearchActive, selectedFilters]);
+    // Reset to first page when search/filter changes
+    setCurrentPage(1);
+    fetchUsers(1, false);
+  }, [selectedFilters, searchText, fromDate, toDate]);
+
+  const loadMoreData = async () => {
+    if (!loadingMore && users.length < totalRecords) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      await fetchUsers(nextPage, true);
+    }
+  };
 
 
   const fetchAllFilterCounts = useCallback(async () => {
@@ -386,10 +410,6 @@ const Dashboard = () => {
   );
 
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
   const clearSearch = async () => {
     setSearchText("");
     setSelectedFilters({
@@ -404,9 +424,10 @@ const Dashboard = () => {
     setToDate("");
     setDateSearchApplied(false);
     setCurrentPage(1);
-    setOpenDropdown(false)
-    fetchUsers();
+    setOpenDropdown(false);
+    setLoadingMore(false);
   };
+  
 
 
   return (
@@ -469,9 +490,9 @@ const Dashboard = () => {
                     <button
                       key={i}
                       className={`px-4 py-2 text-sm ${isAddRecord ? "bg-[#3a86ff] hover:bg-[#2f6fcb]" :
-                      isSearchByDate && dateSearchApplied ? "bg-white/20 hover:bg-white/20" : "bg-white/10 hover:bg-white/20"
-                      } transform -translate-y-[1px] rounded-full flex items-center gap-2 cursor-pointer `}
-                    onClick={() => {
+                        isSearchByDate && dateSearchApplied ? "bg-white/20 hover:bg-white/20" : "bg-white/10 hover:bg-white/20"
+                        } transform -translate-y-[1px] rounded-full flex items-center gap-2 cursor-pointer `}
+                      onClick={() => {
                         if (text === "Add Record") setShowCreateDashboardModal(true);
                         else if (text === "Search By Date") setShowDateModal(true);
                       }}
@@ -491,23 +512,26 @@ const Dashboard = () => {
       {/* Filter Section */}
       <div className="flex">
         <aside className=" flex  flex-col gap-2 w-full md:w-64 px-6">
-          {Object.keys(filteredOptionsWithCounts).map((field) => (
-            <MultiSelectDropdown
-              key={field}
-              label={`Search By ${field}`}
-              options={filteredOptionsWithCounts[field]}
-              selectedValues={selectedFilters[field] || []}
-              onSelect={(values) => {
-                handleFilterSelect(field, values);
-              }}
-              isOpen={openDropdown === field}
-              onToggle={() =>
-                setOpenDropdown(openDropdown === field ? null : field)
-              }
-            />
-          ))}
+          {Object.keys(filteredOptionsWithCounts).map((field) => {
+            const displayField = field === 'Themes/Triggers' ? 'Themes' : field;
+            return (
+              <MultiSelectDropdown
+                key={field}
+                label={`Search By ${displayField}`}  
+                options={filteredOptionsWithCounts[field]}
+                selectedValues={selectedFilters[field] || []}
+                onSelect={(values) => {
+                  handleFilterSelect(field, values);
+                }}
+                isOpen={openDropdown === field}
+                onToggle={() =>
+                  setOpenDropdown(openDropdown === field ? null : field)
+                }
+              />
+            );
+          })}
         </aside>
-        <div className="hidden md:block h-[585px] overflow-y-hidden w-px bg-gray-600 mx-4 ml-6 -mt-6"></div>
+        <div className="hidden md:block max-h-full overflow-y-hidden w-px bg-gray-600 mx-4 ml-6 -mt-6"></div>
         {/* Table */}
         <main className="flex-1 px-6 overflow-x-auto">
           <div className="overflow-x-auto">
@@ -519,6 +543,10 @@ const Dashboard = () => {
               onEdit={handleEditClick}
               onDelete={handleDeleteClick}
               showActions={true}
+              hasMoreRecords={users.length < totalRecords}
+              onLoadMore={loadMoreData}
+              loadingMore={loadingMore}
+
             />
           </div>
 
@@ -532,7 +560,7 @@ const Dashboard = () => {
                 of
                 <span className="text-sm text-[#6c757d]">{totalRecords}</span>
               </span>
-              <div>
+              {/* <div>
                 <nav className="relative z-0 inline-flex gap-2 rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                   <button
                     onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
@@ -565,7 +593,7 @@ const Dashboard = () => {
                     <FaChevronRight className="h-4 w-4" aria-hidden="true" />
                   </div>
                 </nav>
-              </div>
+              </div> */}
             </div>
           </div>
         </main>
