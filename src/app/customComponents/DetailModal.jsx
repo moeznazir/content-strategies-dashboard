@@ -7,11 +7,12 @@ const Modal = ({ data, onClose }) => {
         ([key]) => key !== "Avatar" && key !== "id" && !key.includes("Rating (1-5 stars by the user)")
     );
 
+
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg w-1/3 max-h-[80vh] overflow-y-auto shadow-lg" style={{ backgroundColor: appColors.primaryColor }}>
                 <div className="sticky top-0 py-2 flex justify-between items-center border rounded p-2 z-10">
-                    <h2 className="text-lg font-bold">User Details</h2>
+                    <h2 className="text-lg font-bold">Content Details</h2>
                     <button onClick={onClose} className="text-red-500">
                         <FaTimes size={18} />
                     </button>
@@ -33,7 +34,13 @@ const Modal = ({ data, onClose }) => {
                     {filteredData?.map(([key, value]) => (
                         <div key={key}>
                             <label className="block text-sm font-semibold text-gray-600">
-                                {key === "Text comments for the rating (OPTIONAL input from the user)" ? "First Rating Comment" : key}
+                                {key === "Text comments for the rating (OPTIONAL input from the user)"
+                                    ? "First Rating Comment"
+                                    : key === "rating"
+                                        ? "Rating"
+                                        : key === "Episode_Number"
+                                            ? "Episode #"
+                                            : key}
                             </label>
                             <CustomInput
                                 type="text"

@@ -38,6 +38,7 @@ const Dashboard = () => {
     { label: "Avatar", id: "Avatar" },
     { label: "Name", id: "Guest" },
     { label: "Video Title", id: "Video Title" },
+    // { label: "Rating", id: "rating" },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
     { label: "Main Comment", id: "Text comments for the rating (OPTIONAL input from the user)" },
@@ -78,9 +79,10 @@ const Dashboard = () => {
     "Video Type"
   ];
   const dashboardCrudDetails = [
-    { label: "Video ID", key: "Video ID", placeholder: "Enter Video ID" },
+    { label: "Video ID", key: "Video_ID", placeholder: "Enter Video ID" },
     { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
     { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
+    { label: "Rating", key: "rating", placeholder: "Enter Rating (1-10)", type: "rating" },
     { label: "Text comments for the rating (OPTIONAL input from the user)", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Video Description", key: "Video Description", placeholder: "Enter Video Description" },
     { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
@@ -413,70 +415,74 @@ const Dashboard = () => {
       <div className="py-3 px-6 mt-[-10px] flex justify-between items-center">
         {/* Search Bar */}
         <div className=" p-0 w-full">
+          {/* Search Bar Section */}
           <div className="mx-auto -mt-2">
             <h1 className="text-2xl font-bold mt-6 mb-4">The Contact Center Perspectives Podcast</h1>
 
-            {/* Search Bar */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:cursor-pointer">
-              <div className="relative flex-grow max-w-2xl">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiOutlineSearch className="text-gray-400" />
+            {/* Search Bar with Clear Button */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              {/* Left-aligned search group */}
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                {/* Search Input - Wider */}
+                <div className="relative flex-grow" style={{ minWidth: '470px' }}>
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <HiOutlineSearch className="text-gray-400" />
+                  </div>
+                  <CustomInput
+                    type="text"
+                    value={searchText}
+                    onChange={(e) => {
+                      setSearchText(e.target.value);
+                      debouncedSearch(e.target.value);
+                    }}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full bg-white/10 placeholder-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Search episodes keywords..."
+                  />
                 </div>
-                <CustomInput
-                  type="text"
-                  value={searchText}
-                  onChange={(e) => {
-                    setSearchText(e.target.value);
-                    debouncedSearch(e.target.value);
-                  }}
-                  // onKeyPress={(e) => e.key === 'Enter' && handleGeneralSearch()}
-                  className="block w-[70%] pl-10 pr-3 py-2 border border-gray-300 rounded-full bg-white/10  placeholder-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Search episodes keywords..."
-                />
+
+                {/* Clear Search Button - only visible when there's something to clear */}
+                {(searchText || dateSearchApplied || Object.values(selectedFilters).some(arr => arr.length > 0)) && (
+                  <button
+                    onClick={clearSearch}
+                    className="px-4 py-2 text-sm bg-white/10 hover:bg-white/20 rounded-full flex items-center gap-2 whitespace-nowrap transition-colors"
+                  >
+                    <FaTimes className="w-3 h-3" />
+                    Clear Search
+                  </button>
+                )}
               </div>
-              <div className="flex gap-2 flex-wrap transform -translate-y-[1px] ">
-                {["Search By Date", "Share Search Link", "Clear Search", "Add Record"].map((text, i) => {
+
+              {/* Right-aligned action buttons */}
+              <div className="flex gap-2">
+                {["Search By Date", "Share Search Link", "Add Record"].map((text, i) => {
                   const getIcon = (label) => {
                     switch (label) {
-                      case "Search By Date":
-                        return <FaClock className="w-4 h-4" />;
-                      case "Share Search Link":
-                        return <FaLink />;
-                      case "Clear Search":
-                        return <FaTimes />;
-                      case "Add Record":
-                        return <FaPlus />;
-                      default:
-                        return null;
+                      case "Search By Date": return <FaClock className="w-4 h-4" />;
+                      case "Share Search Link": return <FaLink className="w-3 h-3" />;
+                      case "Add Record": return <FaPlus className="w-3 h-3" />;
+                      default: return null;
                     }
                   };
                   const isAddRecord = text === "Add Record";
                   const isSearchByDate = text === "Search By Date";
                   return (
-                    <div
+                    <button
                       key={i}
                       className={`px-4 py-2 text-sm ${isAddRecord ? "bg-[#3a86ff] hover:bg-[#2f6fcb]" :
-                        isSearchByDate && dateSearchApplied ? "bg-white/20 hover:bg-white/20" : "bg-white/10 hover:bg-white/20"
-                        } transform -translate-y-[1px] rounded-full flex items-center gap-2 cursor-pointer `}
-                      onClick={() => {
-                        if (text === "Add Record") {
-                          setShowCreateDashboardModal(true);
-                        } else if (text === "Search By Date") {
-                          setShowDateModal(true);
-                        } else if (text === "Clear Search") {
-                          clearSearch();
-                        }
+                      isSearchByDate && dateSearchApplied ? "bg-white/20 hover:bg-white/20" : "bg-white/10 hover:bg-white/20"
+                      } transform -translate-y-[1px] rounded-full flex items-center gap-2 cursor-pointer `}
+                    onClick={() => {
+                        if (text === "Add Record") setShowCreateDashboardModal(true);
+                        else if (text === "Search By Date") setShowDateModal(true);
                       }}
                     >
                       {getIcon(text)}
                       {text}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
-
             </div>
-
           </div>
         </div>
 

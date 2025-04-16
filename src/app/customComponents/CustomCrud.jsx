@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { createClient } from "@supabase/supabase-js";
@@ -127,6 +127,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 schema[field.key] = Yup.number().required(`${field.label} is required`).positive(`${field.label} must be positive`);
             } else if (field.type === "url") {
                 schema[field.key] = Yup.string().url(`${field.label} must be a valid URL`);
+            } else if (field.type === "rating") {
+                schema[field.key] = Yup.number().min(1, `${field.label} must be at least 1`).max(10, `${field.label} must be at most 10`).required(`${field.label} is required`);
+
             } else {
                 schema[field.key] = Yup.string().required(`${field.label} is required`);
             }
@@ -136,6 +139,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // console.log("Entity ID:", entityData.id);
     // console.log("isEditMode:", isEditMode);
     // Formik setup
+    useEffect(() => {
+        console.log("Entity Data:", entityData);
+        console.log("Initial Form Values:", formik.initialValues);
+    }, [entityData]);
     const formik = useFormik({
         initialValues: displayFields.reduce((values, field) => {
             let fieldValue = entityData?.[field.key];
@@ -152,7 +159,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         validationSchema,
 
         onSubmit: async (values) => {
+
+
             try {
+                console.log("valuesss", values);
                 const formattedValues = { ...values };
                 MULTISELECT_FIELDS.forEach((field) => {
                     formattedValues[field] = (values[field] || []);
@@ -265,7 +275,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const handleFormSubmit = async () => {
         const errors = await formik.validateForm();
         if (Object.keys(errors).length > 0) {
-            ShowCustomToast("Please fill all required fields.", 'info',2000);
+            ShowCustomToast("Please fill all required fields.", 'info', 2000);
             return;
         }
         formik.handleSubmit();
@@ -292,7 +302,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             value={formik.values[field.key]}
                                             isMulti={true}
                                             onChange={(value) => formik.setFieldValue(field.key, value)}
-                                            placeholder={`Select ${field.label}`}
+                                            placeholder={field.placeholder || `Select ${field.label}...`}
                                             className="w-full mb-2"
                                         />
                                     ) : SINGLESELECT_FIELDS.includes(field.key) ? (
@@ -302,7 +312,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             value={formik.values[field.key]}
                                             isMulti={false}
                                             onChange={(value) => formik.setFieldValue(field.key, value)}
-                                            placeholder={`Select ${field.label}`}
+                                            placeholder={field.placeholder || `Select ${field.label}...`}
                                             className="w-full mb-2"
                                         />
                                     ) : field.type === "image" ? (
@@ -327,6 +337,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
                                             className="w-full p-2 border rounded"
+                                            placeholder={field.placeholder || `Select ${field.label}...`}
                                         />
                                     )}
 
