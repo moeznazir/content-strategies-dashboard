@@ -38,12 +38,32 @@ export const loginUser = async (loginData) => {
         localStorage.setItem("email", loginData.email);
         localStorage.setItem("current_user_id", userId);
         localStorage.setItem("system_roles", system_roles);
-        console.log("dataaaaaa",data);
-        return data;
+        console.log("dataaaaaa", data);
+        // 👉 Fetch the user's profile
+        const { data: profile, error: profileError } = await supabase
+            .from("profiles")
+            .select("company_id")
+            .eq("id", userId)
+            .single();
+            console.log("Logged in user profile:", profile);
+        if (profileError) {
+            // console.error("Failed to fetch profile:", profileError.message);
+            return { error: "Login succeeded, but failed to fetch company info." };
+        }
 
-        
+        // Store company_id if needed
+        localStorage.setItem("company_id", profile.company_id);
+
+        console.log("Logged in user profile:", profile);
+
+        return {
+            ...data,
+            company_id: profile.company_id,
+        };
+
+
     } catch (error) {
-        return { error: error.message };
+        // return { error: error.message };
     }
 };
 

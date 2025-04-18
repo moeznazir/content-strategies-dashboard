@@ -9,7 +9,7 @@ import Alert from "../customComponents/Alert";
 import SearchByDateModal from "../customComponents/SearchByDateModal";
 import CustomInput from "../customComponents/CustomInput";
 import { debounce } from "@/lib/utils";
-import MultiSelectDropdown from "../customComponents/CustomMultiSeect";
+import MultiSelectDropdown from "../customComponents/FiltersMultiSelect";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -39,7 +39,8 @@ const Dashboard = () => {
     { label: "Avatar", id: "Avatar" },
     { label: "Name", id: "Guest" },
     { label: "Video Title", id: "Video Title" },
-    // { label: "Rating", id: "rating" },
+    { label: "Ranking", id: "ranking" },
+    { label: "Ranking Justification", id: "Ranking Justification" },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
     { label: "Main Comment", id: "Text comments for the rating (OPTIONAL input from the user)" },
@@ -55,7 +56,7 @@ const Dashboard = () => {
     { label: "Guest Company", id: "Guest Company" },
     { label: "Guest Industry", id: "Guest Industry" },
     { label: "Tags", id: "Tags" },
-    { label: "Themes", id: "Themes/Triggers" },
+    { label: "Themes", id: "Themes" },
     { label: "Video Type", id: "Video Type" },
     { label: "Validations", id: "Validations" },
     { label: "Objections", id: "Objections" },
@@ -83,7 +84,9 @@ const Dashboard = () => {
     { label: "Video ID", key: "Video_ID", placeholder: "Enter Video ID" },
     { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
     { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
-    { label: "Rating", key: "rating", placeholder: "Enter Rating (1-10)", type: "rating" },
+    { label: "Themes", key: "Themes", placeholder: "Select Themes", type: "multiselect" },
+    { label: "Ranking", key: "ranking", placeholder: "Enter Ranking (1-10)", type: "ranking" },
+    { label: "Ranking justification", key: "Ranking Justification", placeholder: "Enter Ranking Justification" },
     { label: "Text comments for the rating (OPTIONAL input from the user)", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Video Description", key: "Video Description", placeholder: "Enter Video Description" },
     { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
@@ -97,7 +100,7 @@ const Dashboard = () => {
     { label: "Video Type", key: "Video Type", placeholder: "Select Video Type", type: "multiselect" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Video Length", key: "Video Length", placeholder: "Enter Video Length" },
-    { label: "Themes", key: "Themes/Triggers", placeholder: "Select Themes/Triggers", type: "multiselect" },
+ 
     { label: "Tags", key: "Tags", placeholder: "Select Tags", type: "multiselect" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
     { label: "Client", key: "Client", placeholder: "Select Client", type: "select" },
@@ -119,7 +122,7 @@ const Dashboard = () => {
   const [selectedFilters, setSelectedFilters] = useState({
     "Video Type": [],
     "Classifications": [],
-    "Themes/Triggers": [],
+    "Themes": [],
     "Objections": [],
     "Validations": [],
     "Insights": []
@@ -144,7 +147,7 @@ const Dashboard = () => {
       { value: "Public", label: "Public", count: 0 },
       { value: "Private", label: "Private", count: 0 },
     ],
-    "Themes/Triggers": [
+    "Themes": [
       { "value": "Agent Trends & Impact", "label": "Agent Trends & Impact" },
       { "value": "BPO Services", "label": "BPO Services" },
       { "value": "Cost Center vs. Value Centers", "label": "Cost Center vs. Value Centers" },
@@ -192,7 +195,7 @@ const Dashboard = () => {
   const [filterCounts, setFilterCounts] = useState({
     "Video Type": {},
     "Classifications": {},
-    "Themes/Triggers": {},
+    "Themes": {},
     "Objections": {},
     "Validations": {},
     "Insights": {}
@@ -213,13 +216,14 @@ const Dashboard = () => {
       const { data, error } = await supabase.rpc('combined_search', {
         search_term: searchText.trim() || null,
         video_types_json: selectedFilters["Video Type"]?.length ? selectedFilters["Video Type"] : null,
-        themes_json: selectedFilters["Themes/Triggers"]?.length ? selectedFilters["Themes/Triggers"] : null,
+        themes_json: selectedFilters["Themes"]?.length ? selectedFilters["Themes"] : null,
         objections_json: selectedFilters["Objections"]?.length ? selectedFilters["Objections"] : null,
         validations_json: selectedFilters["Validations"]?.length ? selectedFilters["Validations"] : null,
         classifications_json: selectedFilters["Classifications"]?.length ? selectedFilters["Classifications"] : null,
         from_date: fromDateISO ? fromDateISO : null,
         to_date: toDateISO ? toDateISO : null,
         current_user_id: localStorage.getItem('current_user_id'),
+        current_company_id: localStorage.getItem('company_id'),
         page_num: page,
         page_size: ITEMS_PER_PAGE
       });
@@ -233,7 +237,7 @@ const Dashboard = () => {
         setUsers(data || []);
         setFilteredUsers(data || []);
       }
-  
+
       setTotalRecords(data[0]?.total_count || 0);
 
     } catch (err) {
@@ -241,7 +245,7 @@ const Dashboard = () => {
         message: err.message,
         details: err.details,
       });
-    }finally {
+    } finally {
       if (isLoadMore) {
         setLoadingMore(false);
       } else {
@@ -279,7 +283,7 @@ const Dashboard = () => {
       const counts = {
         "Video Type": {},
         "Classifications": {},
-        "Themes/Triggers": {},
+        "Themes": {},
         "Objections": {},
         "Validations": {}
       };
@@ -340,7 +344,7 @@ const Dashboard = () => {
         onPress: async () => {
           try {
             const response = await supabase
-              .from("users_record")
+              .from("content_details")
               .delete()
               .eq("id", Id);
 
@@ -348,7 +352,7 @@ const Dashboard = () => {
               throw new Error(response.error.message);
             }
             const { count, error: countError } = await supabase
-              .from("users_record")
+              .from("content_details")
               .select("*", { count: "exact", head: true });
 
             if (countError) throw countError;
@@ -359,7 +363,7 @@ const Dashboard = () => {
             }
 
             const { data, error } = await supabase
-              .from("users_record")
+              .from("content_details")
               .select("*")
               .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
               .order('id_order', { ascending: false });
@@ -415,7 +419,7 @@ const Dashboard = () => {
     setSelectedFilters({
       "Video Type": [],
       "Classifications": [],
-      "Themes/Triggers": [],
+      "Themes": [],
       "Objections": [],
       "Validations": [],
       "Insights": []
@@ -427,7 +431,7 @@ const Dashboard = () => {
     setOpenDropdown(false);
     setLoadingMore(false);
   };
-  
+
 
 
   return (
@@ -513,11 +517,12 @@ const Dashboard = () => {
       <div className="flex">
         <aside className=" flex  flex-col gap-2 w-full md:w-64 px-6">
           {Object.keys(filteredOptionsWithCounts).map((field) => {
-            const displayField = field === 'Themes/Triggers' ? 'Themes' : field;
+            const displayField = field === 'Themes' ? 'Themes' : field;
             return (
               <MultiSelectDropdown
                 key={field}
-                label={`Search By ${displayField}`}  
+                field={field}
+                label={`Search By ${displayField}`}
                 options={filteredOptionsWithCounts[field]}
                 selectedValues={selectedFilters[field] || []}
                 onSelect={(values) => {
@@ -527,9 +532,22 @@ const Dashboard = () => {
                 onToggle={() =>
                   setOpenDropdown(openDropdown === field ? null : field)
                 }
+                exclusiveSelections={selectedFilters} 
               />
             );
           })}
+          {/* Logo and Text */}
+          <div className="mt-6 flex items-center gap-3 py-4 fixed bottom-0">
+            <img
+              src="/logo_content_stratigies.png"
+              alt="Logo"
+              className="w-10 h-10 object-contain"
+            />
+            <span className="text-sm font-semibold text-gray-700">
+              Content Strategies
+            </span>
+          </div>
+
         </aside>
         <div className="hidden md:block max-h-full overflow-y-hidden w-px bg-gray-600 mx-4 ml-6 -mt-6"></div>
         {/* Table */}
@@ -546,6 +564,7 @@ const Dashboard = () => {
               hasMoreRecords={users.length < totalRecords}
               onLoadMore={loadMoreData}
               loadingMore={loadingMore}
+              alignRecord={false}
 
             />
           </div>

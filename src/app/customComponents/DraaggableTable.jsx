@@ -10,7 +10,6 @@ import { FaCommentDots, FaEdit, FaExpandAlt, FaPlus, FaSortDown, FaTrash } from 
 import Modal from "./DetailModal";
 import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
-import { ChevronDown } from "lucide-react";
 
 const ItemType = "COLUMN";
 
@@ -37,25 +36,30 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
 
     const shouldResizeColumn = (columnId) => {
         // Disable separator for these specific columns
-        return !['Guest Industry', 'Objections', 'Tags', 'Themes/Triggers', 'Validations', 'Video Type', 'action'].includes(columnId);
+        return !['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
     };
-
 
     return (
         <th
             ref={(node) => ref(drop(node))}
-            className={`px-6 py-3 text-white text-left text-xs font-medium text-gray-500 border-b uppercase tracking-wider`}
-            style={{
+            className={`
+          px-2 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
+          ${column.id === 'Avatar' ? 'sticky left-0 px-6 z-30 bg-[#1a1b41] w-[75px]' : ''}
+          ${column.id === 'Guest' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[200px]' : ''}
+          ${column.id == 'email' ? ' px-[25px] z-20 bg-[#1a1b41] w-[200px]' : ''}
 
+        `}
+            style={{
                 cursor: isResizing ? "col-resize" : "",
                 opacity: isDragging ? 0.5 : 1,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
+                borderBottom: "2px solid #4B5563",
             }}
         >
             <ResizableBox
-                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action') ? 75 : 250}
+                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action') ? 90 : 250}
                 height={20}
                 minConstraints={[50]}
                 maxConstraints={[1000]}
@@ -66,7 +70,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
                 handle={
                     <span
                         className="absolute top-0 right-0 h-[50px] -mt-4 w-[5px] cursor-col-resize z-10 bg-transparent border-r-4 border-gray-600"
-                        style={{ marginRight: "-25px" }}
+                        style={{ marginRight: "-8–px" }}
                     />
                 }
             >
@@ -86,7 +90,8 @@ const DraggableTable = ({
     onDelete,
     hasMoreRecords,
     onLoadMore,
-    loadingMore
+    loadingMore,
+    alignRecord
 }) => {
     const [columns, setColumns] = useState(initialColumns);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -103,18 +108,20 @@ const DraggableTable = ({
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="overflow-x-auto rounded-[15px] relative"
+            <div className="overflow-x-auto  relative"
                 style={{
                     height: 'calc(100vh - 18rem)',
                     minHeight: '450px',
                     maxHeight: '750px',
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    border: '1px solid #4B5563',
+                    borderRadius: '10px'
                 }}
             >
-                <table className="min-w-full divide-y divide-gray-300 ">
+                <table className="min-w-full divide-y  divide-gray-300 border-b ">
 
-                    <thead className="bg-white/10">
+                    <thead className="bg-[#1a1b41] sticky top-0 z-10">
                         <tr>
                             {columns.map((column, index) => (
                                 <DraggableHeader key={column.id} column={column} index={index} moveColumn={moveColumn} />
@@ -130,22 +137,26 @@ const DraggableTable = ({
                                     colSpan={columns.length + (showActions ? 1 : 0)}
                                     className="py-6 text-center"
                                 >
-                                    <div className="fixed top-3/2 left-1/2 transform translate-x-[100px] -translate-y-1/2 z-50">
+                                    <div
+                                        className={`${alignRecord ? 'fixed top-3/2 left-1/2 transform -translate-x-[30px] -translate-y-1/2 z-50' : 'fixed top-3/2 left-1/2 transform translate-x-[100px] -translate-y-1/2 z-50'
+                                            }`}
+                                    >
                                         <CustomSpinner className="w-8 h-8 text-gray-500  " />
                                     </div>
                                 </td>
                             </tr>
                         )}
                         {!loading && data?.length === 0 ? (
-                            <tr >
+                            <tr>
                                 <td
                                     colSpan={columns.length + (showActions ? 1 : 0)}
                                     className="py-6 text-center"
                                 >
-                                    <div className="fixed top-3/2 left-1/2 transform translate-x-1/2 -translate-y-1/2 z-50">
-                                        <p className="text-gray-500 text-center">
-                                            No record found
-                                        </p>
+                                    <div
+                                        className={` ${alignRecord ? 'fixed top-3/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50' : 'fixed top-3/2 left-1/2 transform translate-x-1/2 -translate-y-1/2 z-50'
+                                            }`}
+                                    >
+                                        <p className="text-gray-500 text-center">No record found</p>
                                     </div>
                                 </td>
                             </tr>
@@ -153,7 +164,9 @@ const DraggableTable = ({
                             data?.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
-                                    className="group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10 relative"
+                                    className={`group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10 relative
+                                
+                                    `}
                                 >
                                     {columns.map((column) => (
                                         <td
@@ -164,6 +177,10 @@ const DraggableTable = ({
                                                     ? 'w-auto max-w-max'
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
+                                                ${column.id === 'Avatar' ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+                                                ${column.id === 'Guest' ? 'sticky left-[125px] px-[8px] bg-[#1a1b41]' : ''}
+                                                ${column.id === 'email' ? ' px-[30px] ' : ''}
+                                                ${column.id === 'title_roles' ? ' px-[10px] ' : ''}
                                      `}
                                         >
                                             {column.id === "Avatar" ? (
@@ -244,7 +261,7 @@ const DraggableTable = ({
                         )}
                         {/* Show More row - only visible if there are more records to load */}
                         {hasMoreRecords && !loading && (
-                            <tr className="hover:bg-white/10">
+                            <tr className="hover:bg-white/10 scroll-hidden">
                                 <td
                                     colSpan={columns.length + 1} // +1 for the action column
                                     className="relative py-3 text-center cursor-pointer"
@@ -259,9 +276,9 @@ const DraggableTable = ({
                                                 </>
                                             ) : (
                                                 <>
-                                                <span>Show More</span>
+                                                    <span>Show More</span>
                                                     <FaSortDown className="-mt-2 w-6 h-6" />
-                                                    
+
                                                 </>
                                             )}
                                         </div>

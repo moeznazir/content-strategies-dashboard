@@ -9,6 +9,7 @@ const supabase = createClient(
 
 const LikeButton = ({ user_id, current_user_id, user_name, user_email }) => {
   const [liked, setLiked] = useState(false);
+  const [likedByOthers, setLikedByOthers] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
 
   useEffect(() => {
@@ -23,10 +24,14 @@ const LikeButton = ({ user_id, current_user_id, user_name, user_email }) => {
         const totalLikes = data.length;
         setLikesCount(totalLikes);
         const userLiked = data.some(like => like.current_user_id === current_user_id);
+        const otherUserLiked = data.some(like => like.current_user_id != current_user_id);
         setLiked(userLiked);
+        setLikedByOthers(otherUserLiked);
       } else {
         setLikesCount(0);
         setLiked(false);
+        setLikedByOthers(false);
+
       }
     };
 
@@ -67,12 +72,18 @@ const LikeButton = ({ user_id, current_user_id, user_name, user_email }) => {
 
   return (
     <div
-    onClick={handleLikeToggle}
-    className={`flex items-center space-x-1 ${liked ? "text-blue-500" : "text-gray-500"} transition duration-200`}
-  >
-    {liked ? <FaThumbsUp size={18} /> : <FaRegThumbsUp size={18} />}
-    <span className="mt-1">{likesCount}</span>
-  </div>
+      onClick={handleLikeToggle}
+      className={`flex items-center space-x-1 transition duration-200 cursor-pointer ${liked ? "text-blue-500" : likedByOthers ? "text-white" : "text-gray-500"
+        }`}
+    >
+      {liked || likedByOthers ? (
+        <FaThumbsUp size={18} />
+      ) : (
+        <FaRegThumbsUp size={18} />
+      )}
+      <span className="mt-1">{likesCount}</span>
+    </div>
+
   );
 };
 
