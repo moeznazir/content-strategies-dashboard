@@ -21,7 +21,7 @@ const UserManagement = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [systemRoles, setSystemRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
-
+  const [loadingMore, setLoadingMore] = useState(false);
   // Initialize Supabase client
   const supabase = createClient(
     process.env.NEXT_PUBLIC_API_URL,
@@ -46,12 +46,18 @@ const UserManagement = () => {
   ];
 
   const arrayFields = ["title_roles", "system_roles"];
+  const fetchUsers = useCallback(async (page = 1, isLoadMore = false) => {
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
+  
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+  
     try {
-      const { users: fetchedUsers, error } = await getAllUsers();
-
+      const { users: fetchedUsers, total, error } = await getAllUsers();
+  
       if (error) throw error;
 
       const formattedUsers = fetchedUsers.map((user) => {
@@ -87,18 +93,28 @@ const UserManagement = () => {
           )),
         };
       });
+      if (isLoadMore) {
+        setUsers(prev => [...prev, ...formattedUsers]);
+      } else {
+        setUsers(formattedUsers || []);
+        setTotalRecords(fetchedUsers.length);
+      }
 
-      setUsers(formattedUsers);
-      setTotalRecords(formattedUsers.length);
+
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
-      setLoading(false);
+      if (isLoadMore) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    fetchUsers();
+    setCurrentPage(1);
+    fetchUsers(1, false);
   }, [fetchUsers]);
 
   const handleEditClick = (user) => {
@@ -108,6 +124,13 @@ const UserManagement = () => {
     setShowEditModal(true);
   };
 
+  const loadMoreData = async () => {
+    if (!loadingMore && users.length < totalRecords) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      await fetchUsers(nextPage, true);
+    }
+  };
   const handleUpdateRoles = async () => {
     try {
       if (!currentUser) return;
@@ -138,7 +161,6 @@ const UserManagement = () => {
     }
   };
 
-  const totalPages = Math.ceil(totalRecords / ITEMS_PER_PAGE);
   const paginatedUsers = users.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
@@ -148,7 +170,7 @@ const UserManagement = () => {
     setCurrentPage(page);
   };
 
-  return ( true ? null :
+  return (
     <div className="w-[90%] mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">User Management</h1>
@@ -163,53 +185,62 @@ const UserManagement = () => {
             loading={loading}
             onEdit={handleEditClick}
             showActions={true}
+            hasMoreRecords={users.length < totalRecords}
+            onLoadMore={loadMoreData}
+            loadingMore={loadingMore}
+            alignRecord={true}
           />
         </div>
       </div>
 
       {/* Pagination Controls */}
-      {/* {totalPages > 1 && ( */}
-        {/* <div className="flex items-center justify-between mt-4 px-4 py-2 sm:px-6">
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <span className="text-[#6c757d] text-sm font-sm flex items-center gap-1">
-              Showing
-              <span className="text-sm text-[#6c757d]">{currentPage * ITEMS_PER_PAGE - ITEMS_PER_PAGE + 1}</span> -
-              <span className="text-sm text-[#6c757d]">{Math.min(currentPage * ITEMS_PER_PAGE, totalRecords)}</span>
-              of
-              <span className="text-sm text-[#6c757d]">{totalRecords}</span>
-            </span>
-            <div>
-              <nav className="relative z-0 inline-flex gap-2 rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                <button
-                  onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-                  disabled={currentPage === 1}
-                  className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-white/10'}`}                >
-                  <FaChevronLeft />
-                </button>
-
-                {Array.from({ length: totalPages }).map((_, i) => (
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-4 px-4 py-2 sm:px-6">
+        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+          <span className="text-[#6c757d] text-sm font-sm flex items-center gap-1">
+            Showing
+            <span className="text-sm text-[#6c757d]">{currentPage * ITEMS_PER_PAGE - ITEMS_PER_PAGE + 1}</span> -
+            <span className="text-sm text-[#6c757d]">{Math.min(currentPage * ITEMS_PER_PAGE, totalRecords)}</span>
+            of
+            <span className="text-sm text-[#6c757d]">{totalRecords}</span>
+          </span>
+          {/* <div>
+                <nav className="relative z-0 inline-flex gap-2 rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                   <button
-                    key={i + 1}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`px-3 py-1 rounded-md ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-white/10'}`}
                   >
-                    {i + 1}
+                    <span className="sr-only">Previous</span>
+                    <FaChevronLeft className="h-4 w-4" aria-hidden="true" />
                   </button>
-                ))}
 
-                <div
-                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === totalPages ? 'text-gray-300 bg-white/10 cursor-not-allowed' : 'text-gray-500 hover:bg-white/10 cursor-pointer'}`}
-                >
-                  <span className="sr-only ">Next</span>
-                  <FaChevronRight className="h-4 w-4" aria-hidden="true" />
-                </div>
-              </nav>
-            </div>
-          </div>
-        </div> */}
- 
+                  {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
+                    const page = i + 1;
+                    return (
+                      <div
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`relative inline-flex items-center px-3 py-0 border rounded text-sm font-medium ${currentPage === page ? 'z-10 bg-[#3a86ff] border-gray-300 ' : 'bg-white/10  border-gray-300 text-gray-500 hover:bg-gray-200 cursor-pointer'}`}
+                      >
+                        {page}
+                      </div>
+                    );
+                  })}
+
+                  <div
+                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === totalPages ? 'text-gray-300 bg-white/10 cursor-not-allowed' : 'text-gray-500 hover:bg-white/10 cursor-pointer'}`}
+                  >
+                    <span className="sr-only ">Next</span>
+                    <FaChevronRight className="h-4 w-4" aria-hidden="true" />
+                  </div>
+                </nav>
+              </div> */}
+        </div>
+      </div>
+
 
       {/* Edit User Modal */}
       {showEditModal && currentUser && (

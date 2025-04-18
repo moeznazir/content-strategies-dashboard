@@ -14,29 +14,46 @@ import { DivideIcon } from "lucide-react";
 
 const NavigationMenu = () => {
     const [selectedItem, setSelectedItem] = useState();
+    const [userRoles, setUserRoles] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAlertVisible, setAlertVisible] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
 
-    const user = {
-        role: "end-user",
-    };
-    const shouldShowDashboard = !EXCLUED_PATHS.includes(pathname);
+    // const storedRoles = localStorage.getItem("system_roles"); // e.g., "admin,editor"
+    // const systemRoles = storedRoles ? storedRoles.split(",") : [];
+
+    // const isAdmin = systemRoles.includes("admin") ;
+    // console.log('isAdminisAdmin',systemRoles);
 
 
     const menuItems = [
-        { name: "Dashboard", href: "/dashboard", allowedRoles: ["end-user", "admin"] },
+        { name: "Dashboard", href: "/dashboard", allowedRoles: ["end-user", "admin", "editor"] },
         { name: "User Management", href: "/user-management", allowedRoles: ["admin"] }
     ];
+    useEffect(() => {
+        const storedRole = localStorage.getItem("system_roles");
+        console.log('storedRole', storedRole);
+        if (storedRole) {
+            setUserRoles(storedRole.trim());
+        }
+    }, [userRoles, menuItems, pathname]);
+
+    const user = {
+        role: userRoles,
+    };
+
+    console.log('useruser', user);
+    const shouldShowDashboard = !EXCLUED_PATHS.includes(pathname);
+
 
     useEffect(() => {
         if (!user || !user.role) return;
         if (EXCLUED_PATHS.includes(pathname)) return;
 
         const isRouteAccessible = accessibleRoutes[user.role]?.includes(pathname);
-
+        console.log("isRouteAccessible", isRouteAccessible);
         if (!isRouteAccessible) {
             setAlertVisible(true);
             Alert.show(
@@ -47,20 +64,18 @@ const NavigationMenu = () => {
                         text: "OK",
                         primary: true,
                         onPress: () => {
-                            if (user?.role === 'admin' || user?.role === 'end-user') {
-                                router.push('/dashboard');
-                            }
+                            router.push('/');
                         },
                     },
                 ]
             );
         }
-    }, [user?.role, router]);
+    }, [userRoles, menuItems, router]);
 
     useEffect(() => {
         const currentItem = menuItems.find(item => item.href === pathname)?.name;
         setSelectedItem(currentItem);
-    }, [pathname, menuItems]);
+    }, [userRoles, pathname, menuItems]);
 
 
     const handleItemClick = (item) => {
@@ -84,14 +99,14 @@ const NavigationMenu = () => {
 
                     <div className="container-fluid mx-auto flex justify-between items-center px-10">
                         {/* Left Section: Logo and Menu */}
-                        <div className="flex items-center space-x-10">
+                        <div className="flex items-center space-x-8">
                             {/* Logo */}
                             <div className="text-xl font-bold">
                                 <Link href="/" >
                                     <Image
                                         width={150}
                                         height={150}
-                                        src="/logo_content_stratigies.png"
+                                        src="/ai-navigator-logo.gif"
                                         alt="Logo"
                                         className="h-12 w-auto"
                                     />
@@ -107,7 +122,7 @@ const NavigationMenu = () => {
                                         handleItemClick(value);
                                     }
                                 }}
-                                className="hidden md:flex space-x-2"
+                                className="hidden md:flex space-x-4"
                             >
                                 {menuItems
                                     .filter((el) => el?.allowedRoles?.includes(user?.role))
@@ -117,7 +132,7 @@ const NavigationMenu = () => {
                                             value={item.name}
                                             asChild
                                             className={clsx(
-                                                "px-4 py-2 rounded-lg font-medium",
+                                                "px-0 py-2 rounded-lg font-medium",
                                                 selectedItem === item.name
                                                     ? " font-bold underline underline-offset-4 decoration-[#3a86ff] decoration-2"
                                                     : "text-gray-400 hover:text-gray-200",
@@ -147,12 +162,12 @@ const NavigationMenu = () => {
                             {isOpen && (
                                 <div
                                     className="absolute w-[70px] right-0 mt-2 w-24 bg-white border border-gray-300 shadow-lg rounded-md z-50"
-                                    onClick={(e) => e.stopPropagation()} 
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     <button
                                         onClick={() => {
                                             handleLogout();
-                                            setIsOpen(false); 
+                                            setIsOpen(false);
                                         }}
                                         className="w-full px-2 py-1 text-gray-700 hover:bg-gray-100"
                                     >

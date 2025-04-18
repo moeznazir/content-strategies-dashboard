@@ -20,15 +20,16 @@ const MULTISELECT_FIELDS = [
     "Video Type",
     "Tags",
     "Validations",
-    "Themes/Triggers",
-    "Objections"
+    "Objections",
+    "Themes",
 ];
 
 const SINGLESELECT_FIELDS = [
     "Mentions",
     "Client",
     "Employee",
-    "Public_vs_Private"
+    "Public_vs_Private",
+
 ];
 
 const OPTIONS = {
@@ -85,7 +86,7 @@ const OPTIONS = {
         { value: "Public", label: "Public" },
         { value: "Private", label: "Private" },
     ],
-    "Themes/Triggers": [
+    "Themes": [
         { "value": "Agent Trends & Impact", "label": "Agent Trends & Impact" },
         { "value": "BPO Services", "label": "BPO Services" },
         { "value": "Cost Center vs. Value Centers", "label": "Cost Center vs. Value Centers" },
@@ -127,7 +128,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 schema[field.key] = Yup.number().required(`${field.label} is required`).positive(`${field.label} must be positive`);
             } else if (field.type === "url") {
                 schema[field.key] = Yup.string().url(`${field.label} must be a valid URL`);
-            } else if (field.type === "rating") {
+            } else if (field.type === "ranking") {
                 schema[field.key] = Yup.number().min(1, `${field.label} must be at least 1`).max(10, `${field.label} must be at most 10`).required(`${field.label} is required`);
 
             } else {
@@ -210,7 +211,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 let response;
                 if (isEditMode) {
                     response = await supabase
-                        .from("users_record")
+                        .from("content_details")
                         .update(formattedValues)
                         .eq("id", entityData.id);
 
@@ -241,7 +242,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 if (response.error) throw response.error;
 
                 const { count, error: countError } = await supabase
-                    .from("users_record")
+                    .from("content_details")
                     .select("*", { count: "exact", head: true })
                     .order('id_order', { ascending: false });
 
@@ -252,7 +253,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 }
 
                 const { data, error } = await supabase
-                    .from("users_record")
+                    .from("content_details")
                     .select("*")
                     .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1)
                     .order('id_order', { ascending: false });
@@ -300,8 +301,14 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             id={field.key}
                                             options={OPTIONS[field.key] || []}
                                             value={formik.values[field.key]}
-                                            isMulti={true}
-                                            onChange={(value) => formik.setFieldValue(field.key, value)}
+                                            isMulti={field.key !== 'Themes'}
+                                            onChange={(value) => {
+                                                if (field.key === 'Themes') {
+                                                    formik.setFieldValue(field.key, value ? [value] : []);
+                                                } else {
+                                                    formik.setFieldValue(field.key, value);
+                                                }
+                                            }}
                                             placeholder={field.placeholder || `Select ${field.label}...`}
                                             className="w-full mb-2"
                                         />
