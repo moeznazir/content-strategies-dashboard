@@ -7,7 +7,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-const LikeButton = ({ user_id, current_user_id, user_name, user_email }) => {
+const LikeButton = ({ record_id, current_user_id, user_name, user_email }) => {
   const [liked, setLiked] = useState(false);
   const [likedByOthers, setLikedByOthers] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -17,7 +17,7 @@ const LikeButton = ({ user_id, current_user_id, user_name, user_email }) => {
       const { data, error } = await supabase
         .from("user_likes")
         .select("likes_count, current_user_id")
-        .eq("user_id", user_id);
+        .eq("record_id", record_id);
 
       if (!error && data) {
 
@@ -36,14 +36,14 @@ const LikeButton = ({ user_id, current_user_id, user_name, user_email }) => {
     };
 
     fetchLikes();
-  }, [user_id, current_user_id]);
+  }, [record_id, current_user_id]);
 
   const handleLikeToggle = async () => {
     if (liked) {
       const { error } = await supabase
         .from("user_likes")
         .delete()
-        .eq("user_id", user_id)
+        .eq("record_id", record_id)
         .eq("current_user_id", current_user_id);
 
       if (!error) {
@@ -55,13 +55,13 @@ const LikeButton = ({ user_id, current_user_id, user_name, user_email }) => {
         .from("user_likes")
         .upsert([
           {
-            user_id,
+            record_id,
             current_user_id,
             user_name,
             user_email,
             likes_count: 1,
           },
-        ], { onConflict: ["user_id", "current_user_id"] });
+        ], { onConflict: ["record_id", "current_user_id"] });
 
       if (!error) {
         setLiked(true);
