@@ -70,7 +70,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
                 handle={
                     <span
                         className="absolute top-0 right-0 h-[50px] -mt-4 w-[5px] cursor-col-resize z-10 bg-transparent border-r-4 border-gray-600"
-                        style={{ marginRight: "-8–px" }}
+                        style={{ marginRight: "-6px" }}
                     />
                 }
             >
@@ -210,7 +210,7 @@ const DraggableTable = ({
                                                         </span>
                                                     ))
                                             ) : column.id === "Likes" ? (
-                                                <LikeButton user_name={row?.Guest} user_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
+                                                <LikeButton user_name={row?.Guest} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
                                             ) : column.id === "Comments" ? (
                                                 <div onClick={() => setCommentRow(row)} className="text-blue-500">
                                                     <FaCommentDots size={18} />
@@ -268,7 +268,7 @@ const DraggableTable = ({
                                     onClick={onLoadMore}
                                 >
                                     <div className="sticky left-1/2 transform -translate-x-1/2 ml-[300px] z-50 w-max mx-auto">
-                                        <div className="flex items-center justify-center gap-2 text-black font-bold">
+                                        <div className="flex items-center justify-center gap-2 text-white font-bold">
                                             {loadingMore ? (
                                                 <>
                                                     <CustomSpinner className="w-4 h-4" />

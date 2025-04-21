@@ -37,7 +37,7 @@ const CommentModal = ({ row, onClose }) => {
     useEffect(() => {
         const fetchComments = async () => {
             const { data, error } = await supabase
-                .from("wow24_7_comments")
+                .from("record_comments")
                 .select("*")
                 .eq("Record_ID", row.id);
 
@@ -57,7 +57,7 @@ const CommentModal = ({ row, onClose }) => {
     const handleCommentSubmit = async () => {
         if (!newComment.trim()) return;
 
-        const { data, error } = await supabase.from("wow24_7_comments").insert([
+        const { data, error } = await supabase.from("record_comments").insert([
             {
                 Record_ID: row.id,
                 Comment: newComment,
@@ -92,7 +92,7 @@ const CommentModal = ({ row, onClose }) => {
                     onPress: async () => {
                         if (id) {
                             const { error } = await supabase
-                                .from("wow24_7_comments")
+                                .from("record_comments")
                                 .delete()
                                 .eq("id", id);
 
@@ -122,7 +122,7 @@ const CommentModal = ({ row, onClose }) => {
 
     const handleUpdate = async (id) => {
         const { error } = await supabase
-            .from("wow24_7_comments")
+            .from("record_comments")
             .update({ Comment: editedText })
             .eq("id", id);
 
