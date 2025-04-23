@@ -334,9 +334,12 @@ const Dashboard = () => {
       };
 
       // Process the counts data
-      data.forEach(({ category, value, count }) => {
+      data.forEach(({ category, value, count, avg_ranking }) => {
         if (counts[category]) {
-          counts[category][value] = count;
+          counts[category][value] = {
+            count,
+            avg_ranking: category === 'Themes' ? avg_ranking : null
+          };
         }
       });
 
@@ -345,11 +348,16 @@ const Dashboard = () => {
       // Update the filter options with counts
       const updatedOptions = { ...filterOptions };
       for (const filterType in updatedOptions) {
-        updatedOptions[filterType] = updatedOptions[filterType].map(option => ({
-          ...option,
-          count: counts[filterType]?.[option.value] || 0
-        }));
+        updatedOptions[filterType] = updatedOptions[filterType].map(option => {
+          const countData = counts[filterType]?.[option.value] || { count: 0 };
+          return {
+            ...option,
+            count: countData.count,
+            avg_ranking: countData.avg_ranking
+          };
+        });
       }
+  
 
       setFilterOptionsWithCounts(updatedOptions);
     } catch (err) {
