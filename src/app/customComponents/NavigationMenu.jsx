@@ -169,7 +169,7 @@ const NavigationMenu = () => {
                                             handleLogout();
                                             setIsOpen(false);
                                         }}
-                                        className="w-full px-2 py-1 text-gray-700 hover:bg-gray-100"
+                                        className="w-full px-2 py-1 text-gray-700  hover:text-gray-500 font-bold"
                                     >
                                         Logout
                                     </button>
