@@ -22,11 +22,6 @@ const UserManagement = () => {
   const [systemRoles, setSystemRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [loadingMore, setLoadingMore] = useState(false);
-  // Initialize Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_API_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY
-  );
 
   // Predefined system roles
   const availableRoles = [
