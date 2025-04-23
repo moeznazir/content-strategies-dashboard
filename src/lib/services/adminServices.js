@@ -10,7 +10,7 @@ export const supabaseAdmin = createClient(
     
 export const getAllUsers = async () => {
     try {
-        const { data, error } = await supabaseAdmin.auth.admin.listUsers();
+        const { data, error } = await supabaseAdmin?.auth?.admin?.listUsers();
 
         if (error) {
             console.log('Supabase error:', error);
@@ -29,7 +29,7 @@ export const getAllUsers = async () => {
 
 export const updateUserRoles = async (userId, newRoles) => {
     try {
-      const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+      const { data, error } = await supabaseAdmin?.auth?.admin?.updateUserById(userId, {
         user_metadata: {
           system_roles: newRoles,
         },

@@ -5,7 +5,7 @@ import { FaChevronLeft, FaChevronRight, FaTimes, FaEdit } from "react-icons/fa";
 import DraggableTable from "../customComponents/DraaggableTable";
 import Alert from "../customComponents/Alert";
 import { getRandomColor } from "../constants/constant";
-import { getAllUsers } from "@/lib/services/adminServices";
+import { getAllUsers, updateUserRoles } from "@/lib/services/adminServices";
 import CustomButton from "../customComponents/CustomButton";
 import CustomSelect from "../customComponents/CustomSelect";
 import { appColors } from "@/lib/theme";
@@ -47,59 +47,63 @@ const UserManagement = () => {
 
   const arrayFields = ["title_roles", "system_roles"];
   const fetchUsers = useCallback(async (page = 1, isLoadMore = false) => {
-
-  
     if (isLoadMore) {
       setLoadingMore(true);
     } else {
       setLoading(true);
     }
-  
+
     try {
       const { users: fetchedUsers, total, error } = await getAllUsers();
-  
+
       if (error) throw error;
 
       const formattedUsers = fetchedUsers.map((user) => {
+        // Handle title_roles
         const titleRoles = Array.isArray(user.user_metadata?.title_roles)
           ? user.user_metadata.title_roles
           : user.user_metadata?.title_roles
             ? [user.user_metadata.title_roles]
             : [];
 
+        // Handle system_roles
         const systemRoles = Array.isArray(user.user_metadata?.system_roles)
           ? user.user_metadata.system_roles
           : user.user_metadata?.system_roles
             ? [user.user_metadata.system_roles]
             : [];
 
+        // Format dates
+        const lastSignIn = user.last_sign_in_at
+          ? new Date(user.last_sign_in_at).toLocaleDateString()
+          : 'Never';
+
+        const createdAt = user.created_at
+          ? new Date(user.created_at).toLocaleDateString()
+          : '';
+
+        const updatedAt = user.updated_at
+          ? new Date(user.updated_at).toLocaleDateString()
+          : '';
+
         return {
           ...user,
-          title_roles: titleRoles.map((item, idx) => (
-            <span
-              key={idx}
-              className={`inline-block px-2 py-1 my-2 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
-            >
-              {item}
-            </span>
-          )),
-          system_roles: systemRoles.map((item, idx) => (
-            <span
-              key={idx}
-              className={`inline-block px-2 py-1 my-2 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
-            >
-              {item}
-            </span>
-          )),
+          id: user.id,
+          email: user.email || '',
+          title_roles: titleRoles.join(', '),
+          system_roles: systemRoles.join(', '),
+          last_sign_in_at: lastSignIn,
+          created_at: createdAt,
+          updated_at: updatedAt,
         };
       });
+
       if (isLoadMore) {
         setUsers(prev => [...prev, ...formattedUsers]);
       } else {
         setUsers(formattedUsers || []);
         setTotalRecords(fetchedUsers.length);
       }
-
 
     } catch (error) {
       console.log("Error fetching users:", error);
@@ -111,7 +115,6 @@ const UserManagement = () => {
       }
     }
   }, []);
-
   useEffect(() => {
     setCurrentPage(1);
     fetchUsers(1, false);
@@ -131,33 +134,52 @@ const UserManagement = () => {
       await fetchUsers(nextPage, true);
     }
   };
+  // const handleUpdateRoles = async () => {
+  //   try {
+  //     if (!currentUser) return;
+
+  //     const { error } = await supabase?.auth?.admin?.updateUserById(
+  //       currentUser.id,
+  //       {
+  //         user_metadata: {
+  //           ...currentUser.user_metadata,
+  //           system_roles: selectedRoles
+  //         }
+  //       }
+  //     );
+
+  //     if (error) throw error;
+
+  //     Alert.show('Success', 'User role updated successfully.', [
+  //       {
+  //         text: 'OK',
+  //         primary: true,
+  //       },
+  //     ]);
+  //     fetchUsers();
+  //     setShowEditModal(false);
+  //   } catch (err) {
+  //     console.log("Error updating user:", err);
+
+  //   }
+  // };
   const handleUpdateRoles = async () => {
     try {
       if (!currentUser) return;
 
-      const { error } = await supabase.auth.admin.updateUserById(
-        currentUser.id,
-        {
-          user_metadata: {
-            ...currentUser.user_metadata,
-            system_roles: selectedRoles
-          }
-        }
-      );
+      const result = await updateUserRoles(currentUser.id, selectedRoles); 
 
-      if (error) throw error;
-
-      Alert.show('Success', 'User role updated successfully.', [
-        {
-          text: 'OK',
-          primary: true,
-        },
-      ]);
-      fetchUsers();
-      setShowEditModal(false);
+      if (result?.error) {
+        console.log("Error updating user:", result.error);
+      } else {
+        Alert.show('Success', 'User role updated successfully.', [
+          { text: 'OK', primary: true },
+        ]);
+        fetchUsers(); // Refresh user list
+        setShowEditModal(false);
+      }
     } catch (err) {
-      console.log("Error updating user:", err);
-
+      console.log("Error updating user:", err.message);
     }
   };
 
