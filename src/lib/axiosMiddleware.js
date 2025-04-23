@@ -35,7 +35,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     // Handle response errors globally, like redirecting to login if unauthorized
     if (error.response && error.response.status === 401 && localStorage.getItem('token')) {
-      console.error('Unauthorized, logging out...');
+      console.log('Unauthorized, logging out...');
       // Redirect to login or clear storage
       window.location.href = '/login';
       localStorage.removeItem('token');

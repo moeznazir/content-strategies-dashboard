@@ -18,7 +18,7 @@ const Modal = ({ data, onClose }) => {
     ];
 
     const filteredData = Object.entries(data).filter(
-        ([key]) => key !== "Avatar" && key !== "id" && !key.includes("Rating (1-5 stars by the user)")
+        ([key]) => key !== "Avatar" && key !== "id" && key!=="ranking" && key !=="Ranking Justification" && !key.includes("Rating (1-5 stars by the user)")
     );
 
     const toggleExpand = (fieldName) => {
@@ -38,14 +38,14 @@ const Modal = ({ data, onClose }) => {
                 setTimeout(() => setCopiedField(null), 1500);
             })
             .catch(err => {
-                console.error('Failed to copy text: ', err);
+                console.log('Failed to copy text: ', err);
             });
     };
 
     const getDisplayName = (key) => {
         const nameMap = {
             "Text comments for the rating (OPTIONAL input from the user)": "Rating Comment",
-            "ranking": "Ranking",
+            // "ranking": "Ranking",
             "Episode_Number": "Episode #",
             "Video_ID": "Video ID"
         };

@@ -70,7 +70,7 @@ const Signup = () => {
       }
     } catch (error) {
       setServerError("An unexpected error occurred.");
-      console.error(error);
+      console.log(error);
     }
 
     setLoading(false);

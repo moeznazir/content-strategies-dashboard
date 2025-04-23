@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -9,6 +8,7 @@ import CustomButton from "./CustomButton";
 import { appColors } from "@/lib/theme";
 import Alert from "./Alert";
 import { ShowCustomToast } from "./CustomToastify";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_API_URL,
@@ -114,63 +114,158 @@ const OPTIONS = {
 };
 
 
-const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers }) => {
-    const [loading, setLoading] = useState(false);
+// Updated ThemeEntry component to properly display theme data
+const ThemeEntry = ({ theme, ranking, justification, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="flex justify-between  items-start">
+                <div className="flex-1">
+                    <p><span className="font-medium">Theme:</span> <span className='text-gray-400  text-sm'>{theme || "No theme selected"}</span></p>
+                    <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Ranking Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification Avilable"}</span></p>
+                </div>
+                <div className="flex  space-x-1">
+                    <div
+                        type="button"
+                        onClick={() => onEdit(index)}
+                        className="text-blue-500 hover:text-blue-700"
+                    >
+                        <PencilIcon className="h-5 w-5" />
+                    </div>
+                    <div
+                        type="button"
+                        onClick={() => onRemove(index)}
+                        className="text-red-500 hover:text-red-700"
+                    >
+                        <TrashIcon className="h-5 w-5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
-    // Define validation schema
+const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank }) => {
+    const [loading, setLoading] = useState(false);
+    const [currentTheme, setCurrentTheme] = useState("");
+    const [currentRanking, setCurrentRanking] = useState("");
+    const [currentJustification, setCurrentJustification] = useState("");
+    const [themeEntries, setThemeEntries] = useState([]);
+    const [editIndex, setEditIndex] = useState(null);
+
+    function normalizeThemes(data) {
+        if (!Array.isArray(data)) return [];
+        return data.map(entry => {
+            if (typeof entry === "string") {
+                return { theme: entry, ranking: "", justification: "" };
+            }
+            return entry; // already in correct format
+        });
+    }
+
+    useEffect(() => {
+        if (entityData?.id) {
+            const themeData = themesRank.find(item => item.id === entityData.id)?.Themes;
+            if (themeData) {
+                try {
+                    const parsed = Array.isArray(themeData) ? themeData : JSON.parse(themeData);
+                    setThemeEntries(parsed.map(theme => ({
+                        theme: theme.theme || theme,
+                        ranking: theme.ranking || 0,
+                        justification: theme.justification || ''
+                    })));
+                } catch (e) {
+                    console.log("Error parsing themes:", e);
+                    setThemeEntries([]);
+                }
+            } else {
+                setThemeEntries([]);
+            }
+        } else {
+            setThemeEntries([]);
+        }
+    }, [entityData, themesRank]);
+
     const validationSchema = Yup.object(
         displayFields.reduce((schema, field) => {
-            if (MULTISELECT_FIELDS.includes(field.key)) {
-                schema[field.key] = Yup.array().of(Yup.string())
-                    .min(1, `${field.label} is required`);
-            } else if (SINGLESELECT_FIELDS.includes(field.key)) {
-                schema[field.key] = Yup.string().required(`${field.label} is required`);
-            } else if (field.type === "number") {
-                schema[field.key] = Yup.number().required(`${field.label} is required`).positive(`${field.label} must be positive`);
-            } else if (field.type === "url") {
-                schema[field.key] = Yup.string().url(`${field.label} must be a valid URL`);
-            } else if (field.type === "ranking") {
-                schema[field.key] = Yup.number().min(1, `${field.label} must be at least 1`).max(10, `${field.label} must be at most 10`).required(`${field.label} is required`);
-
-            } else {
-                schema[field.key] = Yup.string().required(`${field.label} is required`);
+            if (field.key === "Themes") {
+                schema["Themes"] = Yup.array().of(
+                    Yup.object().shape({
+                        theme: Yup.string().required("Theme is required"),
+                        ranking: Yup.number()
+                            .min(1, "Ranking must be at least 1")
+                            .max(10, "Ranking must be at most 10")
+                            .required("Ranking is required"),
+                        justification: Yup.string().required("Justification is required"),
+                    })
+                );
+            } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
+                if (MULTISELECT_FIELDS.includes(field.key)) {
+                    schema[field.key] = Yup.array()
+                        .of(Yup.string())
+                        .min(1, `${field.label} is required`);
+                } else if (SINGLESELECT_FIELDS.includes(field.key)) {
+                    schema[field.key] = Yup.string().required(`${field.label} is required`);
+                } else if (field.type === "number") {
+                    schema[field.key] = Yup.number()
+                        .required(`${field.label} is required`)
+                        .positive(`${field.label} must be positive`);
+                } else if (field.type === "url") {
+                    schema[field.key] = Yup.string().url(`${field.label} must be a valid URL`);
+                } else if (field.type === "ranking") {
+                    schema[field.key] = Yup.number()
+                        .min(1, `${field.label} must be at least 1`)
+                        .max(10, `${field.label} must be at most 10`)
+                        .required(`${field.label} is required`);
+                } else {
+                    schema[field.key] = Yup.string().required(`${field.label} is required`);
+                }
             }
             return schema;
         }, {})
     );
-    // console.log("Entity ID:", entityData.id);
-    // console.log("isEditMode:", isEditMode);
-    // Formik setup
-    useEffect(() => {
-        console.log("Entity Data:", entityData);
-        console.log("Initial Form Values:", formik.initialValues);
-    }, [entityData]);
+
+    // Initialize form values properly
+    const initialValues = {};
+    displayFields.forEach(field => {
+        if (field.key === "Themes") {
+            initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
+        } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
+            initialValues[field.key] = entityData?.[field.key] ||
+                (MULTISELECT_FIELDS.includes(field.key) ? [] :
+                    SINGLESELECT_FIELDS.includes(field.key) ? "" :
+                        field.type === "number" ? 0 :
+                            field.type === "image" ? "" :
+                                "");
+        }
+    });
+
+
     const formik = useFormik({
-        initialValues: displayFields.reduce((values, field) => {
-            let fieldValue = entityData?.[field.key];
-
-            if (MULTISELECT_FIELDS.includes(field.key)) {
-                fieldValue = fieldValue ? (fieldValue) : [];
-            } else {
-                fieldValue = fieldValue || "";
-            }
-
-            return { ...values, [field.key]: fieldValue };
-        }, {}),
-
+        initialValues,
         validationSchema,
-
         onSubmit: async (values) => {
-
-
             try {
-                console.log("valuesss", values);
-                const formattedValues = { ...values };
-                MULTISELECT_FIELDS.forEach((field) => {
-                    formattedValues[field] = (values[field] || []);
-                });
+                let themesData = null;
+                if (themeEntries.length > 0) {
+                    themesData = themeEntries.map(entry => ({
+                        theme: String(entry.theme || ""),
+                        ranking: parseInt(entry.ranking) || 0,
+                        justification: String(entry.justification || "")
+                    }));
+                }
+                const companyId = localStorage.getItem('company_id');
+                console.log("companyId", companyId);
+                // Create the payload with properly formatted values
+                const formattedValues = {
+                    ...values,
+                    Themes: themeEntries.length > 0 ? themeEntries : null,
+                    company_id: localStorage.getItem('company_id')
+                };
 
+                console.log("forrr", formattedValues);
 
+                // Handle file uploads if any
                 for (const field of displayFields) {
                     if (field.type === "image" && values[field.key] instanceof File) {
                         const file = values[field.key];
@@ -178,7 +273,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         const fileName = `${Date.now()}.${fileExt}`;
                         const filePath = `${fileName}`;
 
-                        // Upload to Supabase Storage
                         const { error: uploadError } = await supabase
                             .storage
                             .from("images")
@@ -187,27 +281,16 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 upsert: true,
                             });
 
-                        // if (uploadError) {
-                        //     console.error("Error uploading file:", uploadError);
-                        //     throw uploadError;
-                        // }
+                        if (uploadError) throw uploadError;
 
-                        // Get the public URL
                         const { data: publicUrlData } = supabase
                             .storage
                             .from("images")
                             .getPublicUrl(filePath);
 
-                        const publicUrl = publicUrlData.publicUrl;
-
-                        console.log("File uploaded successfully:", publicUrl);
-
-                        // Save the image URL into the form values
-                        formattedValues[field.key] = publicUrl;
+                        formattedValues[field.key] = publicUrlData.publicUrl;
                     }
                 }
-
-
 
                 let response;
                 if (isEditMode) {
@@ -215,33 +298,21 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         .from("content_details")
                         .update(formattedValues)
                         .eq("id", entityData.id);
-
-                    Alert.show('Success', 'Record updated successfully.', [
-                        {
-                            text: 'OK',
-                            primary: true,
-                            onPress: () => {
-                                console.log('Record deleted and user clicked OK.');
-                            },
-                        },
-                    ]);
-                    fetchUsers();
                 } else {
-                    response = await supabase.from("users_record").insert([formattedValues]);
-                    Alert.show('Success', 'Record created successfully.', [
-                        {
-                            text: 'OK',
-                            primary: true,
-                            onPress: () => {
-                                console.log('Record deleted and user clicked OK.');
-                            },
-                        },
-                    ]);
-
+                    response = await supabase
+                        .from("content_details")
+                        .insert([formattedValues]);
                 }
 
                 if (response.error) throw response.error;
+                console.log("Creating record with values:", formattedValues);
 
+
+                Alert.show('Success', isEditMode ? 'Record updated successfully.' : 'Record created successfully.', [{
+                    text: 'OK',
+                    primary: true,
+                }]);
+                // Refresh data
                 const { count, error: countError } = await supabase
                     .from("content_details")
                     .select("*", { count: "exact", head: true })
@@ -249,6 +320,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                 if (countError) throw countError;
                 setTotalRecords(count || 0);
+
                 if ((currentPage - 1) * itemsPerPage >= count) {
                     setCurrentPage((prev) => Math.max(prev - 1, 1));
                 }
@@ -259,22 +331,76 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1)
                     .order('id_order', { ascending: false });
 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
 
                 setUsers(data);
-                onSubmit(values);
+                onSubmit(formattedValues);
                 onClose();
                 fetchUsers();
             } catch (error) {
-                console.error("Error saving data:", error);
+                console.log("Error saving data:", error);
+                ShowCustomToast("Error saving data: " + error.message, "error");
             }
         },
-
-
     });
+
+    const handleAddTheme = () => {
+        if (!currentTheme || !currentRanking || !currentJustification) {
+            ShowCustomToast("Please fill all theme fields before adding.", "error");
+            return;
+        }
+
+        const newEntry = {
+            theme: currentTheme,
+            ranking: parseInt(currentRanking) || 0,
+            justification: currentJustification
+        };
+
+        if (editIndex !== null) {
+            const updated = [...themeEntries];
+            updated[editIndex] = newEntry;
+            setThemeEntries(updated);
+            setEditIndex(null);
+        } else {
+            setThemeEntries([...themeEntries, newEntry]);
+        }
+
+        // Reset fields
+        setCurrentTheme("");
+        setCurrentRanking("");
+        setCurrentJustification("");
+    };
+
+    const handleEditTheme = (index) => {
+        const entry = themeEntries[index];
+        setCurrentTheme(entry.theme);
+        setCurrentRanking(entry.ranking);
+        setCurrentJustification(entry.justification);
+        setEditIndex(index);
+    };
+
+    const handleRemoveTheme = (index) => {
+        const updated = themeEntries.filter((_, i) => i !== index);
+        setThemeEntries(updated);
+        if (editIndex === index) {
+            setCurrentTheme("");
+            setCurrentRanking("");
+            setCurrentJustification("");
+            setEditIndex(null);
+        } else if (editIndex > index) {
+            setEditIndex(editIndex - 1);
+        }
+    };
+
     const handleFormSubmit = async () => {
+        // Convert all rankings to numbers in theme entries
+        const validatedThemeEntries = themeEntries.map(entry => ({
+            ...entry,
+            ranking: Number(entry.ranking)
+        }));
+
+        setThemeEntries(validatedThemeEntries);
+
         const errors = await formik.validateForm();
         if (Object.keys(errors).length > 0) {
             ShowCustomToast("Please fill all required fields.", 'info', 2000);
@@ -285,7 +411,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     return (
         <>
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50" onClick={onClose} />
-            <div className="fixed inset-0 flex items-center justify-center z-50 ">
+            <div className="fixed inset-0 flex items-center justify-center z-50">
                 <div className="shadow-lg p-4 border border-gray-300 rounded-lg w-[40%]" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
                     <h2 className="text-[20px] font-bold mt-[2px] p-0 w-full">
                         {isEditMode ? "Edit Record" : "Create Record"}
@@ -295,70 +421,148 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         <div className="max-h-[60vh] overflow-y-auto pr-2">
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
-                                    <label className="block font-semibold" style={{ color: appColors.textColor }}>{field.label}:</label >
-
-                                    {MULTISELECT_FIELDS.includes(field.key) ? (
-                                        <CustomSelect
-                                            id={field.key}
-                                            options={OPTIONS[field.key] || []}
-                                            value={formik.values[field.key]}
-                                            isMulti={field.key !== 'Themes'}
-                                            onChange={(value) => {
-                                                if (field.key === 'Themes') {
-                                                    formik.setFieldValue(field.key, value ? [value] : []);
-                                                } else {
-                                                    formik.setFieldValue(field.key, value);
-                                                }
-                                            }}
-                                            placeholder={field.placeholder || `Select ${field.label}...`}
-                                            className="w-full mb-2"
-                                        />
-                                    ) : SINGLESELECT_FIELDS.includes(field.key) ? (
-                                        <CustomSelect
-                                            id={field.key}
-                                            options={OPTIONS[field.key] || []}
-                                            value={formik.values[field.key]}
-                                            isMulti={false}
-                                            onChange={(value) => formik.setFieldValue(field.key, value)}
-                                            placeholder={field.placeholder || `Select ${field.label}...`}
-                                            className="w-full mb-2"
-                                        />
-                                    ) : field.type === "image" ? (
+                                    {!['Themes', 'ranking', 'Ranking Justification'].includes(field.key) ? (
                                         <>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(event) => {
-                                                    const file = event.currentTarget.files[0];
-                                                    formik.setFieldValue(field.key, file); // Temporarily store file in formik
-                                                }}
-                                            />
-                                            {formik.values[field.key] && typeof formik.values[field.key] === "string" && (
-                                                <img src={formik.values[field.key]} alt="Uploaded Avatar" className="mt-2 h-16 rounded" />
+                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                {field.label}:
+                                            </label>
+
+                                            {MULTISELECT_FIELDS.includes(field.key) ? (
+                                                <CustomSelect
+                                                    id={field.key}
+                                                    options={OPTIONS[field.key] || []}
+                                                    value={formik.values[field.key] || []}
+                                                    isMulti={true}
+                                                    onChange={(value) => formik.setFieldValue(field.key, value)}
+                                                    placeholder={field.placeholder || `Select ${field.label}...`}
+                                                    className="w-full mb-2"
+                                                />
+                                            ) : SINGLESELECT_FIELDS.includes(field.key) ? (
+                                                <CustomSelect
+                                                    id={field.key}
+                                                    options={OPTIONS[field.key] || []}
+                                                    value={formik.values[field.key] || ""}
+                                                    isMulti={false}
+                                                    onChange={(value) => formik.setFieldValue(field.key, value)}
+                                                    placeholder={field.placeholder || `Select ${field.label}...`}
+                                                    className="w-full mb-2"
+                                                />
+                                            ) : field.type === "image" ? (
+                                                <>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(event) => {
+                                                            const file = event.currentTarget.files[0];
+                                                            formik.setFieldValue(field.key, file);
+                                                        }}
+                                                    />
+                                                    {formik.values[field.key] && typeof formik.values[field.key] === "string" && (
+                                                        <img src={formik.values[field.key]} alt="Uploaded Avatar" className="mt-2 h-16 rounded" />
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <CustomInput
+                                                    type={field.type || "text"}
+                                                    name={field.key}
+                                                    value={formik.values[field.key] || ""}
+                                                    onChange={formik.handleChange}
+                                                    onBlur={formik.handleBlur}
+                                                    className="w-full p-2 border rounded"
+                                                    placeholder={field.placeholder || `Select ${field.label}...`}
+                                                />
+                                            )}
+
+                                            {formik.errors[field.key] && (
+                                                <p className="text-red-500 text-sm">{formik.errors[field.key]}</p>
                                             )}
                                         </>
-                                    ) : (
-                                        <CustomInput
-                                            type={field.type || "text"}
-                                            name={field.key}
-                                            value={formik.values[field.key]}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            className="w-full p-2 border rounded"
-                                            placeholder={field.placeholder || `Select ${field.label}...`}
-                                        />
-                                    )}
+                                    ) : field.key === 'Themes' && (
+                                        <div>
+                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                Themes:
+                                            </label>
 
-                                    {formik.errors[field.key] && <p className="text-red-500 text-sm">{formik.errors[field.key]}</p>}
+                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <CustomSelect
+                                                            id="theme-select"
+                                                            options={OPTIONS['Themes'] || []}
+                                                            value={currentTheme}
+                                                            isMulti={false}
+                                                            onChange={(value) => setCurrentTheme(value)}
+                                                            placeholder="Select a theme..."
+                                                            className="w-full mb-2"
+                                                        />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <CustomInput
+                                                                type="number"
+                                                                min="1"
+                                                                max="10"
+                                                                label="Ranking (1-10)"
+                                                                value={currentRanking}
+                                                                onChange={(e) => setCurrentRanking(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="1-10"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Justification"
+                                                                value={currentJustification}
+                                                                onChange={(e) => setCurrentJustification(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter justification"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-end">
+                                                        <CustomButton
+                                                            type="button"
+                                                            onClick={handleAddTheme}
+                                                            disabled={!currentTheme || !currentRanking || !currentJustification}
+                                                            className="flex items-center gap-1"
+                                                        >
+                                                            <PlusIcon className="h-4 w-4" />
+                                                            {editIndex !== null ? "Update Theme" : "Add Theme"}
+                                                        </CustomButton>
+                                                    </div>
+                                                </div>
+                                                {themeEntries.length > 0 && (
+                                                    <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                        <h4 className="font-medium text-sm mb-2">Added Themes:</h4>
+                                                        {themeEntries.map((entry, index) => (
+                                                            <ThemeEntry
+                                                                key={index}
+                                                                index={index}
+                                                                theme={entry.theme}
+                                                                ranking={entry.ranking}
+                                                                justification={entry.justification}
+                                                                onEdit={handleEditTheme}
+                                                                onRemove={handleRemoveTheme}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+
+
+                                        </div>
+                                    )}
                                 </div>
                             ))}
-
-
                         </div>
                         <hr className="border-t border-gray-300 mb-6 mt-[10px] -mx-4" />
                         <div className="flex justify-end space-x-3 mt-4">
                             <CustomButton
-                                type={"submit"}
+                                type="submit"
                                 title={isEditMode ? "Update" : "Save"}
                                 loading={formik.isSubmitting}
                                 disabled={formik.isSubmitting}
@@ -366,7 +570,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 className="mb-0 w-[100px] -mt-2"
                             />
                             <CustomButton
-                                type="text"
+                                type="button"
                                 title="Cancel"
                                 onClick={onClose}
                                 className="mb-0 w-[100px] -mt-2"
@@ -376,10 +580,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 </div>
             </div>
         </>
-
     );
-
 };
 
 export default CustomCrudForm;
-
