@@ -42,7 +42,7 @@ const CommentModal = ({ row, onClose }) => {
                 .eq("Record_ID", row.id);
 
             if (error) {
-                console.error("Error fetching comments:", error);
+                console.log("Error fetching comments:", error);
             } else {
                 setComments(data);
             }
@@ -66,7 +66,7 @@ const CommentModal = ({ row, onClose }) => {
         ]);
 
         if (error) {
-            console.error("Error submitting comment:", error);
+            console.log("Error submitting comment:", error);
         } else {
             setNewComment("");
             setComments([...comments, { Comment: newComment, user_email: userEmail }]);
@@ -97,7 +97,7 @@ const CommentModal = ({ row, onClose }) => {
                                 .eq("id", id);
 
                             if (error) {
-                                console.error("Error deleting comment:", error);
+                                console.log("Error deleting comment:", error);
                             } else {
                                 setComments((prevComments) =>
                                     prevComments.filter((comment) => comment.id !== id)
@@ -127,7 +127,7 @@ const CommentModal = ({ row, onClose }) => {
             .eq("id", id);
 
         if (error) {
-            console.error("Error updating comment:", error);
+            console.log("Error updating comment:", error);
         } else {
             setComments(
                 comments.map((comment) =>

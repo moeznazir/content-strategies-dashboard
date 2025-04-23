@@ -13,7 +13,7 @@ export const getAllUsers = async () => {
         const { data, error } = await supabaseAdmin.auth.admin.listUsers();
 
         if (error) {
-            console.error('Supabase error:', error);
+            console.log('Supabase error:', error);
             return { error: error.message };
         }
 
@@ -22,7 +22,7 @@ export const getAllUsers = async () => {
         return { users: data.users };
 
     } catch (error) {
-        console.error('Unexpected error:', error);
+        console.log('Unexpected error:', error);
         return { error: error.message };
     }
 };
@@ -36,12 +36,12 @@ export const updateUserRoles = async (userId, newRoles) => {
       });
   
       if (error) {
-        console.error('Failed to update roles:', error.message);
+        console.log('Failed to update roles:', error.message);
       } else {
         console.log('User roles updated successfully:', data);
       }
     } catch (err) {
-      console.error('Unexpected error while updating roles:', err);
+      console.log('Unexpected error while updating roles:', err);
     }
   };
   

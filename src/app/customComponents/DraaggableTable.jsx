@@ -10,6 +10,7 @@ import { FaCommentDots, FaEdit, FaExpandAlt, FaPlus, FaSortDown, FaTrash } from 
 import Modal from "./DetailModal";
 import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
+import ThemesModal from "./ThemesModal";
 
 const ItemType = "COLUMN";
 
@@ -91,11 +92,13 @@ const DraggableTable = ({
     hasMoreRecords,
     onLoadMore,
     loadingMore,
-    alignRecord
+    alignRecord,
+    themesRank
 }) => {
     const [columns, setColumns] = useState(initialColumns);
     const [selectedRow, setSelectedRow] = useState(null);
     const [commentRow, setCommentRow] = useState(null);
+    const [selectedThemes, setSelectedThemes] = useState(null);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
 
@@ -105,7 +108,28 @@ const DraggableTable = ({
         updatedColumns.splice(toIndex, 0, movedColumn);
         setColumns(updatedColumns);
     };
+    const normalizeThemes = (rowId) => {
+        const themeData = themesRank.find(item => item.id === rowId)?.Themes;
+        if (!themeData) return [];
 
+        if (Array.isArray(themeData)) {
+            return themeData.map(theme => {
+                if (typeof theme === 'object') {
+                    return {
+                        theme: theme.theme || '',
+                        ranking: theme.ranking || 0,
+                        justification: theme.justification || ''
+                    };
+                }
+                return {
+                    theme: theme || '',
+                    ranking: 0,
+                    justification: ''
+                };
+            });
+        }
+        return [];
+    };
     return (
         <DndProvider backend={HTML5Backend}>
             <div className="overflow-x-auto  relative"
@@ -174,7 +198,7 @@ const DraggableTable = ({
                                             className={`
                                        px-6 py-1 text-sm divide-y divide-gray-600 whitespace-nowrap
                                        ${['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Video Type'].includes(column.label)
-                                                    ? 'w-auto max-w-max'
+                                                    ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
                                                 ${column.id === 'Avatar' ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
@@ -209,6 +233,48 @@ const DraggableTable = ({
                                                             {item}
                                                         </span>
                                                     ))
+                                            ) : column.id === "Themes" ? (
+                                                <div
+                                                    className="flex  gap-1 cursor-pointer"
+                                                    onClick={() => {
+                                                        const themesData = normalizeThemes(row.id);
+                                                        if (themesData.length > 0) {
+                                                            setSelectedThemes(themesData);
+                                                        }
+                                                    }}
+                                                >
+                                                    {normalizeThemes(row.id)
+                                                        .filter(themeObj => {
+                                                            if (!themeObj) return false;
+                                                            const themeStr = String(themeObj.theme).toLowerCase().trim();
+                                                            return themeStr !== 'nan' && themeStr !== '[]' && themeStr !== '';
+                                                        })
+                                                        .map((themeObj, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                            >
+                                                                {themeObj.theme}
+                                                                {/* {themeObj.ranking > 0 && (
+                                                                    <span className="ml-1 text-xs">({themeObj.ranking})</span>
+                                                                )} */}
+                                                            </span>
+                                                        ))}
+                                                </div>
+                                                //  column.id === "Themes" ? (
+                                                //     <div className="flex  gap-1">
+                                                //         {normalizeThemes(row.id).filter((item) => item && item !== "nan" && item !== "[]").map((themeObj, idx) => (
+                                                //             <span
+                                                //                 key={idx}
+                                                //                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                //             >
+                                                //                 {themeObj.theme}
+                                                //                 {/* {themeObj.ranking > 0 && (
+                                                //                     <span className="ml-1 text-xs">({themeObj.ranking})</span>
+                                                //                 )} */}
+                                                //             </span>
+                                                //         ))}
+                                                //     </div>
                                             ) : column.id === "Likes" ? (
                                                 <LikeButton user_name={row?.Guest} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
                                             ) : column.id === "Comments" ? (
@@ -298,7 +364,12 @@ const DraggableTable = ({
             )}
             {/* Comment Modal (For Comments) */}
             {commentRow && <CommentModal row={commentRow} onClose={() => setCommentRow(null)} />}
-
+            {selectedThemes && (
+                <ThemesModal
+                    themes={selectedThemes}
+                    onClose={() => setSelectedThemes(null)}
+                />
+            )}
         </DndProvider>
     );
 

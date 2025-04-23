@@ -34,13 +34,15 @@ const Dashboard = () => {
   const [showCreateDashboardModal, setShowCreateDashboardModal] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [themesRank, setThemesRank] = useState([]);
+
 
   const columns = [
     { label: "Avatar", id: "Avatar" },
     { label: "Name", id: "Guest" },
     { label: "Video Title", id: "Video Title" },
-    { label: "Ranking", id: "ranking" },
-    { label: "Ranking Justification", id: "Ranking Justification" },
+    // { label: "Ranking", id: "ranking" },
+    // { label: "Ranking Justification", id: "Ranking Justification" },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
     { label: "Main Comment", id: "Text comments for the rating (OPTIONAL input from the user)" },
@@ -80,13 +82,14 @@ const Dashboard = () => {
     "Validations",
     "Video Type"
   ];
+
   const dashboardCrudDetails = [
     { label: "Video ID", key: "Video_ID", placeholder: "Enter Video ID" },
     { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
     { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
     { label: "Themes", key: "Themes", placeholder: "Select Themes", type: "multiselect" },
-    { label: "Ranking", key: "ranking", placeholder: "Enter Ranking (1-10)", type: "ranking" },
-    { label: "Ranking justification", key: "Ranking Justification", placeholder: "Enter Ranking Justification" },
+    // { label: "Ranking", key: "ranking", placeholder: "Enter Ranking (1-10)", type: "ranking" },
+    // { label: "Ranking justification", key: "Ranking Justification", placeholder: "Enter Ranking Justification" },
     { label: "Text comments for the rating (OPTIONAL input from the user)", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Video Description", key: "Video Description", placeholder: "Enter Video Description" },
     { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
@@ -100,7 +103,6 @@ const Dashboard = () => {
     { label: "Video Type", key: "Video Type", placeholder: "Select Video Type", type: "multiselect" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Video Length", key: "Video Length", placeholder: "Enter Video Length" },
- 
     { label: "Tags", key: "Tags", placeholder: "Select Tags", type: "multiselect" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
     { label: "Client", key: "Client", placeholder: "Select Client", type: "select" },
@@ -127,7 +129,8 @@ const Dashboard = () => {
     "Validations": [],
     "Insights": []
   });
-  const filteredOptions = {
+
+  const filterOptions = {
     "Video Type": [
       { value: "Summary Video", label: "Summary Video", count: 0 },
       { value: "Full Episode", label: "Full Episode", count: 0 },
@@ -148,27 +151,27 @@ const Dashboard = () => {
       { value: "Private", label: "Private", count: 0 },
     ],
     "Themes": [
-      { "value": "Agent Trends & Impact", "label": "Agent Trends & Impact" },
-      { "value": "BPO Services", "label": "BPO Services" },
-      { "value": "Cost Center vs. Value Centers", "label": "Cost Center vs. Value Centers" },
-      { "value": "Culture/Career Progression", "label": "Culture/Career Progression" },
-      { "value": "Impact: Contact Center Insights", "label": "Impact: Contact Center Insights" },
-      { "value": "Importance of the Agent", "label": "Importance of the Agent" },
-      { "value": "Insights & Strategy Contributions", "label": "Insights & Strategy Contributions" },
-      { "value": "KPI Trends", "label": "KPI Trends" },
-      { "value": "Revenue & Growth", "label": "Revenue & Growth" },
-      { "value": "The Role of AI", "label": "The Role of AI" },
-      { "value": "Trigger: Expanding Markets", "label": "Trigger: Expanding Markets" },
-      { "value": "The Role of Data", "label": "The Role of Data" },
-      { "value": "CX as the New Competitive Advantage", "label": "CX as the New Competitive Advantage" },
-      { "value": "Contact Center’s Role in Driving Revenue & Growth", "label": "Contact Center’s Role in Driving Revenue & Growth" },
-      { "value": "Customer Experience (CX) as a Competitive Advantage", "label": "Customer Experience (CX) as a Competitive Advantage" },
-      { "value": "Cost Center vs. Value Center Perceptions", "label": "Cost Center vs. Value Center Perceptions" }
+      { value: "Agent Trends & Impact", label: "Agent Trends & Impact" },
+      { value: "BPO Services", label: "BPO Services" },
+      { value: "Cost Center vs. Value Centers", label: "Cost Center vs. Value Centers" },
+      { value: "Culture/Career Progression", label: "Culture/Career Progression" },
+      { value: "Impact: Contact Center Insights", label: "Impact: Contact Center Insights" },
+      { value: "Importance of the Agent", label: "Importance of the Agent" },
+      { value: "Insights & Strategy Contributions", label: "Insights & Strategy Contributions" },
+      { value: "KPI Trends", label: "KPI Trends" },
+      { value: "Revenue & Growth", label: "Revenue & Growth" },
+      { value: "The Role of AI", label: "The Role of AI" },
+      { value: "Trigger: Expanding Markets", label: "Trigger: Expanding Markets" },
+      { value: "The Role of Data", label: "The Role of Data" },
+      { value: "CX as the New Competitive Advantage", label: "CX as the New Competitive Advantage" },
+      { value: "Contact Center's Role in Driving Revenue & Growth", label: "Contact Center's Role in Driving Revenue & Growth" },
+      { value: "Customer Experience (CX) as a Competitive Advantage", label: "Customer Experience (CX) as a Competitive Advantage" },
+      { value: "Cost Center vs. Value Center Perceptions", label: "Cost Center vs. Value Center Perceptions" }
     ],
     "Objections": [
-      { "value": "Maintaining Quality", "label": "Maintaining Quality" },
-      { "value": "BPO Value Perceptions", "label": "BPO Value Perceptions" },
-      { "value": "Mitigating Risk", "label": "Mitigating Risk" }
+      { value: "Maintaining Quality", label: "Maintaining Quality" },
+      { value: "BPO Value Perceptions", label: "BPO Value Perceptions" },
+      { value: "Mitigating Risk", label: "Mitigating Risk" }
     ],
     "Validations": [
       { value: "Cross-Department Integration", label: "Cross-Department Integration" },
@@ -182,25 +185,17 @@ const Dashboard = () => {
       { value: "The Importance of Culture", label: "The Importance of Culture" },
       { value: "Agent Quality Trends", label: "Agent Quality Trends" },
       { value: "Are Agents Here To Stay?", label: "Are Agents Here To Stay?" },
-
     ],
     "Insights": [
       { value: "Insight 1", label: "Insight 1" },
       { value: "Insight 2", label: "Insight 2" },
     ],
   };
-  const [filteredOptionsWithCounts, setFilteredOptionsWithCounts] = useState(filteredOptions);
+
+  const [filterOptionsWithCounts, setFilterOptionsWithCounts] = useState(filterOptions);
+  const [filterCounts, setFilterCounts] = useState({});
 
   const totalPages = useMemo(() => Math.ceil(totalRecords / ITEMS_PER_PAGE), [totalRecords]);
-  const [filterCounts, setFilterCounts] = useState({
-    "Video Type": {},
-    "Classifications": {},
-    "Themes": {},
-    "Objections": {},
-    "Validations": {},
-    "Insights": {}
-  });
-
 
   const fetchUsers = useCallback(async (page = 1, isLoadMore = false) => {
     if (isLoadMore) {
@@ -230,18 +225,66 @@ const Dashboard = () => {
 
       if (error) throw error;
 
+      // Ensure data is properly formatted before setting state
+      const formattedData = data.map(item => {
+        // Convert any object fields to strings if needed
+        const formattedItem = { ...item };
+
+        // Special handling for Themes field
+        if (formattedItem.Themes) {
+          try {
+            // Parse if it's JSON string
+            const themes = typeof formattedItem.Themes === 'string'
+              ? JSON.parse(formattedItem.Themes)
+              : formattedItem.Themes;
+
+            // Convert to display format
+            if (Array.isArray(themes)) {
+              formattedItem.Themes = themes.map(theme => {
+                // If it's an object, extract just the theme name
+                if (theme && typeof theme === 'object') {
+                  return theme.theme || '';
+                }
+                // Otherwise use as-is (string)
+                return theme;
+              }).filter(Boolean).join(', ');
+            }
+          } catch (e) {
+            console.log('Error formatting themes:', e);
+            formattedItem.Themes = ''; // Fallback
+          }
+        }
+
+        // Handle other array fields
+        arrayFields.forEach(field => {
+          if (field !== 'Themes' && formattedItem[field]) {
+            if (typeof formattedItem[field] === 'string') {
+              formattedItem[field] = formattedItem[field]
+                .split(',')
+                .map(v => v.trim())
+                .filter(v => v && v.toLowerCase() !== 'nan' && v !== '[]');
+            }
+          }
+        });
+
+        return formattedItem;
+      });
+
+      console.log("formattedData", formattedData);
+      console.log("datattat", data);
+      setThemesRank(data);
       if (isLoadMore) {
-        setUsers(prev => [...prev, ...data]);
-        setFilteredUsers(prev => [...prev, ...data]);
+        setUsers(prev => [...prev, ...formattedData]);
+        setFilteredUsers(prev => [...prev, ...formattedData]);
       } else {
-        setUsers(data || []);
-        setFilteredUsers(data || []);
+        setUsers(formattedData || []);
+        setFilteredUsers(formattedData || []);
       }
 
       setTotalRecords(data[0]?.total_count || 0);
 
     } catch (err) {
-      console.error("Fetch error:", {
+      console.log("Fetch error:", {
         message: err.message,
         details: err.details,
       });
@@ -254,6 +297,7 @@ const Dashboard = () => {
       }
     }
   }, [selectedFilters, isSearchActive, fromDate, toDate, searchText]);
+
   useEffect(() => {
     // Reset to first page when search/filter changes
     setCurrentPage(1);
@@ -268,27 +312,28 @@ const Dashboard = () => {
     }
   };
 
-
   const fetchAllFilterCounts = useCallback(async () => {
     try {
-
       const { data, error } = await supabase.rpc('get_filter_counts', {
         current_user_id: localStorage.getItem('current_user_id')
       });
 
       if (error) {
-        console.error("Error fetching filter counts:", error);
+        console.log("Error fetching filter counts:", error);
         return;
       }
+
+      // Initialize counts object
       const counts = {
         "Video Type": {},
         "Classifications": {},
         "Themes": {},
         "Objections": {},
-        "Validations": {}
+        "Validations": {},
+        "Insights": {}
       };
 
-      // Assuming the RPC returns an array of {category, value, count}
+      // Process the counts data
       data.forEach(({ category, value, count }) => {
         if (counts[category]) {
           counts[category][value] = count;
@@ -296,32 +341,33 @@ const Dashboard = () => {
       });
 
       setFilterCounts(counts);
+
+      // Update the filter options with counts
+      const updatedOptions = { ...filterOptions };
+      for (const filterType in updatedOptions) {
+        updatedOptions[filterType] = updatedOptions[filterType].map(option => ({
+          ...option,
+          count: counts[filterType]?.[option.value] || 0
+        }));
+      }
+
+      setFilterOptionsWithCounts(updatedOptions);
     } catch (err) {
-      console.error("Error calculating filter counts:", err);
+      console.log("Error calculating filter counts:", err);
     }
   }, []);
 
   useEffect(() => {
-    const updatedOptions = { ...filteredOptions };
-    for (const filterType in filteredOptions) {
-      updatedOptions[filterType] = filteredOptions[filterType].map(option => ({
-        ...option,
-        count: filterCounts[filterType]?.[option.value] || 0
-      }));
-    }
-    setFilteredOptionsWithCounts(updatedOptions);
-  }, [filterCounts]);
-
-  useEffect(() => {
     fetchAllFilterCounts();
   }, [fetchAllFilterCounts, users]);
+
   const handleFilterSelect = (filterType, values) => {
     setSelectedFilters(prev => ({
       ...prev,
       [filterType]: values
     }));
     setIsSearchActive(true);
-    setCurrentPage(1); // Always reset to first page when filters change
+    setCurrentPage(1);
   };
 
   const handleCreateDashboardSubmit = () => {
@@ -331,11 +377,12 @@ const Dashboard = () => {
   const handleEditDashboardSubmit = () => {
     setShowEditDashboardModal(false);
   };
+
   const handleEditClick = (fund) => {
     setCurrentEditingDashboard(fund);
     setShowEditDashboardModal(true);
   };
-  // Function to handle Delete Record
+
   const handleDeleteClick = async (Id) => {
     Alert.show('Delete Confirmation', 'Are you sure you want to delete this record?', [
       {
@@ -396,14 +443,14 @@ const Dashboard = () => {
     ]);
   };
 
-  // Function to handle date filtering
   const handleDateSearch = async () => {
     setDateSearchApplied(true);
     setIsSearchActive(true);
     setCurrentPage(1);
-    setShowDateModal(false)
+    setShowDateModal(false);
     fetchUsers();
   };
+
   const debouncedSearch = useMemo(() =>
     debounce((searchValue) => {
       setSearchText(searchValue);
@@ -412,7 +459,6 @@ const Dashboard = () => {
     }, 500),
     []
   );
-
 
   const clearSearch = async () => {
     setSearchText("");
@@ -432,14 +478,12 @@ const Dashboard = () => {
     setLoadingMore(false);
   };
 
-
-
   return (
     <div className="overflow-x-hidden py-0 p-4 relative">
       {/* Search & divs Section */}
       <div className="py-3 px-6 mt-[-10px] flex justify-between items-center">
         {/* Search Bar */}
-        <div className=" p-0 w-full">
+        <div className="p-0 w-full">
           {/* Search Bar Section */}
           <div className="mx-auto -mt-2">
             <h1 className="text-2xl font-bold mt-6 mb-4">The Contact Center Perspectives Podcast</h1>
@@ -510,20 +554,20 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
       </div>
       <hr className="border-gray-500 mb-6 mt-[10px] -mx-12" />
+
       {/* Filter Section */}
       <div className="flex">
-        <aside className=" flex  flex-col gap-2 w-full md:w-64 px-6">
-          {Object.keys(filteredOptionsWithCounts).map((field) => {
+        <aside className="flex flex-col gap-2 w-full md:w-64 px-6">
+          {Object.keys(filterOptionsWithCounts).map((field) => {
             const displayField = field === 'Themes' ? 'Themes' : field;
             return (
               <MultiSelectDropdown
                 key={field}
                 field={field}
                 label={`Search By ${displayField}`}
-                options={filteredOptionsWithCounts[field]}
+                options={filterOptionsWithCounts[field]}
                 selectedValues={selectedFilters[field] || []}
                 onSelect={(values) => {
                   handleFilterSelect(field, values);
@@ -532,10 +576,11 @@ const Dashboard = () => {
                 onToggle={() =>
                   setOpenDropdown(openDropdown === field ? null : field)
                 }
-                exclusiveSelections={selectedFilters} 
+                exclusiveSelections={selectedFilters}
               />
             );
           })}
+
           {/* Logo and Text */}
           <div className="mt-6 flex items-center gap-3 py-4 fixed bottom-0">
             <img
@@ -547,9 +592,10 @@ const Dashboard = () => {
               Content Strategies
             </span>
           </div>
-
         </aside>
+
         <div className="hidden md:block max-h-full overflow-y-hidden w-px bg-gray-600 mx-4 ml-6 -mt-6"></div>
+
         {/* Table */}
         <main className="flex-1 px-6 overflow-x-auto">
           <div className="overflow-x-auto">
@@ -565,7 +611,7 @@ const Dashboard = () => {
               onLoadMore={loadMoreData}
               loadingMore={loadingMore}
               alignRecord={false}
-
+              themesRank={themesRank}
             />
           </div>
 
@@ -579,44 +625,11 @@ const Dashboard = () => {
                 of
                 <span className="text-sm text-[#6c757d]">{totalRecords}</span>
               </span>
-              {/* <div>
-                <nav className="relative z-0 inline-flex gap-2 rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                  <button
-                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-white/10'}`}
-                  >
-                    <span className="sr-only">Previous</span>
-                    <FaChevronLeft className="h-4 w-4" aria-hidden="true" />
-                  </button>
-
-                  {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                    const page = i + 1;
-                    return (
-                      <div
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`relative inline-flex items-center px-3 py-0 border rounded text-sm font-medium ${currentPage === page ? 'z-10 bg-[#3a86ff] border-gray-300 ' : 'bg-white/10  border-gray-300 text-gray-500 hover:bg-gray-200 cursor-pointer'}`}
-                      >
-                        {page}
-                      </div>
-                    );
-                  })}
-
-                  <div
-                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === totalPages ? 'text-gray-300 bg-white/10 cursor-not-allowed' : 'text-gray-500 hover:bg-white/10 cursor-pointer'}`}
-                  >
-                    <span className="sr-only ">Next</span>
-                    <FaChevronRight className="h-4 w-4" aria-hidden="true" />
-                  </div>
-                </nav>
-              </div> */}
             </div>
           </div>
         </main>
       </div>
+
       {/* Dashboard Crud Modal */}
       {(showCreateDashboardModal || showEditDashboardModal) && (
         <CustomCrudForm
@@ -634,8 +647,10 @@ const Dashboard = () => {
           setTotalRecords={setTotalRecords}
           setCurrentPage={setCurrentPage}
           fetchUsers={fetchUsers}
+          themesRank={themesRank}
         />
       )}
+
       {/* Search By Date Modal */}
       {showDateModal && (
         <SearchByDateModal
@@ -647,11 +662,8 @@ const Dashboard = () => {
           handleDateSearch={handleDateSearch}
         />
       )}
-
     </div>
-
   );
 };
 
 export default Dashboard;
-

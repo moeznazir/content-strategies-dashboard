@@ -22,3 +22,27 @@ export const debounce = (func, delay) => {
     timer = setTimeout(() => func.apply(this, args), delay);
   };
 };
+
+// utils/themeHelpers.js
+export const normalizeThemes = (themes) => {
+  if (!themes) return [];
+  
+  // If it's already an array of strings, return as is
+  if (Array.isArray(themes) && themes.every(item => typeof item === 'string')) {
+    return themes;
+  }
+  
+  // If it's an array of objects, extract the theme values
+  if (Array.isArray(themes) && themes.every(item => typeof item === 'object')) {
+    return themes.map(item => item.theme || item);
+  }
+  
+  // Handle case where themes might be a stringified JSON
+  try {
+    const parsed = typeof themes === 'string' ? JSON.parse(themes) : themes;
+    return normalizeThemes(parsed);
+  } catch (e) {
+    console.log("Error parsing themes:", e);
+    return [];
+  }
+};

@@ -47,7 +47,7 @@ export const loginUser = async (loginData) => {
             .single();
             console.log("Logged in user profile:", profile);
         if (profileError) {
-            // console.error("Failed to fetch profile:", profileError.message);
+            // console.log("Failed to fetch profile:", profileError.message);
             return { error: "Login succeeded, but failed to fetch company info." };
         }
 

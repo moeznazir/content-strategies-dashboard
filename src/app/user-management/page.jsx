@@ -102,7 +102,7 @@ const UserManagement = () => {
 
 
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.log("Error fetching users:", error);
     } finally {
       if (isLoadMore) {
         setLoadingMore(false);
@@ -156,7 +156,7 @@ const UserManagement = () => {
       fetchUsers();
       setShowEditModal(false);
     } catch (err) {
-      console.error("Error updating user:", err);
+      console.log("Error updating user:", err);
 
     }
   };
