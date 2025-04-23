@@ -42,7 +42,7 @@ export const updateUserRoles = async (userId, newRoles) => {
     });
 
     if (error) {
-      console.log('Failed to update roles:', error.message);
+      console.log('Failed to update role:', error.message);
     } else {
       console.log('User roles updated successfully:', data);
     }
