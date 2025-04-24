@@ -144,14 +144,74 @@ const ThemeEntry = ({ theme, ranking, justification, onEdit, onRemove, index }) 
         </div>
     );
 };
+const ObjectionEntry = ({ objection, ranking, justification, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <p><span className="font-medium">Objection:</span> <span className='text-gray-400 text-sm'>{objection || "No objection selected"}</span></p>
+                    <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                </div>
+                <div className="flex space-x-1">
+                    <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700">
+                        <PencilIcon className="h-5 w-5" />
+                    </div>
+                    <div onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700">
+                        <TrashIcon className="h-5 w-5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ValidationEntry = ({ validation, ranking, justification, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <p><span className="font-medium">Validation:</span> <span className='text-gray-400 text-sm'>{validation || "No validation selected"}</span></p>
+                    <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                </div>
+                <div className="flex space-x-1">
+                    <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700">
+                        <PencilIcon className="h-5 w-5" />
+                    </div>
+                    <div onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700">
+                        <TrashIcon className="h-5 w-5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank }) => {
     const [loading, setLoading] = useState(false);
+
+    // Themes
     const [currentTheme, setCurrentTheme] = useState("");
     const [currentRanking, setCurrentRanking] = useState("");
     const [currentJustification, setCurrentJustification] = useState("");
     const [themeEntries, setThemeEntries] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
+
+    // Objections
+    const [currentObjection, setCurrentObjection] = useState("");
+    const [currentObjectionRanking, setCurrentObjectionRanking] = useState("");
+    const [currentObjectionJustification, setCurrentObjectionJustification] = useState("");
+    const [objectionEntries, setObjectionEntries] = useState([]);
+    const [objectionEditIndex, setObjectionEditIndex] = useState(null);
+
+    //Validations
+    const [currentValidation, setCurrentValidation] = useState("");
+    const [currentValidationRanking, setCurrentValidationRanking] = useState("");
+    const [currentValidationJustification, setCurrentValidationJustification] = useState("");
+    const [validationEntries, setValidationEntries] = useState([]);
+    const [validationEditIndex, setValidationEditIndex] = useState(null);
+
 
     function normalizeThemes(data) {
         if (!Array.isArray(data)) return [];
@@ -159,21 +219,40 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             if (typeof entry === "string") {
                 return { theme: entry, ranking: "", justification: "" };
             }
-            return entry; // already in correct format
+            return entry;
+        });
+    }
+
+    function normalizeValidations(data) {
+        if (!Array.isArray(data)) return [];
+        return data.map(entry => {
+            if (typeof entry === "string") {
+                return { validation: entry, ranking: "", justification: "" };
+            }
+            return entry;
+        });
+    }
+
+    function normalizeObjections(data) {
+        if (!Array.isArray(data)) return [];
+        return data.map(entry => {
+            if (typeof entry === "string") {
+                return { objection: entry, ranking: "", justification: "" };
+            }
+            return entry;
         });
     }
 
     useEffect(() => {
         if (entityData?.id) {
-            const themeData = themesRank.find(item => item.id === entityData.id)?.Themes;
+            const matchedData = themesRank.find(item => item.id === entityData.id);
+
+            // --- Handle Themes
+            const themeData = matchedData?.Themes;
             if (themeData) {
                 try {
                     const parsed = Array.isArray(themeData) ? themeData : JSON.parse(themeData);
-                    setThemeEntries(parsed.map(theme => ({
-                        theme: theme.theme || theme,
-                        ranking: theme.ranking || 0,
-                        justification: theme.justification || ''
-                    })));
+                    setThemeEntries(normalizeThemes(parsed));
                 } catch (e) {
                     console.log("Error parsing themes:", e);
                     setThemeEntries([]);
@@ -181,17 +260,49 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             } else {
                 setThemeEntries([]);
             }
+
+            // --- Handle Validations
+            const validationData = matchedData?.Validations;
+            if (validationData) {
+                try {
+                    const parsed = Array.isArray(validationData) ? validationData : JSON.parse(validationData);
+                    setValidationEntries(normalizeValidations(parsed));
+                } catch (e) {
+                    console.log("Error parsing validations:", e);
+                    setValidationEntries([]);
+                }
+            } else {
+                setValidationEntries([]);
+            }
+
+            // --- Handle Objections
+            const objectionData = matchedData?.Objections;
+            if (objectionData) {
+                try {
+                    const parsed = Array.isArray(objectionData) ? objectionData : JSON.parse(objectionData);
+                    setObjectionEntries(normalizeObjections(parsed));
+                } catch (e) {
+                    console.log("Error parsing objections:", e);
+                    setObjectionEntries([]);
+                }
+            } else {
+                setObjectionEntries([]);
+            }
         } else {
+            // Clear on new entry
             setThemeEntries([]);
+            setValidationEntries([]);
+            setObjectionEntries([]);
         }
     }, [entityData, themesRank]);
 
+
     const validationSchema = Yup.object(
         displayFields.reduce((schema, field) => {
-            if (field.key === "Themes") {
-                schema["Themes"] = Yup.array().of(
+            if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations") {
+                schema[field.key] = Yup.array().of(
                     Yup.object().shape({
-                        theme: Yup.string().required("Theme is required"),
+                        [field.key.toLowerCase().slice(0, -1)]: Yup.string().required(`${field.key.slice(0, -1)} is required`),
                         ranking: Yup.number()
                             .min(1, "Ranking must be at least 1")
                             .max(10, "Ranking must be at most 10")
@@ -228,7 +339,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Initialize form values properly
     const initialValues = {};
     displayFields.forEach(field => {
-        if (field.key === "Themes") {
+        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations") {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
             initialValues[field.key] = entityData?.[field.key] ||
@@ -254,12 +365,30 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         justification: String(entry.justification || "")
                     }));
                 }
-                const companyId = localStorage.getItem('company_id');
-                console.log("companyId", companyId);
+                let objectionData = null;
+                if (objectionEntries.length > 0) {
+                    objectionData = objectionEntries.map(entry => ({
+                        objection: String(entry.objection || ""),
+                        ranking: parseInt(entry.ranking) || 0,
+                        justification: String(entry.justification || "")
+                    }));
+                }
+                let validationData = null;
+                if (validationEntries.length > 0) {
+                    validationData = validationEntries.map(entry => ({
+                        validation: String(entry.validation || ""),
+                        ranking: parseInt(entry.ranking) || 0,
+                        justification: String(entry.justification || "")
+                    }));
+                }
+
+
                 // Create the payload with properly formatted values
                 const formattedValues = {
                     ...values,
                     Themes: themeEntries.length > 0 ? themeEntries : null,
+                    Objections: objectionEntries.length > 0 ? objectionEntries : null,
+                    Validations: validationEntries.length > 0 ? validationEntries : null,
                     company_id: localStorage.getItem('company_id')
                 };
 
@@ -344,6 +473,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         },
     });
 
+    //Themes Handlers
     const handleAddTheme = () => {
         if (!currentTheme || !currentRanking || !currentJustification) {
             ShowCustomToast("Please fill all theme fields before adding.", "error");
@@ -392,6 +522,102 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
     };
 
+    // Objection handlers
+    const handleAddObjection = () => {
+        if (!currentObjection || !currentObjectionRanking || !currentObjectionJustification) {
+            ShowCustomToast("Please fill all objection fields before adding.", "error");
+            return;
+        }
+
+        const newEntry = {
+            objection: currentObjection,
+            ranking: parseInt(currentObjectionRanking) || 0,
+            justification: currentObjectionJustification
+        };
+
+        if (objectionEditIndex !== null) {
+            const updated = [...objectionEntries];
+            updated[objectionEditIndex] = newEntry;
+            setObjectionEntries(updated);
+            setObjectionEditIndex(null);
+        } else {
+            setObjectionEntries([...objectionEntries, newEntry]);
+        }
+
+        setCurrentObjection("");
+        setCurrentObjectionRanking("");
+        setCurrentObjectionJustification("");
+    };
+
+    const handleEditObjection = (index) => {
+        const entry = objectionEntries[index];
+        setCurrentObjection(entry.objection);
+        setCurrentObjectionRanking(entry.ranking);
+        setCurrentObjectionJustification(entry.justification);
+        setObjectionEditIndex(index);
+    };
+
+    const handleRemoveObjection = (index) => {
+        const updated = objectionEntries.filter((_, i) => i !== index);
+        setObjectionEntries(updated);
+        if (objectionEditIndex === index) {
+            setCurrentObjection("");
+            setCurrentObjectionRanking("");
+            setCurrentObjectionJustification("");
+            setObjectionEditIndex(null);
+        } else if (objectionEditIndex > index) {
+            setObjectionEditIndex(objectionEditIndex - 1);
+        }
+    };
+
+    // Validation handlers (similar to objections)
+    const handleAddValidation = () => {
+        if (!currentValidation || !currentValidationRanking || !currentValidationJustification) {
+            ShowCustomToast("Please fill all validation fields before adding.", "error");
+            return;
+        }
+
+        const newEntry = {
+            validation: currentValidation,
+            ranking: parseInt(currentValidationRanking) || 0,
+            justification: currentValidationJustification
+        };
+
+        if (validationEditIndex !== null) {
+            const updated = [...validationEntries];
+            updated[validationEditIndex] = newEntry;
+            setValidationEntries(updated);
+            setValidationEditIndex(null);
+        } else {
+            setValidationEntries([...validationEntries, newEntry]);
+        }
+
+        setCurrentValidation("");
+        setCurrentValidationRanking("");
+        setCurrentValidationJustification("");
+    };
+
+    const handleEditValidation = (index) => {
+        const entry = validationEntries[index];
+        setCurrentValidation(entry.validation);
+        setCurrentValidationRanking(entry.ranking);
+        setCurrentValidationJustification(entry.justification);
+        setValidationEditIndex(index);
+    };
+
+    const handleRemoveValidation = (index) => {
+        const updated = validationEntries.filter((_, i) => i !== index);
+        setValidationEntries(updated);
+        if (validationEditIndex === index) {
+            setCurrentValidation("");
+            setCurrentValidationRanking("");
+            setCurrentValidationJustification("");
+            setValidationEditIndex(null);
+        } else if (validationEditIndex > index) {
+            setValidationEditIndex(validationEditIndex - 1);
+        }
+    };
+
     const handleFormSubmit = async () => {
         // Convert all rankings to numbers in theme entries
         const validatedThemeEntries = themeEntries.map(entry => ({
@@ -399,7 +625,20 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             ranking: Number(entry.ranking)
         }));
 
+        const validatedObjectionEntries = objectionEntries.map(entry => ({
+            ...entry,
+            ranking: Number(entry.ranking)
+        }));
+
+        const validatedValidationEntries = validationEntries.map(entry => ({
+            ...entry,
+            ranking: Number(entry.ranking)
+        }));
+
         setThemeEntries(validatedThemeEntries);
+        setObjectionEntries(validatedObjectionEntries);
+        setValidationEntries(validatedValidationEntries);
+
 
         const errors = await formik.validateForm();
         if (Object.keys(errors).length > 0) {
@@ -421,7 +660,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         <div className="max-h-[60vh] overflow-y-auto pr-2">
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
-                                    {!['Themes', 'ranking', 'Ranking Justification'].includes(field.key) ? (
+                                    {!['Themes', 'Objections', 'Validations', 'ranking', 'Ranking Justification'].includes(field.key) ? (
                                         <>
                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                 {field.label}:
@@ -477,7 +716,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                 <p className="text-red-500 text-sm">{formik.errors[field.key]}</p>
                                             )}
                                         </>
-                                    ) : field.key === 'Themes' && (
+                                    ) : field.key === 'Themes' ? (
                                         <div>
                                             <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
                                                 Themes:
@@ -552,10 +791,166 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                     </div>
                                                 )}
                                             </div>
+                                            {formik.errors['Themes'] && formik.touched['Themes'] && (
+                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Themes']}</p>
+                                            )}
 
 
                                         </div>
-                                    )}
+                                    ) : field.key === 'Objections' ? (
+                                        <div>
+                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                Objections:
+                                            </label>
+                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <CustomSelect
+                                                            id="objection-select"
+                                                            options={OPTIONS['Objections'] || []}
+                                                            value={currentObjection}
+                                                            isMulti={false}
+                                                            onChange={(value) => setCurrentObjection(value)}
+                                                            placeholder="Select an objection..."
+                                                            className="w-full mb-2"
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <CustomInput
+                                                                type="number"
+                                                                min="1"
+                                                                max="10"
+                                                                label="Ranking (1-10)"
+                                                                value={currentObjectionRanking}
+                                                                onChange={(e) => setCurrentObjectionRanking(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="1-10"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Justification"
+                                                                value={currentObjectionJustification}
+                                                                onChange={(e) => setCurrentObjectionJustification(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter justification"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex justify-end">
+                                                        <CustomButton
+                                                            type="button"
+                                                            onClick={handleAddObjection}
+                                                            disabled={!currentObjection || !currentObjectionRanking || !currentObjectionJustification}
+                                                            className="flex items-center gap-1"
+                                                        >
+                                                            <PlusIcon className="h-4 w-4" />
+                                                            {objectionEditIndex !== null ? "Update Objection" : "Add Objection"}
+                                                        </CustomButton>
+                                                    </div>
+                                                    {objectionEntries.length > 0 && (
+                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                            <h4 className="font-medium text-sm mb-2">Added Objections:</h4>
+                                                            {objectionEntries.map((entry, index) => (
+                                                                <ObjectionEntry
+                                                                    key={index}
+                                                                    index={index}
+                                                                    objection={entry.objection}
+                                                                    ranking={entry.ranking}
+                                                                    justification={entry.justification}
+                                                                    onEdit={handleEditObjection}
+                                                                    onRemove={handleRemoveObjection}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {formik.errors['Objections'] && formik.touched['Objections'] && (
+                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Objections']}</p>
+                                            )}
+
+                                        </div>
+                                    ) : field.key === 'Validations' && (
+                                        <div>
+                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                Validations:
+                                            </label>
+                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <CustomSelect
+                                                            id="validation-select"
+                                                            options={OPTIONS['Validations'] || []}
+                                                            value={currentValidation}
+                                                            isMulti={false}
+                                                            onChange={(value) => setCurrentValidation(value)}
+                                                            placeholder="Select a validation..."
+                                                            className="w-full mb-2"
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <CustomInput
+                                                                type="number"
+                                                                min="1"
+                                                                max="10"
+                                                                label="Ranking (1-10)"
+                                                                value={currentValidationRanking}
+                                                                onChange={(e) => setCurrentValidationRanking(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="1-10"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Justification"
+                                                                value={currentValidationJustification}
+                                                                onChange={(e) => setCurrentValidationJustification(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter justification"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex justify-end">
+                                                        <CustomButton
+                                                            type="button"
+                                                            onClick={handleAddValidation}
+                                                            disabled={!currentValidation || !currentValidationRanking || !currentValidationJustification}
+                                                            className="flex items-center gap-1"
+                                                        >
+                                                            <PlusIcon className="h-4 w-4" />
+                                                            {validationEditIndex !== null ? "Update Validation" : "Add Validation"}
+                                                        </CustomButton>
+                                                    </div>
+                                                    {validationEntries.length > 0 && (
+                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                            <h4 className="font-medium text-sm mb-2">Added Validations:</h4>
+                                                            {validationEntries.map((entry, index) => (
+                                                                <ValidationEntry
+                                                                    key={index}
+                                                                    index={index}
+                                                                    validation={entry.validation}
+                                                                    ranking={entry.ranking}
+                                                                    justification={entry.justification}
+                                                                    onEdit={handleEditValidation}
+                                                                    onRemove={handleRemoveValidation}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {formik.errors['Validations'] && formik.touched['Validations'] && (
+                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Validations']}</p>
+                                            )}
+                                        </div>
+                                    )
+
+                                    }
                                 </div>
                             ))}
                         </div>

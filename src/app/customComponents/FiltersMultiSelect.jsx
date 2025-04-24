@@ -107,14 +107,14 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onToggle, isOpen,
                             {typeof option.count === 'number' && (
                                 <span className="text-xs opacity-70 whitespace-nowrap inline-flex items-center gap-1">
                                     <span>({option.count})</span>
-                                    {field === 'Themes' && (
+                                    {(field === 'Themes' || field === 'Objections' || field === 'Validations') && (
                                         <span>({option.avg_ranking}★)</span>
                                     )}
                                 </span>
                             )}
 
                             {/* Tooltip */}
-                            {hoveredOption?.value === option.value && field === 'Themes' && (
+                            {hoveredOption?.value === option.value && ['Themes', 'Objections', 'Validations'].includes(field) && (
                                 <div className="absolute top-full left-0 -mt-1 z-10 bg-black text-white text-xs px-1 py-1 ml-4 rounded shadow-lg whitespace-nowrap">
                                     total_count: {option.count ?? 0}, avg_ranking: {option.avg_ranking ?? 'N/A'}
                                 </div>
