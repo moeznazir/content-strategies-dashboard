@@ -59,9 +59,9 @@ const Dashboard = () => {
     { label: "Guest Industry", id: "Guest Industry" },
     { label: "Tags", id: "Tags" },
     { label: "Themes", id: "Themes" },
-    { label: "Video Type", id: "Video Type" },
     { label: "Validations", id: "Validations" },
     { label: "Objections", id: "Objections" },
+    { label: "Video Type", id: "Video Type" },
     { label: "Guest Title", id: "Guest Title" },
     { label: "LinkedIn Video - Extended Media", id: "LinkedIn Video - Extended Media" },
     { label: "Mentions", id: "Mentions" },
@@ -88,6 +88,8 @@ const Dashboard = () => {
     { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
     { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
     { label: "Themes", key: "Themes", placeholder: "Select Themes", type: "multiselect" },
+    { label: "Validations", key: "Validations", placeholder: "Select Validations", type: "multiselect" },
+    { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
     // { label: "Ranking", key: "ranking", placeholder: "Enter Ranking (1-10)", type: "ranking" },
     // { label: "Ranking justification", key: "Ranking Justification", placeholder: "Enter Ranking Justification" },
     { label: "Text comments for the rating (OPTIONAL input from the user)", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
@@ -107,8 +109,6 @@ const Dashboard = () => {
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
     { label: "Client", key: "Client", placeholder: "Select Client", type: "select" },
     { label: "Employee", key: "Employee", placeholder: "Enter Employee" },
-    { label: "Validations", key: "Validations", placeholder: "Select Validations", type: "multiselect" },
-    { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
     { label: "YouTube Link", key: "YouTube Link", placeholder: "Enter YouTube Link", type: "url" },
     { label: "Podbook Link", key: "Podbook Link", placeholder: "Enter Podbook Link", type: "url" },
     { label: "Article - Extended Media", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
@@ -231,33 +231,72 @@ const Dashboard = () => {
         const formattedItem = { ...item };
 
         // Special handling for Themes field
-        if (formattedItem.Themes) {
+        // if (formattedItem.Themes) {
+        //   try {
+        //     // Parse if it's JSON string
+        //     const themes = typeof formattedItem.Themes === 'string'
+        //       ? JSON.parse(formattedItem.Themes)
+        //       : formattedItem.Themes;
+
+        //     // Convert to display format
+        //     if (Array.isArray(themes)) {
+        //       formattedItem.Themes = themes.map(theme => {
+        //         // If it's an object, extract just the theme name
+        //         if (theme && typeof theme === 'object') {
+        //           return theme.theme || '';
+        //         }
+        //         // Otherwise use as-is (string)
+        //         return theme;
+        //       }).filter(Boolean).join(', ');
+        //     }
+        //   } catch (e) {
+        //     console.log('Error formatting themes:', e);
+        //     formattedItem.Themes = ''; // Fallback
+        //   }
+        // }
+        // Helper function to format array data consistently
+        const formatArrayField = (fieldValue) => {
+          if (!fieldValue) return '';
+
           try {
             // Parse if it's JSON string
-            const themes = typeof formattedItem.Themes === 'string'
-              ? JSON.parse(formattedItem.Themes)
-              : formattedItem.Themes;
+            const items = typeof fieldValue === 'string'
+              ? JSON.parse(fieldValue)
+              : fieldValue;
 
             // Convert to display format
-            if (Array.isArray(themes)) {
-              formattedItem.Themes = themes.map(theme => {
-                // If it's an object, extract just the theme name
-                if (theme && typeof theme === 'object') {
-                  return theme.theme || '';
+            if (Array.isArray(items)) {
+              return items.map(item => {
+                // If it's an object, extract just the name property
+                if (item && typeof item === 'object') {
+                  return item.validation || item.objection || item.theme || '';
                 }
                 // Otherwise use as-is (string)
-                return theme;
+                return item;
               }).filter(Boolean).join(', ');
             }
+            return '';
           } catch (e) {
-            console.log('Error formatting themes:', e);
-            formattedItem.Themes = ''; // Fallback
+            console.log('Error formatting field:', e);
+            return ''; // Fallback
           }
+        };
+
+        // Apply formatting to all three fields
+        if (formattedItem.Themes) {
+          formattedItem.Themes = formatArrayField(formattedItem.Themes);
         }
 
+        if (formattedItem.Validations) {
+          formattedItem.Validations = formatArrayField(formattedItem.Validations);
+        }
+
+        if (formattedItem.Objections) {
+          formattedItem.Objections = formatArrayField(formattedItem.Objections);
+        }
         // Handle other array fields
         arrayFields.forEach(field => {
-          if (field !== 'Themes' && formattedItem[field]) {
+          if (field !== 'Themes' && field !== 'Objections' && field !== 'Validations' && formattedItem[field]) {
             if (typeof formattedItem[field] === 'string') {
               formattedItem[field] = formattedItem[field]
                 .split(',')
@@ -338,7 +377,7 @@ const Dashboard = () => {
         if (counts[category]) {
           counts[category][value] = {
             count,
-            avg_ranking: category === 'Themes' ? avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations'].includes(category) ? avg_ranking : null
           };
         }
       });
@@ -353,11 +392,12 @@ const Dashboard = () => {
           return {
             ...option,
             count: countData.count,
-            avg_ranking: countData.avg_ranking
+            avg_ranking: ['Themes', 'Objections', 'Validations'].includes(filterType) ? countData.avg_ranking : null
+
           };
         });
       }
-  
+
 
       setFilterOptionsWithCounts(updatedOptions);
     } catch (err) {

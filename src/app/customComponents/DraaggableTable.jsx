@@ -10,7 +10,7 @@ import { FaCommentDots, FaEdit, FaExpandAlt, FaPlus, FaSortDown, FaTrash } from 
 import Modal from "./DetailModal";
 import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
-import ThemesModal from "./ThemesModal";
+import RankingModal from "./CustomRankingModal";
 
 const ItemType = "COLUMN";
 
@@ -99,6 +99,8 @@ const DraggableTable = ({
     const [selectedRow, setSelectedRow] = useState(null);
     const [commentRow, setCommentRow] = useState(null);
     const [selectedThemes, setSelectedThemes] = useState(null);
+    const [selectedObjections, setSelectedObjections] = useState(null);
+    const [selectedValidations, setSelectedValidations] = useState(null);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
 
@@ -123,6 +125,50 @@ const DraggableTable = ({
                 }
                 return {
                     theme: theme || '',
+                    ranking: 0,
+                    justification: ''
+                };
+            });
+        }
+        return [];
+    };
+    const normalizeObjections = (rowId) => {
+        const ObjectionData = themesRank.find(item => item.id === rowId)?.Objections;
+        if (!ObjectionData) return [];
+
+        if (Array.isArray(ObjectionData)) {
+            return ObjectionData.map(objection => {
+                if (typeof objection === 'object') {
+                    return {
+                        objection: objection.objection || '',
+                        ranking: objection.ranking || 0,
+                        justification: objection.justification || ''
+                    };
+                }
+                return {
+                    objection: objection || '',
+                    ranking: 0,
+                    justification: ''
+                };
+            });
+        }
+        return [];
+    };
+    const normalizeValidations = (rowId) => {
+        const ValidationData = themesRank.find(item => item.id === rowId)?.Validations;
+        if (!ValidationData) return [];
+
+        if (Array.isArray(ValidationData)) {
+            return ValidationData.map(validation => {
+                if (typeof validation === 'object') {
+                    return {
+                        validation: validation.validation || '',
+                        ranking: validation.ranking || 0,
+                        justification: validation.justification || ''
+                    };
+                }
+                return {
+                    validation: validation || '',
                     ranking: 0,
                     justification: ''
                 };
@@ -293,6 +339,90 @@ const DraggableTable = ({
                                                 //             </span>
                                                 //         ))}
                                                 //     </div>
+                                            ) : column.id === "Objections" ? (
+                                                <div
+                                                    className="flex  gap-1 cursor-pointer"
+                                                    onClick={() => {
+                                                        const objectionData = normalizeObjections(row.id);
+                                                        if (objectionData.length > 0) {
+                                                            setSelectedObjections(objectionData);
+                                                        }
+                                                    }}
+                                                >
+                                                    {normalizeObjections(row.id)
+                                                        .filter(objectionObj => {
+                                                            if (!objectionObj) return false;
+                                                            const objectionStr = String(objectionObj.objection).toLowerCase().trim();
+                                                            return objectionStr !== 'nan' && objectionStr !== '[]' && objectionStr !== '';
+                                                        })
+                                                        .map((objectionObj, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                            >
+                                                                {objectionObj.objection}
+                                                                {/* {themeObj.ranking > 0 && (
+                                                                    <span className="ml-1 text-xs">({themeObj.ranking})</span>
+                                                                )} */}
+                                                            </span>
+                                                        ))}
+                                                </div>
+                                                //  column.id === "Themes" ? (
+                                                //     <div className="flex  gap-1">
+                                                //         {normalizeThemes(row.id).filter((item) => item && item !== "nan" && item !== "[]").map((themeObj, idx) => (
+                                                //             <span
+                                                //                 key={idx}
+                                                //                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                //             >
+                                                //                 {themeObj.theme}
+                                                //                 {/* {themeObj.ranking > 0 && (
+                                                //                     <span className="ml-1 text-xs">({themeObj.ranking})</span>
+                                                //                 )} */}
+                                                //             </span>
+                                                //         ))}
+                                                //     </div>
+                                            ) : column.id === "Validations" ? (
+                                                <div
+                                                    className="flex  gap-1 cursor-pointer"
+                                                    onClick={() => {
+                                                        const validationData = normalizeValidations(row.id);
+                                                        if (validationData.length > 0) {
+                                                            setSelectedValidations(validationData);
+                                                        }
+                                                    }}
+                                                >
+                                                    {normalizeValidations(row.id)
+                                                        .filter(validationObj => {
+                                                            if (!validationObj) return false;
+                                                            const validationStr = String(validationObj.validation).toLowerCase().trim();
+                                                            return validationStr !== 'nan' && validationStr !== '[]' && validationStr !== '';
+                                                        })
+                                                        .map((validationObj, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                            >
+                                                                {validationObj.validation}
+                                                                {/* {themeObj.ranking > 0 && (
+                                                                    <span className="ml-1 text-xs">({themeObj.ranking})</span>
+                                                                )} */}
+                                                            </span>
+                                                        ))}
+                                                </div>
+                                                //  column.id === "Themes" ? (
+                                                //     <div className="flex  gap-1">
+                                                //         {normalizeThemes(row.id).filter((item) => item && item !== "nan" && item !== "[]").map((themeObj, idx) => (
+                                                //             <span
+                                                //                 key={idx}
+                                                //                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                //             >
+                                                //                 {themeObj.theme}
+                                                //                 {/* {themeObj.ranking > 0 && (
+                                                //                     <span className="ml-1 text-xs">({themeObj.ranking})</span>
+                                                //                 )} */}
+                                                //             </span>
+                                                //         ))}
+                                                //     </div>
                                             ) : column.id === "Likes" ? (
                                                 <LikeButton user_name={row?.Guest} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
                                             ) : column.id === "Comments" ? (
@@ -347,7 +477,7 @@ const DraggableTable = ({
                         {hasMoreRecords && !loading && (
                             <tr className="hover:bg-white/10 scroll-hidden">
                                 <td
-                                    colSpan={columns.length + 1} // +1 for the action column
+                                    colSpan={columns.length + 1} 
                                     className="relative py-3 text-center cursor-pointer"
                                     onClick={onLoadMore}
                                 >
@@ -382,10 +512,24 @@ const DraggableTable = ({
             )}
             {/* Comment Modal (For Comments) */}
             {commentRow && <CommentModal row={commentRow} onClose={() => setCommentRow(null)} />}
+
+            {/* Ranking Modal (For Ranks) */}
             {selectedThemes && (
-                <ThemesModal
-                    themes={selectedThemes}
+                <RankingModal
+                    data={selectedThemes}
                     onClose={() => setSelectedThemes(null)}
+                />
+            )}
+            {selectedValidations && (
+                <RankingModal
+                    data={selectedValidations}
+                    onClose={() => setSelectedValidations(null)}
+                />
+            )}
+            {selectedObjections && (
+                <RankingModal
+                    data={selectedObjections}
+                    onClose={() => setSelectedObjections(null)}
                 />
             )}
         </DndProvider>
