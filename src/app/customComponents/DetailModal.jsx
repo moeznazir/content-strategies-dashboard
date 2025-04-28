@@ -1,7 +1,6 @@
 import { FaTimes, FaCopy, FaExpand, FaCompress } from "react-icons/fa";
 import { appColors } from "@/lib/theme";
 import { useState } from "react";
-import CustomButton from "./CustomButton";
 
 const Modal = ({ data, onClose }) => {
     const [expandedFields, setExpandedFields] = useState({});
@@ -19,7 +18,7 @@ const Modal = ({ data, onClose }) => {
     ];
 
     const filteredData = Object.entries(data).filter(
-        ([key]) => key !== "Avatar" && key !== "id" && key!=="ranking" && key !=="Ranking Justification" && !key.includes("Rating (1-5 stars by the user)")
+        ([key]) => key !== "Avatar" && key !== "id" && key!=="ranking" && key !=="Ranking Justification" && key !=="total_count" && key !=="private_count" && key !=="public_count"&& key !=="employee_count"&& key !=="client_count"&& key !=="mentioned_count"&& !key.includes("Rating (1-5 stars by the user)")
     );
 
     const toggleExpand = (fieldName) => {
