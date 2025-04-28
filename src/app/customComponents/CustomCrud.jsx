@@ -22,6 +22,7 @@ const MULTISELECT_FIELDS = [
     "Tags",
     "Validations",
     "Objections",
+    "Challenges",
     "Themes",
 ];
 
@@ -109,34 +110,42 @@ const OPTIONS = {
         { "value": "Maintaining Quality", "label": "Maintaining Quality" },
         { "value": "BPO Value Perceptions", "label": "BPO Value Perceptions" },
         { "value": "Mitigating Risk", "label": "Mitigating Risk" }
-    ]
+    ],
+    "Challenges": [
+        { value: "Misalignment Between Short-Term Targets and Long-Term Value", label: "Misalignment Between Short-Term Targets and Long-Term Value" },
+        { value: "Underutilization of Voice-of-Customer Data", label: "Underutilization of Voice-of-Customer Data" },
+        { value: "Lack of Empowerment and Budget Control for CX and Support Leaders", label: "Lack of Empowerment and Budget Control for CX and Support Leaders" },
+        { value: "Inability to Deeply Understand and Adapt to the ICP", label: "Inability to Deeply Understand and Adapt to the ICP" },
+        { value: "Cultural Bias Toward Viewing Support as a Cost Center", label: "Cultural Bias Toward Viewing Support as a Cost Center" },
+        { value: "Conflicting Executive Priorities", label: "Conflicting Executive Priorities" },
+        { value: "Tagging, Taxonomy, and Feedback Classification Challenges", label: "Tagging, Taxonomy, and Feedback Classification Challenges" },
+        { value: "Generational Workforce Gaps", label: "Generational Workforce Gaps" },
+        { value: "Tool Overload and AI Misalignment", label: "Tool Overload and AI Misalignment" },
+        { value: "Organizational Dysfunction and Scaling Expertise", label: "Organizational Dysfunction and Scaling Expertise" },
+    ],
 
 };
 
 
 // Updated ThemeEntry component to properly display theme data
-const ThemeEntry = ({ theme, ranking, justification, onEdit, onRemove, index }) => {
+const ThemeEntry = ({ theme, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-            <div className="flex justify-between  items-start">
+            <div className="flex justify-between items-start">
                 <div className="flex-1">
-                    <p><span className="font-medium">Theme:</span> <span className='text-gray-400  text-sm'>{theme || "No theme selected"}</span></p>
+                    <p><span className="font-medium">Theme:</span> <span className='text-gray-400 text-sm'>{theme || "No theme selected"}</span></p>
                     <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
-                    <p><span className="font-medium">Ranking Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification Avilable"}</span></p>
+                    <p><span className="font-medium">Ranking Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
+                    <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
+                    <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
+                    <p><span className="font-medium">Supporting Quotes:</span> <span className='text-gray-400 text-sm'>{supportingQuotes || "Not specified"}</span></p>
                 </div>
-                <div className="flex  space-x-1">
-                    <div
-                        type="button"
-                        onClick={() => onEdit(index)}
-                        className="text-blue-500 hover:text-blue-700"
-                    >
+                <div className="flex space-x-1">
+                    <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700">
                         <PencilIcon className="h-5 w-5" />
                     </div>
-                    <div
-                        type="button"
-                        onClick={() => onRemove(index)}
-                        className="text-red-500 hover:text-red-700"
-                    >
+                    <div onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700">
                         <TrashIcon className="h-5 w-5" />
                     </div>
                 </div>
@@ -144,7 +153,8 @@ const ThemeEntry = ({ theme, ranking, justification, onEdit, onRemove, index }) 
         </div>
     );
 };
-const ObjectionEntry = ({ objection, ranking, justification, onEdit, onRemove, index }) => {
+
+const ObjectionEntry = ({ objection, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
             <div className="flex justify-between items-start">
@@ -152,6 +162,10 @@ const ObjectionEntry = ({ objection, ranking, justification, onEdit, onRemove, i
                     <p><span className="font-medium">Objection:</span> <span className='text-gray-400 text-sm'>{objection || "No objection selected"}</span></p>
                     <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
                     <p><span className="font-medium">Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
+                    <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
+                    <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
+                    <p><span className="font-medium">Supporting Quotes:</span> <span className='text-gray-400 text-sm'>{supportingQuotes || "Not specified"}</span></p>
                 </div>
                 <div className="flex space-x-1">
                     <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700">
@@ -166,7 +180,33 @@ const ObjectionEntry = ({ objection, ranking, justification, onEdit, onRemove, i
     );
 };
 
-const ValidationEntry = ({ validation, ranking, justification, onEdit, onRemove, index }) => {
+const ChallengesEntry = ({ challenge, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <p><span className="font-medium">Challenge:</span> <span className='text-gray-400 text-sm'>{challenge || "No challenge selected"}</span></p>
+                    <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
+                    <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
+                    <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
+                    <p><span className="font-medium">Supporting Quotes:</span> <span className='text-gray-400 text-sm'>{supportingQuotes || "Not specified"}</span></p>
+                </div>
+                <div className="flex space-x-1">
+                    <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700">
+                        <PencilIcon className="h-5 w-5" />
+                    </div>
+                    <div onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700">
+                        <TrashIcon className="h-5 w-5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ValidationEntry = ({ validation, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
             <div className="flex justify-between items-start">
@@ -174,6 +214,10 @@ const ValidationEntry = ({ validation, ranking, justification, onEdit, onRemove,
                     <p><span className="font-medium">Validation:</span> <span className='text-gray-400 text-sm'>{validation || "No validation selected"}</span></p>
                     <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
                     <p><span className="font-medium">Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
+                    <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
+                    <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
+                    <p><span className="font-medium">Supporting Quotes:</span> <span className='text-gray-400 text-sm'>{supportingQuotes || "Not specified"}</span></p>
                 </div>
                 <div className="flex space-x-1">
                     <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700">
@@ -187,7 +231,6 @@ const ValidationEntry = ({ validation, ranking, justification, onEdit, onRemove,
         </div>
     );
 };
-
 const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank }) => {
     const [loading, setLoading] = useState(false);
 
@@ -195,6 +238,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [currentTheme, setCurrentTheme] = useState("");
     const [currentRanking, setCurrentRanking] = useState("");
     const [currentJustification, setCurrentJustification] = useState("");
+    const [currentPerception, setCurrentPerception] = useState("");
+    const [currentWhyItMatters, setCurrentWhyItMatters] = useState("");
+    const [currentDeeperInsight, setCurrentDeeperInsight] = useState("");
+    const [currentSupportingQuotes, setCurrentSupportingQuotes] = useState("");
+
     const [themeEntries, setThemeEntries] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
 
@@ -202,6 +250,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [currentObjection, setCurrentObjection] = useState("");
     const [currentObjectionRanking, setCurrentObjectionRanking] = useState("");
     const [currentObjectionJustification, setCurrentObjectionJustification] = useState("");
+    const [currentObjectionPerception, setCurrentObjectionPerception] = useState("");
+    const [currentObjectionWhyItMatters, setCurrentObjectionWhyItMatters] = useState("");
+    const [currentObjectionDeeperInsight, setCurrentObjectionDeeperInsight] = useState("");
+    const [currentObjectionSupportingQuotes, setCurrentObjectionSupportingQuotes] = useState("");
     const [objectionEntries, setObjectionEntries] = useState([]);
     const [objectionEditIndex, setObjectionEditIndex] = useState(null);
 
@@ -209,15 +261,35 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [currentValidation, setCurrentValidation] = useState("");
     const [currentValidationRanking, setCurrentValidationRanking] = useState("");
     const [currentValidationJustification, setCurrentValidationJustification] = useState("");
+    const [currentValidationPerception, setCurrentValidationPerception] = useState("");
+    const [currentValidationWhyItMatters, setCurrentValidationWhyItMatters] = useState("");
+    const [currentValidationDeeperInsight, setCurrentValidationDeeperInsight] = useState("");
+    const [currentValidationSupportingQuotes, setCurrentValidationSupportingQuotes] = useState("");
     const [validationEntries, setValidationEntries] = useState([]);
     const [validationEditIndex, setValidationEditIndex] = useState(null);
+
+    //Challenges
+    const [currentChallenges, setCurrentChallenges] = useState("");
+    const [currentChallengesRanking, setCurrentChallengesRanking] = useState("");
+    const [currentChallengesJustification, setCurrentChallengesJustification] = useState("");
+    const [currentChallengesPerception, setCurrentChallengesPerception] = useState("");
+    const [currentChallengesWhyItMatters, setCurrentChallengesWhyItMatters] = useState("");
+    const [currentChallengesDeeperInsight, setCurrentChallengesDeeperInsight] = useState("");
+    const [currentChallengesSupportingQuotes, setCurrentChallengesSupportingQuotes] = useState("");
+    const [challengesEntries, setChallengesEntries] = useState([]);
+    const [challengesEditIndex, setChallengesEditIndex] = useState(null);
 
 
     function normalizeThemes(data) {
         if (!Array.isArray(data)) return [];
         return data.map(entry => {
             if (typeof entry === "string") {
-                return { theme: entry, ranking: "", justification: "" };
+                return {
+                    theme: entry, ranking: "", justification: "", perception: "",
+                    whyItMatters: "",
+                    deeperInsight: "",
+                    supportingQuotes: ""
+                };
             }
             return entry;
         });
@@ -227,7 +299,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         if (!Array.isArray(data)) return [];
         return data.map(entry => {
             if (typeof entry === "string") {
-                return { validation: entry, ranking: "", justification: "" };
+                return {
+                    validation: entry, ranking: "", justification: "", perception: "",
+                    whyItMatters: "",
+                    deeperInsight: "",
+                    supportingQuotes: ""
+                };
             }
             return entry;
         });
@@ -237,7 +314,27 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         if (!Array.isArray(data)) return [];
         return data.map(entry => {
             if (typeof entry === "string") {
-                return { objection: entry, ranking: "", justification: "" };
+                return {
+                    objection: entry, ranking: "", justification: "", perception: "",
+                    whyItMatters: "",
+                    deeperInsight: "",
+                    supportingQuotes: ""
+                };
+            }
+            return entry;
+        });
+    }
+
+    function normalizeChallenges(data) {
+        if (!Array.isArray(data)) return [];
+        return data.map(entry => {
+            if (typeof entry === "string") {
+                return {
+                    challenges: entry, ranking: "", justification: "", perception: "",
+                    whyItMatters: "",
+                    deeperInsight: "",
+                    supportingQuotes: ""
+                };
             }
             return entry;
         });
@@ -288,18 +385,32 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             } else {
                 setObjectionEntries([]);
             }
+            // --- Handle  Challenges
+            const challengesData = matchedData?.Challenges;
+            if (challengesData) {
+                try {
+                    const parsed = Array.isArray(challengesData) ? challengesData : JSON.parse(challengesData);
+                    setChallengesEntries(normalizeChallenges(parsed));
+                } catch (e) {
+                    console.log("Error parsing challenges:", e);
+                    setChallengesEntries([]);
+                }
+            } else {
+                setChallengesEntries([]);
+            }
         } else {
             // Clear on new entry
             setThemeEntries([]);
             setValidationEntries([]);
             setObjectionEntries([]);
+            setChallengesEntries([]);
         }
     }, [entityData, themesRank]);
 
 
     const validationSchema = Yup.object(
         displayFields.reduce((schema, field) => {
-            if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations") {
+            if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key == "Challenges") {
                 schema[field.key] = Yup.array().of(
                     Yup.object().shape({
                         [field.key.toLowerCase().slice(0, -1)]: Yup.string().required(`${field.key.slice(0, -1)} is required`),
@@ -308,6 +419,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                             .max(10, "Ranking must be at most 10")
                             .required("Ranking is required"),
                         justification: Yup.string().required("Justification is required"),
+                        perception: Yup.string(),
+                        whyItMatters: Yup.string(),
+                        deeperInsight: Yup.string(),
+                        supportingQuotes: Yup.string(),
                     })
                 );
             } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
@@ -339,7 +454,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Initialize form values properly
     const initialValues = {};
     displayFields.forEach(field => {
-        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations") {
+        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges") {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
             initialValues[field.key] = entityData?.[field.key] ||
@@ -362,7 +477,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     themesData = themeEntries.map(entry => ({
                         theme: String(entry.theme || ""),
                         ranking: parseInt(entry.ranking) || 0,
-                        justification: String(entry.justification || "")
+                        justification: String(entry.justification || ""),
+                        perception: String(entry.perception || ""),
+                        whyItMatters: String(entry.whyItMatters || ""),
+                        deeperInsight: String(entry.deeperInsight || ""),
+                        supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
                 let objectionData = null;
@@ -370,7 +489,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     objectionData = objectionEntries.map(entry => ({
                         objection: String(entry.objection || ""),
                         ranking: parseInt(entry.ranking) || 0,
-                        justification: String(entry.justification || "")
+                        justification: String(entry.justification || ""),
+                        perception: String(entry.perception || ""),
+                        whyItMatters: String(entry.whyItMatters || ""),
+                        deeperInsight: String(entry.deeperInsight || ""),
+                        supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
                 let validationData = null;
@@ -378,7 +501,24 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     validationData = validationEntries.map(entry => ({
                         validation: String(entry.validation || ""),
                         ranking: parseInt(entry.ranking) || 0,
-                        justification: String(entry.justification || "")
+                        justification: String(entry.justification || ""),
+                        perception: String(entry.perception || ""),
+                        whyItMatters: String(entry.whyItMatters || ""),
+                        deeperInsight: String(entry.deeperInsight || ""),
+                        supportingQuotes: String(entry.supportingQuotes || "")
+                    }));
+                }
+
+                let challengesData = null;
+                if (challengesEntries.length > 0) {
+                    challengesData = challengesEntries.map(entry => ({
+                        challenges: String(entry.challenges || ""),
+                        ranking: parseInt(entry.ranking) || 0,
+                        justification: String(entry.justification || ""),
+                        perception: String(entry.perception || ""),
+                        whyItMatters: String(entry.whyItMatters || ""),
+                        deeperInsight: String(entry.deeperInsight || ""),
+                        supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
 
@@ -389,6 +529,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     Themes: themeEntries.length > 0 ? themeEntries : null,
                     Objections: objectionEntries.length > 0 ? objectionEntries : null,
                     Validations: validationEntries.length > 0 ? validationEntries : null,
+                    Challenges: challengesEntries.length > 0 ? challengesEntries : null,
                     company_id: localStorage.getItem('company_id')
                 };
 
@@ -483,7 +624,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         const newEntry = {
             theme: currentTheme,
             ranking: parseInt(currentRanking) || 0,
-            justification: currentJustification
+            justification: currentJustification,
+            perception: currentPerception,
+            whyItMatters: currentWhyItMatters,
+            deeperInsight: currentDeeperInsight,
+            supportingQuotes: currentSupportingQuotes
         };
 
         if (editIndex !== null) {
@@ -499,6 +644,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setCurrentTheme("");
         setCurrentRanking("");
         setCurrentJustification("");
+        setCurrentPerception("");
+        setCurrentWhyItMatters("");
+        setCurrentDeeperInsight("");
+        setCurrentSupportingQuotes("");
+
     };
 
     const handleEditTheme = (index) => {
@@ -506,6 +656,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setCurrentTheme(entry.theme);
         setCurrentRanking(entry.ranking);
         setCurrentJustification(entry.justification);
+        setCurrentPerception(entry.perception);
+        setCurrentWhyItMatters(entry.whyItMatters);
+        setCurrentDeeperInsight(entry.deeperInsight);
+        setCurrentSupportingQuotes(entry.supportingQuotes);
         setEditIndex(index);
     };
 
@@ -516,6 +670,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setCurrentTheme("");
             setCurrentRanking("");
             setCurrentJustification("");
+            setCurrentPerception("");
+            setCurrentWhyItMatters("");
+            setCurrentDeeperInsight("");
+            setCurrentSupportingQuotes("");
+
             setEditIndex(null);
         } else if (editIndex > index) {
             setEditIndex(editIndex - 1);
@@ -532,7 +691,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         const newEntry = {
             objection: currentObjection,
             ranking: parseInt(currentObjectionRanking) || 0,
-            justification: currentObjectionJustification
+            justification: currentObjectionJustification,
+            perception: currentObjectionPerception,
+            whyItMatters: currentObjectionWhyItMatters,
+            deeperInsight: currentObjectionDeeperInsight,
+            supportingQuotes: currentObjectionSupportingQuotes
         };
 
         if (objectionEditIndex !== null) {
@@ -547,6 +710,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setCurrentObjection("");
         setCurrentObjectionRanking("");
         setCurrentObjectionJustification("");
+        setCurrentObjectionPerception("");
+        setCurrentObjectionWhyItMatters("");
+        setCurrentObjectionDeeperInsight("");
+        setCurrentObjectionSupportingQuotes("");
     };
 
     const handleEditObjection = (index) => {
@@ -554,6 +721,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setCurrentObjection(entry.objection);
         setCurrentObjectionRanking(entry.ranking);
         setCurrentObjectionJustification(entry.justification);
+        setCurrentObjectionPerception(entry.perception);
+        setCurrentObjectionWhyItMatters(entry.whyItMatters);
+        setCurrentObjectionDeeperInsight(entry.deeperInsight);
+        setCurrentObjectionSupportingQuotes(entry.supportingQuotes);
         setObjectionEditIndex(index);
     };
 
@@ -564,13 +735,82 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setCurrentObjection("");
             setCurrentObjectionRanking("");
             setCurrentObjectionJustification("");
+            setCurrentObjectionPerception("");
+            setCurrentObjectionWhyItMatters("");
+            setCurrentObjectionDeeperInsight("");
+            setCurrentObjectionSupportingQuotes("");
             setObjectionEditIndex(null);
         } else if (objectionEditIndex > index) {
             setObjectionEditIndex(objectionEditIndex - 1);
         }
     };
 
-    // Validation handlers (similar to objections)
+
+    // Challenges handlers
+    const handleAddChallenges = () => {
+        if (!currentChallenges || !currentChallengesRanking || !currentChallengesJustification) {
+            ShowCustomToast("Please fill all challenge fields before adding.", "error");
+            return;
+        }
+
+        const newEntry = {
+            challenges: currentChallenges,
+            ranking: parseInt(currentChallengesRanking) || 0,
+            justification: currentChallengesJustification,
+            perception: currentChallengesPerception,
+            whyItMatters: currentChallengesWhyItMatters,
+            deeperInsight: currentChallengesDeeperInsight,
+            supportingQuotes: currentChallengesSupportingQuotes
+        };
+
+        if (challengesEditIndex !== null) {
+            const updated = [...challengesEntries];
+            updated[challengesEditIndex] = newEntry;
+            setChallengesEntries(updated);
+            setChallengesEditIndex(null);
+        } else {
+            setChallengesEntries([...challengesEntries, newEntry]);
+        }
+
+        setCurrentChallenges("");
+        setCurrentChallengesRanking("");
+        setCurrentChallengesJustification("");
+        setCurrentChallengesPerception("");
+        setCurrentChallengesWhyItMatters("");
+        setCurrentChallengesDeeperInsight("");
+        setCurrentChallengesSupportingQuotes("");
+
+    };
+
+    const handleEditChallenges = (index) => {
+        const entry = challengesEntries[index];
+        setCurrentChallenges(entry.challenges);
+        setCurrentChallengesRanking(entry.ranking);
+        setCurrentChallengesJustification(entry.justification);
+        setCurrentChallengesPerception(entry.perception);
+        setCurrentChallengesWhyItMatters(entry.whyItMatters);
+        setCurrentChallengesDeeperInsight(entry.deeperInsight);
+        setCurrentChallengesSupportingQuotes(entry.supportingQuotes);
+        setChallengesEditIndex(index);
+    };
+
+    const handleRemoveChallenges = (index) => {
+        const updated = challengesEntries.filter((_, i) => i !== index);
+        setChallengesEntries(updated);
+        if (challengesEditIndex === index) {
+            setCurrentChallenges("");
+            setCurrentChallengesRanking("");
+            setCurrentChallengesJustification("");
+            setCurrentChallengesPerception("");
+            setCurrentChallengesWhyItMatters("");
+            setCurrentChallengesDeeperInsight("");
+            setCurrentChallengesSupportingQuotes("");
+            setChallengesEditIndex(null);
+        } else if (challengesEditIndex > index) {
+            setChallengesEditIndex(challengesEditIndex - 1);
+        }
+    };
+    // Validation handlers 
     const handleAddValidation = () => {
         if (!currentValidation || !currentValidationRanking || !currentValidationJustification) {
             ShowCustomToast("Please fill all validation fields before adding.", "error");
@@ -580,7 +820,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         const newEntry = {
             validation: currentValidation,
             ranking: parseInt(currentValidationRanking) || 0,
-            justification: currentValidationJustification
+            justification: currentValidationJustification,
+            perception: currentValidationPerception,
+            whyItMatters: currentValidationWhyItMatters,
+            deeperInsight: currentValidationDeeperInsight,
+            supportingQuotes: currentValidationSupportingQuotes
         };
 
         if (validationEditIndex !== null) {
@@ -595,6 +839,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setCurrentValidation("");
         setCurrentValidationRanking("");
         setCurrentValidationJustification("");
+        setCurrentValidationPerception("");
+        setCurrentValidationWhyItMatters("");
+        setCurrentValidationDeeperInsight("");
+        setCurrentValidationSupportingQuotes("");
     };
 
     const handleEditValidation = (index) => {
@@ -602,6 +850,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setCurrentValidation(entry.validation);
         setCurrentValidationRanking(entry.ranking);
         setCurrentValidationJustification(entry.justification);
+        setCurrentValidationPerception(entry.perception);
+        setCurrentValidationWhyItMatters(entry.whyItMatters);
+        setCurrentValidationDeeperInsight(entry.deeperInsight);
+        setCurrentValidationSupportingQuotes(entry.supportingQuotes);
         setValidationEditIndex(index);
     };
 
@@ -612,6 +864,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setCurrentValidation("");
             setCurrentValidationRanking("");
             setCurrentValidationJustification("");
+            setCurrentValidationPerception("");
+            setCurrentValidationWhyItMatters("");
+            setCurrentValidationDeeperInsight("");
+            setCurrentValidationSupportingQuotes("");
             setValidationEditIndex(null);
         } else if (validationEditIndex > index) {
             setValidationEditIndex(validationEditIndex - 1);
@@ -634,10 +890,15 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             ...entry,
             ranking: Number(entry.ranking)
         }));
+        const validatedChallengesEntries = challengesEntries.map(entry => ({
+            ...entry,
+            ranking: Number(entry.ranking)
+        }));
 
         setThemeEntries(validatedThemeEntries);
         setObjectionEntries(validatedObjectionEntries);
         setValidationEntries(validatedValidationEntries);
+        setChallengesEntries(validatedChallengesEntries);
 
 
         const errors = await formik.validateForm();
@@ -647,6 +908,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         formik.handleSubmit();
     };
+
+    console.log("Vhalllll", displayFields);
     return (
         <>
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50" onClick={onClose} />
@@ -660,7 +923,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         <div className="max-h-[60vh] overflow-y-auto pr-2">
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
-                                    {!['Themes', 'Objections', 'Validations', 'ranking', 'Ranking Justification'].includes(field.key) ? (
+                                    {!['Themes', 'Objections', 'Validations', 'Challenges', 'ranking', 'Ranking Justification'].includes(field.key) ? (
                                         <>
                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                 {field.label}:
@@ -762,6 +1025,50 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         </div>
                                                     </div>
 
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Perception to Address"
+                                                            value={currentPerception}
+                                                            onChange={(e) => setCurrentPerception(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter perception to address"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Why It Matters"
+                                                            value={currentWhyItMatters}
+                                                            onChange={(e) => setCurrentWhyItMatters(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter why it matters"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Deeper Insight"
+                                                            value={currentDeeperInsight}
+                                                            onChange={(e) => setCurrentDeeperInsight(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter deeper insight"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Supporting Quotes"
+                                                            value={currentSupportingQuotes}
+                                                            onChange={(e) => setCurrentSupportingQuotes(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter supporting quotes"
+                                                        />
+                                                    </div>
+
                                                     <div className="flex justify-end">
                                                         <CustomButton
                                                             type="button"
@@ -784,6 +1091,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 theme={entry.theme}
                                                                 ranking={entry.ranking}
                                                                 justification={entry.justification}
+                                                                perception={entry.perception}
+                                                                whyItMatters={entry.whyItMatters}
+                                                                deeperInsight={entry.deeperInsight}
+                                                                supportingQuotes={entry.supportingQuotes}
                                                                 onEdit={handleEditTheme}
                                                                 onRemove={handleRemoveTheme}
                                                             />
@@ -794,8 +1105,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             {formik.errors['Themes'] && formik.touched['Themes'] && (
                                                 <p className="text-red-500 text-sm mb-2">{formik.errors['Themes']}</p>
                                             )}
-
-
                                         </div>
                                     ) : field.key === 'Objections' ? (
                                         <div>
@@ -839,6 +1148,51 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             />
                                                         </div>
                                                     </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Perception to Address"
+                                                            value={currentObjectionPerception}
+                                                            onChange={(e) => setCurrentObjectionPerception(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter perception to address"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Why It Matters"
+                                                            value={currentObjectionWhyItMatters}
+                                                            onChange={(e) => setCurrentObjectionWhyItMatters(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter why it matters"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Deeper Insight"
+                                                            value={currentObjectionDeeperInsight}
+                                                            onChange={(e) => setCurrentObjectionDeeperInsight(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter deeper insight"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Supporting Quotes"
+                                                            value={currentObjectionSupportingQuotes}
+                                                            onChange={(e) => setCurrentObjectionSupportingQuotes(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter supporting quotes"
+                                                        />
+                                                    </div>
+
                                                     <div className="flex justify-end">
                                                         <CustomButton
                                                             type="button"
@@ -860,6 +1214,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                     objection={entry.objection}
                                                                     ranking={entry.ranking}
                                                                     justification={entry.justification}
+                                                                    perception={entry.perception}
+                                                                    whyItMatters={entry.whyItMatters}
+                                                                    deeperInsight={entry.deeperInsight}
+                                                                    supportingQuotes={entry.supportingQuotes}
                                                                     onEdit={handleEditObjection}
                                                                     onRemove={handleRemoveObjection}
                                                                 />
@@ -871,9 +1229,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             {formik.errors['Objections'] && formik.touched['Objections'] && (
                                                 <p className="text-red-500 text-sm mb-2">{formik.errors['Objections']}</p>
                                             )}
-
                                         </div>
-                                    ) : field.key === 'Validations' && (
+                                    ) : field.key === 'Validations' ? (
                                         <div>
                                             <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
                                                 Validations:
@@ -904,7 +1261,20 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 placeholder="1-10"
                                                             />
                                                         </div>
+
+
                                                         <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Supporting Quotes"
+                                                                value={currentValidationSupportingQuotes}
+                                                                onChange={(e) => setCurrentValidationSupportingQuotes(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter supporting quotes"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
                                                             <CustomInput
                                                                 type="text"
                                                                 label="Justification"
@@ -914,6 +1284,37 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 placeholder="Enter justification"
                                                             />
                                                         </div>
+                                                        <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Perception to Address"
+                                                            value={currentValidationPerception}
+                                                            onChange={(e) => setCurrentValidationPerception(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter perception to address"
+                                                        />
+                                                    </div>
+    
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Why It Matters"
+                                                            value={currentValidationWhyItMatters}
+                                                            onChange={(e) => setCurrentValidationWhyItMatters(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter why it matters"
+                                                        />
+                                                    </div>
+    
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Deeper Insight"
+                                                            value={currentValidationDeeperInsight}
+                                                            onChange={(e) => setCurrentValidationDeeperInsight(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter deeper insight"
+                                                        />
                                                     </div>
                                                     <div className="flex justify-end">
                                                         <CustomButton
@@ -948,9 +1349,131 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                 <p className="text-red-500 text-sm mb-2">{formik.errors['Validations']}</p>
                                             )}
                                         </div>
-                                    )
+                                    ) : field.key === 'Challenges' && (
+                                        <div>
+                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                Challenges:
+                                            </label>
+                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <CustomSelect
+                                                            id="challenges-select"
+                                                            options={OPTIONS['Challenges'] || []}
+                                                            value={currentChallenges}
+                                                            isMulti={false}
+                                                            onChange={(value) => setCurrentChallenges(value)}
+                                                            placeholder="Select a challenge..."
+                                                            className="w-full mb-2"
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <CustomInput
+                                                                type="number"
+                                                                min="1"
+                                                                max="10"
+                                                                label="Ranking (1-10)"
+                                                                value={currentChallengesRanking}
+                                                                onChange={(e) => setCurrentChallengesRanking(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="1-10"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Justification"
+                                                                value={currentChallengesJustification}
+                                                                onChange={(e) => setCurrentChallengesJustification(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter justification"
+                                                            />
+                                                        </div>
+                                                    </div>
 
-                                    }
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Perception to Address"
+                                                            value={currentChallengesPerception}
+                                                            onChange={(e) => setCurrentChallengesPerception(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter perception to address"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Why It Matters"
+                                                            value={currentChallengesWhyItMatters}
+                                                            onChange={(e) => setCurrentChallengesWhyItMatters(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter why it matters"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Deeper Insight"
+                                                            value={currentChallengesDeeperInsight}
+                                                            onChange={(e) => setCurrentChallengesDeeperInsight(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter deeper insight"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Supporting Quotes"
+                                                            value={currentChallengesSupportingQuotes}
+                                                            onChange={(e) => setCurrentChallengesSupportingQuotes(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter supporting quotes"
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex justify-end">
+                                                        <CustomButton
+                                                            type="button"
+                                                            onClick={handleAddChallenges}
+                                                            disabled={!currentChallenges || !currentChallengesRanking || !currentChallengesJustification}
+                                                            className="flex items-center gap-1"
+                                                        >
+                                                            <PlusIcon className="h-4 w-4" />
+                                                            {challengesEditIndex !== null ? "Update Challenge" : "Add Challenge"}
+                                                        </CustomButton>
+                                                    </div>
+                                                    {challengesEntries.length > 0 && (
+                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                            <h4 className="font-medium text-sm mb-2">Added Challenges:</h4>
+                                                            {challengesEntries.map((entry, index) => (
+                                                                <ChallengesEntry
+                                                                    key={index}
+                                                                    index={index}
+                                                                    challenge={entry.challenges}
+                                                                    ranking={entry.ranking}
+                                                                    justification={entry.justification}
+                                                                    perception={entry.perception}
+                                                                    whyItMatters={entry.whyItMatters}
+                                                                    deeperInsight={entry.deeperInsight}
+                                                                    supportingQuotes={entry.supportingQuotes}
+                                                                    onEdit={handleEditChallenges}
+                                                                    onRemove={handleRemoveChallenges}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {formik.errors['Challenges'] && formik.touched['Challenges'] && (
+                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Challenges']}</p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

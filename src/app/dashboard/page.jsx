@@ -61,6 +61,7 @@ const Dashboard = () => {
     { label: "Themes", id: "Themes" },
     { label: "Validations", id: "Validations" },
     { label: "Objections", id: "Objections" },
+    { label: "Challenges", id: "Challenges" },
     { label: "Video Type", id: "Video Type" },
     { label: "Guest Title", id: "Guest Title" },
     { label: "LinkedIn Video - Extended Media", id: "LinkedIn Video - Extended Media" },
@@ -80,6 +81,7 @@ const Dashboard = () => {
     "Tags",
     "Themes",
     "Validations",
+    "Challenges",
     "Video Type"
   ];
 
@@ -90,6 +92,7 @@ const Dashboard = () => {
     { label: "Themes", key: "Themes", placeholder: "Select Themes", type: "multiselect" },
     { label: "Validations", key: "Validations", placeholder: "Select Validations", type: "multiselect" },
     { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
+    { label: "Challenges", key: "Challenges", placeholder: "Select Challenges", type: "multiselect" },
     // { label: "Ranking", key: "ranking", placeholder: "Enter Ranking (1-10)", type: "ranking" },
     // { label: "Ranking justification", key: "Ranking Justification", placeholder: "Enter Ranking Justification" },
     { label: "Text comments for the rating (OPTIONAL input from the user)", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
@@ -127,6 +130,7 @@ const Dashboard = () => {
     "Themes": [],
     "Objections": [],
     "Validations": [],
+    "Challenges": [],
     "Insights": []
   });
 
@@ -186,6 +190,18 @@ const Dashboard = () => {
       { value: "Agent Quality Trends", label: "Agent Quality Trends" },
       { value: "Are Agents Here To Stay?", label: "Are Agents Here To Stay?" },
     ],
+    "Challenges": [
+      { value: "Misalignment Between Short-Term Targets and Long-Term Value", label: "Misalignment Between Short-Term Targets and Long-Term Value" },
+      { value: "Underutilization of Voice-of-Customer Data", label: "Underutilization of Voice-of-Customer Data" },
+      { value: "Lack of Empowerment and Budget Control for CX and Support Leaders", label: "Lack of Empowerment and Budget Control for CX and Support Leaders" },
+      { value: "Inability to Deeply Understand and Adapt to the ICP", label: "Inability to Deeply Understand and Adapt to the ICP" },
+      { value: "Cultural Bias Toward Viewing Support as a Cost Center", label: "Cultural Bias Toward Viewing Support as a Cost Center" },
+      { value: "Conflicting Executive Priorities", label: "Conflicting Executive Priorities" },
+      { value: "Tagging, Taxonomy, and Feedback Classification Challenges", label: "Tagging, Taxonomy, and Feedback Classification Challenges" },
+      { value: "Generational Workforce Gaps", label: "Generational Workforce Gaps" },
+      { value: "Tool Overload and AI Misalignment", label: "Tool Overload and AI Misalignment" },
+      { value: "Organizational Dysfunction and Scaling Expertise", label: "Organizational Dysfunction and Scaling Expertise" },
+    ],
     "Insights": [
       { value: "Insight 1", label: "Insight 1" },
       { value: "Insight 2", label: "Insight 2" },
@@ -215,6 +231,7 @@ const Dashboard = () => {
         objections_json: selectedFilters["Objections"]?.length ? selectedFilters["Objections"] : null,
         validations_json: selectedFilters["Validations"]?.length ? selectedFilters["Validations"] : null,
         classifications_json: selectedFilters["Classifications"]?.length ? selectedFilters["Classifications"] : null,
+        challenges_json: selectedFilters["Challenges"]?.length ? selectedFilters["Challenges"] : null,
         from_date: fromDateISO ? fromDateISO : null,
         to_date: toDateISO ? toDateISO : null,
         current_user_id: localStorage.getItem('current_user_id'),
@@ -229,31 +246,6 @@ const Dashboard = () => {
       const formattedData = data.map(item => {
         // Convert any object fields to strings if needed
         const formattedItem = { ...item };
-
-        // Special handling for Themes field
-        // if (formattedItem.Themes) {
-        //   try {
-        //     // Parse if it's JSON string
-        //     const themes = typeof formattedItem.Themes === 'string'
-        //       ? JSON.parse(formattedItem.Themes)
-        //       : formattedItem.Themes;
-
-        //     // Convert to display format
-        //     if (Array.isArray(themes)) {
-        //       formattedItem.Themes = themes.map(theme => {
-        //         // If it's an object, extract just the theme name
-        //         if (theme && typeof theme === 'object') {
-        //           return theme.theme || '';
-        //         }
-        //         // Otherwise use as-is (string)
-        //         return theme;
-        //       }).filter(Boolean).join(', ');
-        //     }
-        //   } catch (e) {
-        //     console.log('Error formatting themes:', e);
-        //     formattedItem.Themes = ''; // Fallback
-        //   }
-        // }
         // Helper function to format array data consistently
         const formatArrayField = (fieldValue) => {
           if (!fieldValue) return '';
@@ -269,7 +261,7 @@ const Dashboard = () => {
               return items.map(item => {
                 // If it's an object, extract just the name property
                 if (item && typeof item === 'object') {
-                  return item.validation || item.objection || item.theme || '';
+                  return item.challenge || item.challenges || item.Challenges || item.validation || item.objection || item.theme || '';
                 }
                 // Otherwise use as-is (string)
                 return item;
@@ -294,9 +286,12 @@ const Dashboard = () => {
         if (formattedItem.Objections) {
           formattedItem.Objections = formatArrayField(formattedItem.Objections);
         }
+        if (formattedItem.Challenges) {
+          formattedItem.Challenges = formatArrayField(formattedItem.Challenges);
+        }
         // Handle other array fields
         arrayFields.forEach(field => {
-          if (field !== 'Themes' && field !== 'Objections' && field !== 'Validations' && formattedItem[field]) {
+          if (field !== 'Themes' && field !== 'Objections' && field !== 'Validations' && field !== 'Challenges'  && formattedItem[field]) {
             if (typeof formattedItem[field] === 'string') {
               formattedItem[field] = formattedItem[field]
                 .split(',')
@@ -305,6 +300,7 @@ const Dashboard = () => {
             }
           }
         });
+        
 
         return formattedItem;
       });
@@ -369,6 +365,7 @@ const Dashboard = () => {
         "Themes": {},
         "Objections": {},
         "Validations": {},
+        "Challenges": {},
         "Insights": {}
       };
 
@@ -377,7 +374,7 @@ const Dashboard = () => {
         if (counts[category]) {
           counts[category][value] = {
             count,
-            avg_ranking: ['Themes', 'Objections', 'Validations'].includes(category) ? avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations','Challenges'].includes(category) ? avg_ranking : null
           };
         }
       });
@@ -392,7 +389,7 @@ const Dashboard = () => {
           return {
             ...option,
             count: countData.count,
-            avg_ranking: ['Themes', 'Objections', 'Validations'].includes(filterType) ? countData.avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations','Challenges'].includes(filterType) ? countData.avg_ranking : null
 
           };
         });
@@ -516,6 +513,7 @@ const Dashboard = () => {
       "Themes": [],
       "Objections": [],
       "Validations": [],
+      "Challenges": [],
       "Insights": []
     });
     setFromDate("");

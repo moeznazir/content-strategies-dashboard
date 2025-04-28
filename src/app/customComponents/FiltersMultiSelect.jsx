@@ -5,7 +5,7 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onToggle, isOpen,
     const dropdownRef = useRef(null);
     const [dropdownWidth, setDropdownWidth] = useState('230px');
     const [hoveredOption, setHoveredOption] = useState(null);
-    const exclusiveGroups = ['Themes', 'Objections', 'Validations'];
+    const exclusiveGroups = ['Themes', 'Objections', 'Validations','Challenges'];
     const selectedExclusiveGroup = exclusiveGroups.find(group =>
         group !== field && exclusiveSelections?.[group]?.length > 0
     );
@@ -79,7 +79,7 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onToggle, isOpen,
             {isDropdownDisabled && !isOpen && (
                 <div className="absolute top-2 left-30 ml-2 mt-1 z-20 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                     You can select only one of: <br />
-                    Objections / Validations / Themes
+                    Objections / Validations / Themes / Challenges
                 </div>
             )}
 
@@ -107,14 +107,14 @@ const MultiSelectDropdown = ({ label, options, selectedValues, onToggle, isOpen,
                             {typeof option.count === 'number' && (
                                 <span className="text-xs opacity-70 whitespace-nowrap inline-flex items-center gap-1">
                                     <span>({option.count})</span>
-                                    {(field === 'Themes' || field === 'Objections' || field === 'Validations') && (
+                                    {(field === 'Themes' || field === 'Objections' || field === 'Validations' || field === 'Challenges') && (
                                         <span>({option.avg_ranking}★)</span>
                                     )}
                                 </span>
                             )}
 
                             {/* Tooltip */}
-                            {hoveredOption?.value === option.value && ['Themes', 'Objections', 'Validations'].includes(field) && (
+                            {hoveredOption?.value === option.value && ['Themes', 'Objections', 'Validations','Challenges'].includes(field) && (
                                 <div className="absolute top-full left-0 -mt-1 z-10 bg-black text-white text-xs px-1 py-1 ml-4 rounded shadow-lg whitespace-nowrap">
                                     total_count: {option.count ?? 0}, avg_ranking: {option.avg_ranking ?? 'N/A'}
                                 </div>

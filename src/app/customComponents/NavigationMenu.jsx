@@ -21,11 +21,6 @@ const NavigationMenu = () => {
     const pathname = usePathname();
     const router = useRouter();
 
-    // const storedRoles = localStorage.getItem("system_roles"); // e.g., "admin,editor"
-    // const systemRoles = storedRoles ? storedRoles.split(",") : [];
-
-    // const isAdmin = systemRoles.includes("admin") ;
-    // console.log('isAdminisAdmin',systemRoles);
 
 
     const menuItems = [
