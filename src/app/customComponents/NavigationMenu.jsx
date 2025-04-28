@@ -101,7 +101,7 @@ const NavigationMenu = () => {
                                     <Image
                                         width={150}
                                         height={150}
-                                        src="/ai-navigator-logo.gif"
+                                        src="/logo_content_stratigies.png"
                                         alt="Logo"
                                         className="h-12 w-auto"
                                     />

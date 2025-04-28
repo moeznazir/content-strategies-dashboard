@@ -300,7 +300,7 @@ const Dashboard = () => {
             }
           }
         });
-        
+
 
         return formattedItem;
       });
@@ -630,7 +630,7 @@ const Dashboard = () => {
           {/* Logo and Text */}
           <div className="mt-6 flex items-center gap-3 py-4 fixed bottom-0">
             <img
-              src="/logo_content_stratigies.png"
+              src="/ai-navigator-logo.gif"
               alt="Logo"
               className="w-10 h-10 object-contain"
             />
