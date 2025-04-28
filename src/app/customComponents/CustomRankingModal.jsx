@@ -6,7 +6,7 @@ const RankingModal = ({ data, onClose }) => {
     // Determine the data type based on the first item's properties
     const dataType = data.length > 0
         ? Object.keys(data[0]).find(key =>
-            ['theme', 'validation', 'objection'].includes(key)
+            ['theme', 'validation', 'objection', 'challenges'].includes(key)
         )
         : null;
 
@@ -15,6 +15,7 @@ const RankingModal = ({ data, onClose }) => {
             case 'theme': return 'Theme Details';
             case 'validation': return 'Validation Details';
             case 'objection': return 'Objection Details';
+            case 'challenges': return 'Challenge Details';
             default: return 'Details';
         }
     };
@@ -24,10 +25,11 @@ const RankingModal = ({ data, onClose }) => {
             case 'theme': return 'Theme';
             case 'validation': return 'Validation';
             case 'objection': return 'Objection';
+            case 'challenges': return 'Challenge';
             default: return 'Item';
         }
     };
-
+console.log("dataaaaaa",data);
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center">
             <div
@@ -35,7 +37,7 @@ const RankingModal = ({ data, onClose }) => {
                 style={{
                     backgroundColor: appColors.primaryColor,
                     color: appColors.textColor,
-                    maxHeight: '70vh'
+                    maxHeight: '80vh' 
                 }}
             >
                 <div className="flex justify-between items-center mb-4">
@@ -48,36 +50,62 @@ const RankingModal = ({ data, onClose }) => {
                     </button>
                 </div>
                 <hr className="border-b border-gray-500 mb-6 -mt-[6px] -mx-6" />
-                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2">
                     {data.length > 0 ? (
                         data.map((item, index) => (
                             <div
                                 key={index}
-                                className="border rounded-lg p-4"
+                                className="border rounded-lg p-4 mb-4"
                                 style={{ backgroundColor: appColors.primaryColor }}
                             >
-                                <p>
-                                    <span className="font-semibold">{getFieldLabel()}: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {item[dataType] || `No ${dataType} selected`}
-                                    </span>
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Ranking: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {item.ranking || "N/A"}
-                                    </span>
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Justification: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {item.justification || "No justification available"}
-                                    </span>
-                                </p>
+                                <div className="grid grid-cols-1 gap-2">
+                                    <p>
+                                        <span className="font-semibold">{getFieldLabel()}: </span>
+                                        <span className='text-gray-400 text-sm'>
+                                            {item[dataType] || `No ${dataType} selected`}
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Ranking: </span>
+                                        <span className='text-gray-400 text-sm'>
+                                            {item.ranking || "N/A"}
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Justification: </span>
+                                        <span className='text-gray-400 text-sm'>
+                                            {item.justification || "No justification available"}
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Perception to Address: </span>
+                                        <span className='text-gray-400 text-sm'>
+                                            {item.perceptionToAddress || "Not specified"}
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Why It Matters: </span>
+                                        <span className='text-gray-400 text-sm'>
+                                            {item.whyItMatters || "Not specified"}
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Deeper Insight: </span>
+                                        <span className='text-gray-400 text-sm'>
+                                            {item.deeperInsight || "Not specified"}
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Supporting Quotes: </span>
+                                        <span className='text-gray-400 text-sm'>
+                                            {item.supportingQuotes || "None provided"}
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
                         ))
                     ) : (
-                        <p>No data available</p>
+                        <p className="text-center py-4">No data available</p>
                     )}
                 </div>
 

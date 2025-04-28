@@ -14,7 +14,8 @@ const Modal = ({ data, onClose }) => {
         "Classifications",
         "Themes",
         "Objections",
-        "Validations"
+        "Validations",
+        "Challenges"
     ];
 
     const filteredData = Object.entries(data).filter(

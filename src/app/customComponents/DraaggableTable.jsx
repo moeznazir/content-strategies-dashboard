@@ -37,7 +37,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
 
     const shouldResizeColumn = (columnId) => {
         // Disable separator for these specific columns
-        return !['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
+        return !['Guest Industry', 'Objections', 'Challenges', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
     };
 
     return (
@@ -101,6 +101,7 @@ const DraggableTable = ({
     const [selectedThemes, setSelectedThemes] = useState(null);
     const [selectedObjections, setSelectedObjections] = useState(null);
     const [selectedValidations, setSelectedValidations] = useState(null);
+    const [selectedChallenges, setSelectedChallenges] = useState(null);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
 
@@ -120,18 +121,27 @@ const DraggableTable = ({
                     return {
                         theme: theme.theme || '',
                         ranking: theme.ranking || 0,
-                        justification: theme.justification || ''
+                        justification: theme.justification || '',
+                        perceptionToAddress: theme.perception || '',
+                        whyItMatters: theme.whyItMatters || '',
+                        deeperInsight: theme.deeperInsight || '',
+                        supportingQuotes: theme.supportingQuotes || ''
                     };
                 }
                 return {
                     theme: theme || '',
                     ranking: 0,
-                    justification: ''
+                    justification: '',
+                    perceptionToAddress: '',
+                    whyItMatters: '',
+                    deeperInsight: '',
+                    supportingQuotes: ''
                 };
             });
         }
         return [];
     };
+
     const normalizeObjections = (rowId) => {
         const ObjectionData = themesRank.find(item => item.id === rowId)?.Objections;
         if (!ObjectionData) return [];
@@ -142,18 +152,27 @@ const DraggableTable = ({
                     return {
                         objection: objection.objection || '',
                         ranking: objection.ranking || 0,
-                        justification: objection.justification || ''
+                        justification: objection.justification || '',
+                        perceptionToAddress: objection.perception || '',
+                        whyItMatters: objection.whyItMatters || '',
+                        deeperInsight: objection.deeperInsight || '',
+                        supportingQuotes: objection.supportingQuotes || ''
                     };
                 }
                 return {
                     objection: objection || '',
                     ranking: 0,
-                    justification: ''
+                    justification: '',
+                    perceptionToAddress: '',
+                    whyItMatters: '',
+                    deeperInsight: '',
+                    supportingQuotes: ''
                 };
             });
         }
         return [];
     };
+
     const normalizeValidations = (rowId) => {
         const ValidationData = themesRank.find(item => item.id === rowId)?.Validations;
         if (!ValidationData) return [];
@@ -164,13 +183,52 @@ const DraggableTable = ({
                     return {
                         validation: validation.validation || '',
                         ranking: validation.ranking || 0,
-                        justification: validation.justification || ''
+                        justification: validation.justification || '',
+                        perceptionToAddress: validation.perception || '',
+                        whyItMatters: validation.whyItMatters || '',
+                        deeperInsight: validation.deeperInsight || '',
+                        supportingQuotes: validation.supportingQuotes || ''
                     };
                 }
                 return {
                     validation: validation || '',
                     ranking: 0,
-                    justification: ''
+                    justification: '',
+                    perceptionToAddress: '',
+                    whyItMatters: '',
+                    deeperInsight: '',
+                    supportingQuotes: ''
+                };
+            });
+        }
+        return [];
+    };
+
+    const normalizeChallenges = (rowId) => {
+        const ChallengesData = themesRank.find(item => item.id === rowId)?.Challenges;
+        if (!ChallengesData) return [];
+
+        if (Array.isArray(ChallengesData)) {
+            return ChallengesData.map(challenge => {
+                if (typeof challenge === 'object') {
+                    return {
+                        challenges: challenge.challenges || '',
+                        ranking: challenge.ranking || 0,
+                        justification: challenge.justification || '',
+                        perceptionToAddress: challenge.perception || '',
+                        whyItMatters: challenge.whyItMatters || '',
+                        deeperInsight: challenge.deeperInsight || '',
+                        supportingQuotes: challenge.supportingQuotes || ''
+                    };
+                }
+                return {
+                    challenges: challenge || '',
+                    ranking: 0,
+                    justification: '',
+                    perceptionToAddress: '',
+                    whyItMatters: '',
+                    deeperInsight: '',
+                    supportingQuotes: ''
                 };
             });
         }
@@ -243,7 +301,7 @@ const DraggableTable = ({
                                             key={column.id}
                                             className={`
                                        px-6 py-1 text-sm divide-y divide-gray-600 whitespace-nowrap
-                                       ${['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Video Type'].includes(column.label)
+                                       ${['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Video Type'].includes(column.label)
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
@@ -423,6 +481,48 @@ const DraggableTable = ({
                                                 //             </span>
                                                 //         ))}
                                                 //     </div>
+                                            ) : column.id === "Challenges" ? (
+                                                <div
+                                                    className="flex  gap-1 cursor-pointer"
+                                                    onClick={() => {
+                                                        const challengesData = normalizeChallenges(row.id);
+                                                        if (challengesData.length > 0) {
+                                                            setSelectedChallenges(challengesData);
+                                                        }
+                                                    }}
+                                                >
+                                                    {normalizeChallenges(row.id)
+                                                        .filter(challengesObj => {
+                                                            if (!challengesObj) return false;
+                                                            const challengesStr = String(challengesObj.challenges).toLowerCase().trim();
+                                                            return challengesStr !== 'nan' && challengesStr !== '[]' && challengesStr !== '';
+                                                        })
+                                                        .map((challengesObj, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                            >
+                                                                {challengesObj.challenges}
+                                                                {/* {themeObj.ranking > 0 && (
+                                                                    <span className="ml-1 text-xs">({themeObj.ranking})</span>
+                                                                )} */}
+                                                            </span>
+                                                        ))}
+                                                </div>
+                                                //  column.id === "Themes" ? (
+                                                //     <div className="flex  gap-1">
+                                                //         {normalizeThemes(row.id).filter((item) => item && item !== "nan" && item !== "[]").map((themeObj, idx) => (
+                                                //             <span
+                                                //                 key={idx}
+                                                //                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                //             >
+                                                //                 {themeObj.theme}
+                                                //                 {/* {themeObj.ranking > 0 && (
+                                                //                     <span className="ml-1 text-xs">({themeObj.ranking})</span>
+                                                //                 )} */}
+                                                //             </span>
+                                                //         ))}
+                                                //     </div>
                                             ) : column.id === "Likes" ? (
                                                 <LikeButton user_name={row?.Guest} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
                                             ) : column.id === "Comments" ? (
@@ -477,7 +577,7 @@ const DraggableTable = ({
                         {hasMoreRecords && !loading && (
                             <tr className="hover:bg-white/10 scroll-hidden">
                                 <td
-                                    colSpan={columns.length + 1} 
+                                    colSpan={columns.length + 1}
                                     className="relative py-3 text-center cursor-pointer"
                                     onClick={onLoadMore}
                                 >
@@ -530,6 +630,12 @@ const DraggableTable = ({
                 <RankingModal
                     data={selectedObjections}
                     onClose={() => setSelectedObjections(null)}
+                />
+            )}
+            {selectedChallenges && (
+                <RankingModal
+                    data={selectedChallenges}
+                    onClose={() => setSelectedChallenges(null)}
                 />
             )}
         </DndProvider>
