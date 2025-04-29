@@ -14,6 +14,8 @@ const ResetPassword = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
     const handleResetPassword = async (e) => {
         e.preventDefault();
@@ -26,7 +28,7 @@ const ResetPassword = () => {
 
         setLoading(true);
         try {
-            const response = await updatePassword(password); 
+            const response = await updatePassword(password);
             if (response.error) throw new Error(response.error);
             setSuccessMessage("Password updated! Redirecting to sign in...");
             setTimeout(() => {
@@ -41,25 +43,26 @@ const ResetPassword = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen " style={{ color: appColors.textHeadingColor }}>
-            <div className="bg-white p-8 rounded-2xl shadow-lg w-96">
+            <div className="bg-white p-8 rounded-2xl shadow-lg w-96" >
                 <h2 className="text-2xl font-bold text-center mb-4">
                     <span className="border-l-4 border-[#1a1b41] pl-2">Reset Password</span>
                 </h2>
 
 
                 <form onSubmit={handleResetPassword}>
+                    <label className="block text-sm text-[#1a1b41] font-bold mb-1" >New Password</label>
                     <CustomInput
-                        label="New Password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="Enter new password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full mb-2"
+                        labelClassName="text-[#1a1b41]"
                         disabled={loading}
                     />
+                    <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Confirm Password</label>
                     <CustomInput
-                        label="Confirm Password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="Confirm new password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -67,7 +70,14 @@ const ResetPassword = () => {
                         disabled={loading}
                     />
                     {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
-                {successMessage && <p className="text-green-500 text-sm text-center mb-4">{successMessage}</p>}
+                    {successMessage && <p className="text-green-500 text-sm text-center mb-4">{successMessage}</p>}
+                    <div className="text-sm mb-2">
+                        <label className="flex items-center space-x-2">
+                            <input type="checkbox" onChange={togglePasswordVisibility} />
+                            <span>Show password</span>
+                        </label>
+                    </div>
+
                     <CustomButton
                         title={loading ? "Updating..." : "Update Password"}
                         className="w-full bg-[#1a1b41] hover:bg-gray-600 text-white font-bold py-2 rounded-md transition mb-4 mt-4"

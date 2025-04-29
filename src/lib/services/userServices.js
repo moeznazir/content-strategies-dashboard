@@ -45,7 +45,7 @@ export const loginUser = async (loginData) => {
             .select("company_id")
             .eq("id", userId)
             .single();
-            console.log("Logged in user profile:", profile);
+        console.log("Logged in user profile:", profile);
         if (profileError) {
             // console.log("Failed to fetch profile:", profileError.message);
             return { error: "Login succeeded, but failed to fetch company info." };
@@ -70,8 +70,9 @@ export const loginUser = async (loginData) => {
 
 export const signUpUser = async (signUpData) => {
     try {
-
         const systemRoles = ["end-user"];
+
+        // Step 1: Sign up the user
         const { data, error } = await supabase.auth.signUp({
             email: signUpData.email,
             password: signUpData.password,
@@ -85,12 +86,24 @@ export const signUpUser = async (signUpData) => {
 
         if (error) throw error;
 
-        return data;
+        const userId = data?.user?.id;
+        if (!userId) throw new Error("User ID not returned during signup.");
+        const { error: profileError } = await supabase
+            .from("profiles")
+            .insert([
+                {
+                    id: userId,
+                    company_id: 1
+                },
+            ]);
+
+        if (profileError) throw profileError;
+
+        return { user: data.user };
     } catch (error) {
         return { error: error.message };
     }
 };
-
 
 export const resetPasswordLink = async (email) => {
     try {
