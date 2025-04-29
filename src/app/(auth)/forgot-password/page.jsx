@@ -45,8 +45,8 @@ const ForgotPassword = () => {
           <span className="border-l-4 border-[#1a1b41] pl-2">Forgot Password</span>
         </h2>
         <form onSubmit={handleForgotPassword}>
+          <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Email</label>
           <CustomInput
-            label="Email"
             type="email"
             placeholder="Enter your email"
             value={email}

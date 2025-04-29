@@ -18,7 +18,7 @@ const SignInPage = () => {
     const [error, setError] = useState("");
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
-    const [successMessage, setSuccessMessage] = useState(""); 
+    const [successMessage, setSuccessMessage] = useState("");
 
     const handleSignIn = async (e) => {
         e.preventDefault();
@@ -51,9 +51,9 @@ const SignInPage = () => {
             if (response.error) {
                 setError(response.error || "Login failed. Please try again.");
             } else {
-                setSuccessMessage("Login successful! Redirecting...");  
+                setSuccessMessage("Login successful! Redirecting...");
                 setTimeout(() => {
-                    router.push("/dashboard");  
+                    router.push("/dashboard");
                 }, 2000);
             }
         } catch (err) {
@@ -76,8 +76,8 @@ const SignInPage = () => {
                 {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
 
                 <form onSubmit={handleSignIn} >
+                    <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Email</label>
                     <CustomInput
-                        label="Email"
                         type="email"
                         placeholder="Enter your email"
                         value={email}
@@ -86,9 +86,8 @@ const SignInPage = () => {
                         disabled={loading}
                     />
                     {emailError && <p className="text-red-500 text-sm mb-2 mt-0">{emailError}</p>}
-
+                    <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Password</label>
                     <CustomInput
-                        label="Password"
                         type="password"
                         placeholder="Enter your password"
                         value={password}

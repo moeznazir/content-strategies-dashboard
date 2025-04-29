@@ -53,14 +53,14 @@ const Signup = () => {
         password,
         title_roles: selectedTitles.map((title) => title),
       };
-    
+
       const response = await signUpUser(signUpData, email);
-    
+
       if (response.error) {
         setServerError(response.error);
       } else {
         const user = response.user;
-    
+
         if (user?.user_metadata?.email_verified === undefined) {
           setServerError("This email is already registered and verified. Try signing in.");
         } else {
@@ -78,18 +78,17 @@ const Signup = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen" style={{ color: appColors.textHeadingColor }}>
-     <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-100">
+      <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-100">
         <form onSubmit={handleSignUp}>
           <h2 className="text-2xl font-bold text-center mb-4">
             <span className="border-l-4 border-[#1a1b41] pl-2">Content Strategies</span>
           </h2>
           <p className="text-center  mb-4 w-[100%]">
-          Sign Up For A WOW24-7 Podcast Database
+            Sign Up For A WOW24-7 Podcast Database
           </p>
-
+          <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Select Titles</label>
           <CustomSelect
             id="titles"
-            title="Select Titles"
             value={selectedTitles}
             onChange={setSelectedTitles}
             placeholder="Select Titles"
@@ -105,9 +104,8 @@ const Signup = () => {
             className="w-full mb-2 "
           />
           {titleError && <p className="text-red-500 text-sm mt-0 mb-3">{titleError}</p>}
-
+          <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Email</label>
           <CustomInput
-            label="Email"
             type="email"
             placeholder="Enter your email"
             value={email}
@@ -116,9 +114,8 @@ const Signup = () => {
             disabled={loading}
           />
           {emailError && <p className="text-red-500 text-sm mt-0 mb-2">{emailError}</p>}
-
+          <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Password</label>
           <CustomInput
-            label="Password"
             type="password"
             placeholder="Enter your password"
             value={password}
