@@ -45,7 +45,7 @@ const Dashboard = () => {
     // { label: "Ranking Justification", id: "Ranking Justification" },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
-    { label: "Main Comment", id: "Text comments for the rating (OPTIONAL input from the user)" },
+    { label: "Top Three Takeaways", id: "Text comments for the rating (OPTIONAL input from the user)" },
     { label: "Video Description", id: "Video Description" },
     { label: "Transcript", id: "Transcript" },
     { label: "Article - Extended Media", id: "Article - Extended Media" },
@@ -95,7 +95,7 @@ const Dashboard = () => {
     { label: "Challenges", key: "Challenges", placeholder: "Select Challenges", type: "multiselect" },
     // { label: "Ranking", key: "ranking", placeholder: "Enter Ranking (1-10)", type: "ranking" },
     // { label: "Ranking justification", key: "Ranking Justification", placeholder: "Enter Ranking Justification" },
-    { label: "Text comments for the rating (OPTIONAL input from the user)", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
+    { label: "Top Three Takeaways", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Video Description", key: "Video Description", placeholder: "Enter Video Description" },
     { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
     { label: "Quote", key: "Quote", placeholder: "Enter Quote" },
@@ -155,40 +155,44 @@ const Dashboard = () => {
       { value: "Private", label: "Private", count: 0 },
     ],
     "Themes": [
-      { value: "Agent Trends & Impact", label: "Agent Trends & Impact" },
-      { value: "BPO Services", label: "BPO Services" },
-      { value: "Cost Center vs. Value Centers", label: "Cost Center vs. Value Centers" },
-      { value: "Culture/Career Progression", label: "Culture/Career Progression" },
-      { value: "Impact: Contact Center Insights", label: "Impact: Contact Center Insights" },
-      { value: "Importance of the Agent", label: "Importance of the Agent" },
-      { value: "Insights & Strategy Contributions", label: "Insights & Strategy Contributions" },
-      { value: "KPI Trends", label: "KPI Trends" },
-      { value: "Revenue & Growth", label: "Revenue & Growth" },
-      { value: "The Role of AI", label: "The Role of AI" },
-      { value: "Trigger: Expanding Markets", label: "Trigger: Expanding Markets" },
-      { value: "The Role of Data", label: "The Role of Data" },
-      { value: "CX as the New Competitive Advantage", label: "CX as the New Competitive Advantage" },
-      { value: "Contact Center's Role in Driving Revenue & Growth", label: "Contact Center's Role in Driving Revenue & Growth" },
-      { value: "Customer Experience (CX) as a Competitive Advantage", label: "Customer Experience (CX) as a Competitive Advantage" },
-      { value: "Cost Center vs. Value Center Perceptions", label: "Cost Center vs. Value Center Perceptions" }
+      // { value: "Contact Center Industry", label: "Contact Center Industry" },
+      // { value: "BPO Partnership", label: "BPO Partnership" },
+      // { value: "Podcast Guests", label: "Podcast Guests" },
+      { value: "Positioning Contact Centers as Strategic Growth Drivers (Contact Center Industry)", label: "Positioning Contact Centers as Strategic Growth Drivers (Contact Center Industry)" },
+      { value: "Transforming Contact Centers into Experience-Driven Hubs (Contact Center Industry)", label: "Transforming Contact Centers into Experience-Driven Hubs (Contact Center Industry)" },
+      { value: "Harnessing AI to Elevate Customer Experience (Contact Center Industry)", label: "Harnessing AI to Elevate Customer Experience (Contact Center Industry)" },
+      { value: "Retaining Talent to Reduce Turnover and Improve CX (Contact Center Industry)", label: "Retaining Talent to Reduce Turnover and Improve CX (Contact Center Industry)" },
+      { value: "Building Culture and Brand Alignment Inside the Contact Center (Contact Center Industry)", label: "Building Culture and Brand Alignment Inside the Contact Center (Contact Center Industry)" },
+      { value: "Treating BPOs as Strategic Growth Partners, Not Just Vendors  (BPO Partnership)", label: "Treating BPOs as Strategic Growth Partners, Not Just Vendors  (BPO Partnership)" },
+      { value: "Reimagining Outsourcing for Customer-Centric Service (BPO Partnership)", label: "Reimagining Outsourcing for Customer-Centric Service (BPO Partnership)" },
+      { value: "Embedding AI into BPO Operations for Smarter Support (BPO Partnership)", label: "Embedding AI into BPO Operations for Smarter Support (BPO Partnership)" },
+      { value: "Aligning Outsourcing KPIs with Revenue and Innovation (BPO Partnership)", label: "Aligning Outsourcing KPIs with Revenue and Innovation (BPO Partnership)" },
+      { value: "Joint Talent Management to Elevate BPO Service Quality (BPO Partnership)", label: "Joint Talent Management to Elevate BPO Service Quality (BPO Partnership)" },
+      { value: "Redefining Contact Centers as Value Creation Engines (Podcast Guests)", label: "Redefining Contact Centers as Value Creation Engines (Podcast Guests)" },
+      { value: "Shifting from Reactive to Proactive Customer Engagement (Podcast Guests)", label: "Shifting from Reactive to Proactive Customer Engagement (Podcast Guests)" },
+      { value: "Customer Experience as the New Competitive Advantage (Podcast Guests)", label: "Customer Experience as the New Competitive Advantage (Podcast Guests)" },
+      { value: "Linking Agent Experience Directly to Customer Loyalty (Podcast Guests)", label: "Linking Agent Experience Directly to Customer Loyalty (Podcast Guests)" },
+      { value: "Using AI to Empower Agents, Not Replace Them (Podcast Guests)", label: "Using AI to Empower Agents, Not Replace Them (Podcast Guests)" },
     ],
     "Objections": [
-      { value: "Maintaining Quality", label: "Maintaining Quality" },
-      { value: "BPO Value Perceptions", label: "BPO Value Perceptions" },
-      { value: "Mitigating Risk", label: "Mitigating Risk" }
+      { value: "Cost vs. Value Perception", label: "Cost vs. Value Perception" },
+      { value: "Brand Representation and Quality Control", label: "Brand Representation and Quality Control" },
+      { value: "Fear of Losing Operational Control", label: "Fear of Losing Operational Control" },
+      { value: "Integration and Ramp-Up Complexity", label: "Integration and Ramp-Up Complexity" },
+      { value: "Lack of Industry-Specific Expertise", label: "Lack of Industry-Specific Expertise" },
+      { value: "Technology Gaps and Legacy Limitations", label: "Technology Gaps and Legacy Limitations" },
+      { value: "Transparency and Performance Accountabilitys", label: "Transparency and Performance Accountabilitys" },
+      { value: "Previous Negative Outsourcing Experience", label: "Previous Negative Outsourcing Experience" },
+      { value: "Internal Resistance to Change", label: "Internal Resistance to Change" },
     ],
     "Validations": [
-      { value: "Cross-Department Integration", label: "Cross-Department Integration" },
-      { value: "Impact on Revenue & Growth", label: "Impact on Revenue & Growth" },
-      { value: "Insights influencing Company Growth", label: "Insights Influencing Company Growth" },
-      { value: "Agent Turnover Impact", label: "Agent Turnover Impact" },
-      { value: "BPO Success Strategies", label: "BPO Success Strategies" },
-      { value: "Contact Centers as Growth Drivers", label: "Contact Centers as Growth Drivers" },
-      { value: "Role as Consultant/Partner", label: "Role as Consultant/Partner" },
-      { value: "Importance of the Agent", label: "Importance of the Agent" },
-      { value: "The Importance of Culture", label: "The Importance of Culture" },
-      { value: "Agent Quality Trends", label: "Agent Quality Trends" },
-      { value: "Are Agents Here To Stay?", label: "Are Agents Here To Stay?" },
+      { value: "Transform Cost Centers into Strategic Experience Centers", label: "Transform Cost Centers into Strategic Experience Centers" },
+      { value: "Every Interaction is a Revenue Opportunity", label: "Every Interaction is a Revenue Opportunity" },
+      { value: "Operationalizing Revenue From Every Interaction", label: "Operationalizing Revenue From Every Interaction" },
+      { value: "Customized AI Strategy Empowering Actionable Insights Through Tailored Technology", label: "Customized AI Strategy Empowering Actionable Insights Through Tailored Technology" },
+      { value: "Seamless Integration as an Extension of Your Team", label: "Seamless Integration as an Extension of Your Team" },
+      { value: "Proven Tangible Results and Measurable Success", label: "Proven Tangible Results and Measurable Success" },
+      { value: "Empowering Executives to Become Strategic Business Partners", label: "Role as Consultant/Partner" },
     ],
     "Challenges": [
       { value: "Misalignment Between Short-Term Targets and Long-Term Value", label: "Misalignment Between Short-Term Targets and Long-Term Value" },
@@ -291,7 +295,7 @@ const Dashboard = () => {
         }
         // Handle other array fields
         arrayFields.forEach(field => {
-          if (field !== 'Themes' && field !== 'Objections' && field !== 'Validations' && field !== 'Challenges'  && formattedItem[field]) {
+          if (field !== 'Themes' && field !== 'Objections' && field !== 'Validations' && field !== 'Challenges' && formattedItem[field]) {
             if (typeof formattedItem[field] === 'string') {
               formattedItem[field] = formattedItem[field]
                 .split(',')
@@ -374,7 +378,7 @@ const Dashboard = () => {
         if (counts[category]) {
           counts[category][value] = {
             count,
-            avg_ranking: ['Themes', 'Objections', 'Validations','Challenges'].includes(category) ? avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges'].includes(category) ? avg_ranking : null
           };
         }
       });
@@ -389,7 +393,7 @@ const Dashboard = () => {
           return {
             ...option,
             count: countData.count,
-            avg_ranking: ['Themes', 'Objections', 'Validations','Challenges'].includes(filterType) ? countData.avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges'].includes(filterType) ? countData.avg_ranking : null
 
           };
         });

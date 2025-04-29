@@ -44,7 +44,7 @@ const Modal = ({ data, onClose }) => {
 
     const getDisplayName = (key) => {
         const nameMap = {
-            "Text comments for the rating (OPTIONAL input from the user)": "Rating Comment",
+            "Text comments for the rating (OPTIONAL input from the user)": "Top Three Takeaways",
             // "ranking": "Ranking",
             "Episode_Number": "Episode #",
             "Video_ID": "Video ID"
@@ -105,7 +105,7 @@ const Modal = ({ data, onClose }) => {
                 style={{ backgroundColor: appColors.primaryColor }}>
 
                 {/* Header */}
-                <div className="sticky top-0 py-2 flex justify-between items-center border rounded p-2 z-10">
+                <div className="sticky top-0 py-2 flex justify-between items-center border rounded p-2 z-10" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
                     <h2 className="text-lg font-bold">Content Details</h2>
                     <button onClick={onClose} className="text-red-500">
                         <FaTimes size={18} />
@@ -136,7 +136,7 @@ const Modal = ({ data, onClose }) => {
                             <div key={key} className="w-full">
                                 {/* Field Label */}
                                 <div className="flex justify-between items-center mb-2">
-                                    <label className="text-sm font-semibold text-gray-600">
+                                    <label className="text-sm font-semibold text-gray-600" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
                                         {displayName}
                                     </label>
                                     {copiedField === displayName && (
