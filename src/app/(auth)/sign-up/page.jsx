@@ -19,7 +19,8 @@ const Signup = () => {
   const [passwordError, setPasswordError] = useState("");
   const [serverError, setServerError] = useState("");
   const [titleError, setTitleError] = useState("");
-
+  const [showPassword, setShowPassword] = useState(false);
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
   const handleSignUp = async (e) => {
 
     e.preventDefault();
@@ -55,7 +56,7 @@ const Signup = () => {
       };
 
       const response = await signUpUser(signUpData, email);
-
+      console.log("responseresponse", response);
       if (response.error) {
         setServerError(response.error);
       } else {
@@ -116,13 +117,19 @@ const Signup = () => {
           {emailError && <p className="text-red-500 text-sm mt-0 mb-2">{emailError}</p>}
           <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Password</label>
           <CustomInput
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className={`w-full ${passwordError ? "border-red-500" : ""} mb-1 `}
             disabled={loading}
           />
+          <div className="text-sm mb-2">
+            <label className="flex items-center space-x-2">
+              <input type="checkbox" onChange={togglePasswordVisibility} />
+              <span>Show password</span>
+            </label>
+          </div>
           {passwordError && <p className="text-red-500 text-sm mb-6 mt-2">{passwordError}</p>}
           {emailSentMessage && <p className="text-green-500 text-sm text-center mb-0">{emailSentMessage}</p>}
 

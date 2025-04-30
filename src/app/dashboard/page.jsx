@@ -536,8 +536,7 @@ const Dashboard = () => {
         <div className="p-0 w-full">
           {/* Search Bar Section */}
           <div className="mx-auto -mt-2">
-            <h1 className="text-2xl font-bold mt-6 mb-4">The Contact Center Perspectives Podcast</h1>
-
+            <h1 className="text-2xl font-bold mt-4 mb-2">The Contact Center Perspectives Podcast</h1>
             {/* Search Bar with Clear Button */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               {/* Left-aligned search group */}
@@ -604,7 +603,66 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
       </div>
+      {/* Selected Filters Section - Fixed and Scrollable */}
+      {(searchText || dateSearchApplied || Object.values(selectedFilters).some(arr => arr.length > 0)) && (
+        <div className="sticky top-0 z-10 max-w-[calc(100%-3rem)] ml-6 border rounded-full bg-white/10 py-2 px-8 mb-3">
+          <div className="flex items-center w-full max-w-[calc(100vw-8rem)] mx-auto">
+            <span className="text-gray-200 font-medium whitespace-nowrap mr-2 -ml-2">Applied Filters:</span>
+            <div className="flex-1 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+              {/* Search text filter */}
+              {searchText && (
+                <div className="flex-shrink-0 flex items-center gap-1 bg-[#1a1b41] rounded-full px-3 py-1">
+                  <span className="text-white whitespace-nowrap">Search: "{searchText}"</span>
+                  <button
+                    onClick={() => setSearchText("")}
+                    className="text-gray-300 hover:text-white"
+                  >
+                    <FaTimes className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
+              {/* Date filter */}
+              {dateSearchApplied && (
+                <div className="flex-shrink-0 flex items-center gap-1 bg-[#1a1b41] rounded-full px-3 py-1">
+                  <span className="text-white text-sm whitespace-nowrap">
+                    Date: {fromDate} to {toDate}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setFromDate("");
+                      setToDate("");
+                      setDateSearchApplied(false);
+                    }}
+                    className="text-gray-300 hover:text-white"
+                  >
+                    <FaTimes className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
+              {/* Dynamic filters */}
+              {Object.entries(selectedFilters).map(([filterType, values]) => (
+                values.length > 0 && (
+                  <div key={filterType} className="flex-shrink-0 flex items-center gap-1 bg-[#1a1b41] rounded-full px-3 py-1">
+                    <span className="text-white text-sm whitespace-nowrap capitalize">
+                      {filterType}: {values.join(", ")}
+                    </span>
+                    <button
+                      onClick={() => handleFilterSelect(filterType, [])}
+                      className="text-gray-300 hover:text-white"
+                    >
+                      <FaTimes className="w-3 h-3" />
+                    </button>
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <hr className="border-gray-500 mb-6 mt-[10px] -mx-12" />
 
       {/* Filter Section */}
@@ -638,16 +696,15 @@ const Dashboard = () => {
               alt="Logo"
               className="w-10 h-10 object-contain"
             />
-            <span className="text-sm font-semibold text-gray-700">
+            <span className="text-sm font-semibold text-gray-400">
               Content Strategies
             </span>
           </div>
         </aside>
 
-        <div className="hidden md:block max-h-full overflow-y-hidden w-px bg-gray-600 mx-4 ml-6 -mt-6"></div>
-
+        <div className="hidden md:block verflow-y-hidden w-px fixed h-[calc(100vh-6rem)] w-px bg-gray-600 left-[295px] -mt-6 "></div>
         {/* Table */}
-        <main className="flex-1 px-6 overflow-x-auto">
+        <main className="flex-1 px-6 overflow-x-auto ml-9">
           <div className="overflow-x-auto">
             <DraggableTable
               columns={columns}
@@ -666,7 +723,7 @@ const Dashboard = () => {
           </div>
 
           {/* Pagination Controls */}
-          <div className="flex items-center justify-between mt-4 px-4 py-2 sm:px-6">
+          <div className="flex items-center justify-between mt-0 px-4 py-2 sm:px-6">
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <span className="text-[#6c757d] text-sm font-sm flex items-center gap-1">
                 Showing
