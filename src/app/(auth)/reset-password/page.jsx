@@ -69,14 +69,15 @@ const ResetPassword = () => {
                         className="w-full mb-2"
                         disabled={loading}
                     />
-                    {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
-                    {successMessage && <p className="text-green-500 text-sm text-center mb-4">{successMessage}</p>}
-                    <div className="text-sm mb-2">
+                     <div className="text-sm mb-2">
                         <label className="flex items-center space-x-2">
                             <input type="checkbox" onChange={togglePasswordVisibility} />
                             <span>Show password</span>
                         </label>
                     </div>
+                    {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+                    {successMessage && <p className="text-green-500 text-sm text-center mb-4">{successMessage}</p>}
+                   
 
                     <CustomButton
                         title={loading ? "Updating..." : "Update Password"}

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from './adminServices';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -104,6 +105,7 @@ export const signUpUser = async (signUpData) => {
         return { error: error.message };
     }
 };
+
 
 export const resetPasswordLink = async (email) => {
     try {

@@ -19,6 +19,8 @@ const SignInPage = () => {
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
     const handleSignIn = async (e) => {
         e.preventDefault();
@@ -88,14 +90,19 @@ const SignInPage = () => {
                     {emailError && <p className="text-red-500 text-sm mb-2 mt-0">{emailError}</p>}
                     <label className="block text-sm text-[#1a1b41] font-bold mb-1" >Password</label>
                     <CustomInput
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className={`w-full ${passwordError ? "border-red-500" : ""} mb-2`}
                         disabled={loading}
                     />
-
+                    <div className="text-sm mb-2">
+                        <label className="flex items-center space-x-2">
+                            <input type="checkbox" onChange={togglePasswordVisibility} />
+                            <span>Show password</span>
+                        </label>
+                    </div>
 
                     {passwordError && <p className="text-red-500 text-sm mb-0 mt-0">{passwordError}</p>}
                     <div className="w-full flex justify-end mt-0 underline">
