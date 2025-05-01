@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { supabaseAdmin } from './adminServices';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -7,25 +6,6 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-// const supabaseAdmin = createClient(
-//     process.env.NEXT_PUBLIC_API_URL,
-//     process.env.SUPABASE_SERVICE_ROLE_KEY
-// );
-
-// export const getAllUsers = async () => {
-//     try {
-//         // Fetch all users from Supabase
-//         const { data, error } = await supabaseAdmin.auth.admin.listUsers();
-
-//         if (error) {
-//             return { error: error.message };
-//         }
-//         console.log("admin", data);
-//         return { users: data.users }; // Return the clean users list
-//     } catch (error) {
-//         return { error: error.message };
-//     }
-// };
 export const loginUser = async (loginData) => {
     try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -35,24 +15,22 @@ export const loginUser = async (loginData) => {
         if (error) return { error: "Invalid email or password." };
         const userId = data?.user?.id;
         const system_roles = data?.user?.user_metadata?.system_roles;
-        localStorage.setItem("token", data.session.access_token);
-        localStorage.setItem("email", loginData.email);
-        localStorage.setItem("current_user_id", userId);
-        localStorage.setItem("system_roles", system_roles);
         console.log("dataaaaaa", data);
         // 👉 Fetch the user's profile
         const { data: profile, error: profileError } = await supabase
-            .from("profiles")
+            .from("users_profiles")
             .select("company_id")
             .eq("id", userId)
             .single();
         console.log("Logged in user profile:", profile);
         if (profileError) {
-            // console.log("Failed to fetch profile:", profileError.message);
             return { error: "Login succeeded, but failed to fetch company info." };
         }
 
-        // Store company_id if needed
+        localStorage.setItem("token", data.session.access_token);
+        localStorage.setItem("email", loginData.email);
+        localStorage.setItem("current_user_id", userId);
+        localStorage.setItem("system_roles", system_roles);
         localStorage.setItem("company_id", profile.company_id);
 
         console.log("Logged in user profile:", profile);
@@ -64,9 +42,10 @@ export const loginUser = async (loginData) => {
 
 
     } catch (error) {
-        // return { error: error.message };
+        return { error: error.message || "Something went wrong during sigin." };
     }
 };
+
 
 
 export const signUpUser = async (signUpData) => {
@@ -90,7 +69,7 @@ export const signUpUser = async (signUpData) => {
         const userId = data?.user?.id;
         if (!userId) throw new Error("User ID not returned during signup.");
         const { error: profileError } = await supabase
-            .from("profiles")
+            .from("users_profiles")
             .insert([
                 {
                     id: userId,
@@ -98,11 +77,16 @@ export const signUpUser = async (signUpData) => {
                 },
             ]);
 
-        if (profileError) throw profileError;
+            console.log("daaaaa",profileError);
+        if (profileError) {
+            return { error: "This email is already registered and verified. Try signing in." };
+        }
+
+        // if (profileError) throw profileError;
 
         return { user: data.user };
     } catch (error) {
-        return { error: error.message };
+        return { error: error.message || "Something went wrong during signup." };
     }
 };
 
