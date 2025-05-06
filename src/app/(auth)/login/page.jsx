@@ -67,12 +67,12 @@ const SignInPage = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen" style={{ color: appColors.textHeadingColor }}>
-            <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-100" >
+            <div className="bg-[#ffffff] p-8 rounded-2xl shadow-lg w-96" >
                 <h2 className="text-2xl font-bold text-center mb-4">
                     <span className="border-l-4 border-[#1a1b41] pl-2">Content Strategies</span>
                 </h2>
                 <p className="text-center  mb-4">
-                    Sign Into The WOW24-7 Podcast Database
+                    Sign Into Your Podcast Database
                 </p>
 
                 {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
@@ -123,12 +123,12 @@ const SignInPage = () => {
                 </form>
 
 
-                <div className="flex justify-center items-center">
+                {/* <div className="flex justify-center items-center">
                     <p className="text-sm font-medium text-gray-600">Don't have an account?</p>
                     <Link href="/sign-up" className="ml-2 text-sm font-medium text-[#1a1b41] hover:text-gray-400 transition">
                         Create a new account
                     </Link>
-                </div>
+                </div> */}
             </div>
         </div>
     );

@@ -14,7 +14,15 @@ export function isValidPassword(password) {
   return password.length >= 6;
 
 }
+export function formatUrl(url) {
+  if (!url) return '#';
+  
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
 
+  return url;
+}
 export const debounce = (func, delay) => {
   let timer;
   return function (...args) {

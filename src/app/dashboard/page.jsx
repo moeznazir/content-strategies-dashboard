@@ -39,39 +39,48 @@ const Dashboard = () => {
 
   const columns = [
     { label: "Avatar", id: "Avatar" },
-    { label: "Name", id: "Guest" },
-    { label: "Video Title", id: "Video Title" },
-    // { label: "Ranking", id: "ranking" },
-    // { label: "Ranking Justification", id: "Ranking Justification" },
+    { label: "Guest", id: "Guest" },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
-    { label: "Top Three Takeaways", id: "Text comments for the rating (OPTIONAL input from the user)" },
-    { label: "Video Description", id: "Video Description" },
-    { label: "Transcript", id: "Transcript" },
-    { label: "Article - Extended Media", id: "Article - Extended Media" },
-    { label: "Blog Post 1,2 & 3", id: "Blog Post 1,2 & 3" },
-    { label: "Client", id: "Client" },
-    { label: "Date Recorded", id: "Date Recorded" },
-    { label: "Employee", id: "Employee" },
-    { label: "Episode #", id: "Episode_Number" },
-    { label: "Episode Title", id: "Episode Title" },
+    { label: "Guest Title", id: "Guest Title" },
     { label: "Guest Company", id: "Guest Company" },
     { label: "Guest Industry", id: "Guest Industry" },
+    { label: "Guest Role", id: "Guest Role" },
+    { label: "Date Recorded", id: "Date Recorded" },
+    { label: "Episode #", id: "Episode_Number" },
+    { label: "Full Episode Title", id: "Episode Title" },
+    { label: "Video Type", id: "Video Type" },
+    { label: "Video Title", id: "Video Title" },
+    { label: "Video Length", id: "Video Length" },
+    // { label: "Videos", id: "Videos" },
+    { label: "Videos", id: "Videos Link",type:'url' },
+    { label: "Video Description", id: "Video Description" },
+    { label: "Top Three Takeaways", id: "Text comments for the rating (OPTIONAL input from the user)" },
+    { label: "Key Quote", id: "Quote" },
+    { label: "Mentions", id: "Mentions" },
+    { label: "Public vs. Private", id: "Public_vs_Private" },
+    { label: "Discussion Guide", id: "Discussion Guide" },
+    { label: "Transcript", id: "Transcript" },
+    { label: "Client", id: "Client" },
+    { label: "Employee", id: "Employee" },
     { label: "Tags", id: "Tags" },
     { label: "Themes", id: "Themes" },
     { label: "Validations", id: "Validations" },
     { label: "Objections", id: "Objections" },
     { label: "Challenges", id: "Challenges" },
-    { label: "Video Type", id: "Video Type" },
-    { label: "Guest Title", id: "Guest Title" },
-    { label: "LinkedIn Video - Extended Media", id: "LinkedIn Video - Extended Media" },
-    { label: "Mentions", id: "Mentions" },
-    { label: "Podbook Link", id: "Podbook Link" },
-    { label: "Private Link - Post-Podcast 1", id: "Private Link - Post-Podcast 1" },
-    { label: "Private Link - Post-Podcast 2", id: "Private Link - Post-Podcast 2" },
-    { label: "Public vs. Private", id: "Public_vs_Private" },
-    { label: "Quote", id: "Quote" },
-    { label: "Quote Card - Extended Media", id: "Quote Card - Extended Media" },
+    { label: "Sales Insights", id: "Sales Insights" },
+    { label: "Challenge Report: Unedited Video Link", id: "Challenge Report_Unedited Video Link",type:'url' },
+    { label: "Challenge Report: Unedited Transcript Link", id: "Challenge Report_Unedited Transcript Link",type:'url' },
+    { label: "Challenge Report: Summary", id: "Challenge Report_Summary",type:'url' },
+    { label: "Podcast Report: Unedited Video Link", id: "Podcast Report_Unedited Video Link",type:'url' },
+    { label: "Podcast Report: Unedited Transcript Link", id: "Podcast Report_Unedited Transcript Link",type:'url' },
+    { label: "Podcast Report: Summary", id: "Podcast Report_Summary",type:'url' },
+    { label: "Post-Podcast Report: Unedited Video Link", id: "Post-Podcast Report_Unedited Video Link",type:'url' },
+    { label: "Post-Podcast Report: Unedited Transcript Link", id: "Post-Podcast Report_Unedited Transcript Link",type:'url' },
+    { label: "Post-Podcast Report_Summary", id: "Post-Podcast Report_Summary",type:'url' },
+    { label: "Podbook Link", id: "Podbook Link",type:'url' },
+    { label: "Article", id: "Article - Extended Media",type:'url' },
+    { label: "Quote Card", id: "Quote Card - Extended Media",type:'url' },
     { label: "Actions", id: "action" },
   ];
 
@@ -82,46 +91,53 @@ const Dashboard = () => {
     "Themes",
     "Validations",
     "Challenges",
+    "Sales Insights",
     "Video Type"
   ];
 
   const dashboardCrudDetails = [
     { label: "Video ID", key: "Video_ID", placeholder: "Enter Video ID" },
-    { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
-    { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
-    { label: "Themes", key: "Themes", placeholder: "Select Themes", type: "multiselect" },
-    { label: "Validations", key: "Validations", placeholder: "Select Validations", type: "multiselect" },
-    { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
-    { label: "Challenges", key: "Challenges", placeholder: "Select Challenges", type: "multiselect" },
-    // { label: "Ranking", key: "ranking", placeholder: "Enter Ranking (1-10)", type: "ranking" },
-    // { label: "Ranking justification", key: "Ranking Justification", placeholder: "Enter Ranking Justification" },
-    { label: "Top Three Takeaways", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
-    { label: "Video Description", key: "Video Description", placeholder: "Enter Video Description" },
-    { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
-    { label: "Quote", key: "Quote", placeholder: "Enter Quote" },
     { label: "Guest", key: "Guest", placeholder: "Enter Guest Name" },
+    { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
     { label: "Guest Title", key: "Guest Title", placeholder: "Enter Guest Title" },
     { label: "Guest Company", key: "Guest Company", placeholder: "Enter Guest Company" },
     { label: "Guest Industry", key: "Guest Industry", placeholder: "Select Guest Industry", type: "multiselect" },
-    { label: "Episode Title", key: "Episode Title", placeholder: "Enter Episode Title" },
+    { label: "Guest Role", key: "Guest Role", placeholder: "Enter Guest Role" },
+    { label: "Date Recorded", key: "Date Recorded", placeholder: "Select Date", type: "date" },
     { label: "Episode #", key: "Episode_Number", placeholder: "Enter Episode Number", type: "number" },
+    { label: "Full Episode Title", key: "Episode Title", placeholder: "Enter Episode Title" },
     { label: "Video Type", key: "Video Type", placeholder: "Select Video Type", type: "multiselect" },
-    { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
+    { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
     { label: "Video Length", key: "Video Length", placeholder: "Enter Video Length" },
-    { label: "Tags", key: "Tags", placeholder: "Select Tags", type: "multiselect" },
+    { label: "Videos", key: "Videos", placeholder: "Select Videos" },
+    { label: "Videos Link", key: "Videos Link", placeholder: "Enter Video Link" , type:'url' },
+    { label: "Video Description", key: "Video Description", placeholder: "Enter Video Description" },
+    { label: "Top Three Takeaways", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
+    { label: "Key Quote", key: "Quote", placeholder: "Enter Quote" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
+    { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
+    { label: "Discussion Guide", key: "Discussion Guide", placeholder: "Enter Discussion Guide", type: "url" },
+    { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
     { label: "Client", key: "Client", placeholder: "Select Client", type: "select" },
     { label: "Employee", key: "Employee", placeholder: "Enter Employee" },
-    { label: "YouTube Link", key: "YouTube Link", placeholder: "Enter YouTube Link", type: "url" },
+    { label: "Tags", key: "Tags", placeholder: "Select Tags", type: "multiselect" },
+    { label: "Themes", key: "Themes", placeholder: "Select Themes", type: "multiselect" },
+    { label: "Validations", key: "Validations", placeholder: "Select Validations", type: "multiselect" },
+    { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
+    { label: "Challenges", key: "Challenges", placeholder: "Select an ICP Challenge", type: "multiselect" },
+    { label: "Sales Insights", key: "Sales Insights", placeholder: "Select Sales Insights", type: "multiselect" },
+    { label: "Challenge Report: Unedited Video Link", key: "Challenge Report_Unedited Video Link", type: "url" },
+    { label: "Challenge Report: Unedited Transcript Link", key: "Challenge Report_Unedited Transcript Link" },
+    { label: "Challenge Report: Summary", key: "Challenge Report_Summary" },
+    { label: "Podcast Report: Unedited Video Link", key: "Podcast Report_Unedited Video Link" },
+    { label: "Podcast Report: Unedited Transcript Link", key: "Podcast Report_Unedited Transcript Link" },
+    { label: "Podcast Report: Summary", key: "Podcast Report_Summary" },
+    { label: "Post-Podcast Report: Unedited Video Link", key: "Post-Podcast Report_Unedited Video Link" },
+    { label: "Post-Podcast Report: Unedited Transcript Link", key: "Post-Podcast Report_Unedited Transcript Link" },
+    { label: "Post-Podcast Report_Summary", key: "Post-Podcast Report_Summary" },
     { label: "Podbook Link", key: "Podbook Link", placeholder: "Enter Podbook Link", type: "url" },
-    { label: "Article - Extended Media", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
-    { label: "YouTube Short - Extended Media", key: "YouTube Short - Extended Media", placeholder: "Enter YouTube Short Link", type: "url" },
-    { label: "LinkedIn Video - Extended Media", key: "LinkedIn Video - Extended Media", placeholder: "Enter LinkedIn Video Link", type: "url" },
-    { label: "Quote Card - Extended Media", key: "Quote Card - Extended Media", placeholder: "Enter Quote Card Link", type: "url" },
-    { label: "Private Link - Post-Podcast 1", key: "Private Link - Post-Podcast 1", placeholder: "Enter Private Link 1", type: "url" },
-    { label: "Private Link - Post-Podcast 2", key: "Private Link - Post-Podcast 2", placeholder: "Enter Private Link 2", type: "url" },
-    { label: "Date Recorded", key: "Date Recorded", placeholder: "Select Date", type: "date" },
-    { label: "Blog Post 1,2 & 3", key: "Blog Post 1,2 & 3", placeholder: "Enter Blog Posts" },
+    { label: "Article", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
+    { label: "Quote Card", key: "Quote Card - Extended Media", placeholder: "Enter Quote Card Link" },
   ];
 
   const [selectedFilters, setSelectedFilters] = useState({
@@ -131,7 +147,7 @@ const Dashboard = () => {
     "Objections": [],
     "Validations": [],
     "Challenges": [],
-    "Insights": []
+    "Sales Insights": []
   });
 
   const filterOptions = {
@@ -155,9 +171,6 @@ const Dashboard = () => {
       { value: "Private", label: "Private", count: 0 },
     ],
     "Themes": [
-      // { value: "Contact Center Industry", label: "Contact Center Industry" },
-      // { value: "BPO Partnership", label: "BPO Partnership" },
-      // { value: "Podcast Guests", label: "Podcast Guests" },
       { value: "Positioning Contact Centers as Strategic Growth Drivers (Contact Center Industry)", label: "Positioning Contact Centers as Strategic Growth Drivers (Contact Center Industry)" },
       { value: "Transforming Contact Centers into Experience-Driven Hubs (Contact Center Industry)", label: "Transforming Contact Centers into Experience-Driven Hubs (Contact Center Industry)" },
       { value: "Harnessing AI to Elevate Customer Experience (Contact Center Industry)", label: "Harnessing AI to Elevate Customer Experience (Contact Center Industry)" },
@@ -206,9 +219,25 @@ const Dashboard = () => {
       { value: "Tool Overload and AI Misalignment", label: "Tool Overload and AI Misalignment" },
       { value: "Organizational Dysfunction and Scaling Expertise", label: "Organizational Dysfunction and Scaling Expertise" },
     ],
-    "Insights": [
-      { value: "Insight 1", label: "Insight 1" },
-      { value: "Insight 2", label: "Insight 2" },
+    "Sales Insights": [
+      { value: "Evolving Expectations of Data Security", label: "Evolving Expectations of Data Security" },
+      { value: "Understanding Buyer Priorities in Scaling Operations", label: "Understanding Buyer Priorities in Scaling Operations" },
+      { value: "Proven Experience and Service Quality", label: "Proven Experience and Service Quality" },
+      { value: "Customer Experience as a Competitive Advantage", label: "Customer Experience as a Competitive Advantage" },
+      { value: "Skepticism About Long-Term Partnership Viability", label: "Skepticism About Long-Term Partnership Viability" },
+      { value: "Flexibility in Service and Partnership Models", label: "Flexibility in Service and Partnership Models" },
+      { value: "Pressure to Reduce Time-to-Resolution", label: "Pressure to Reduce Time-to-Resolution" },
+      { value: "Measuring and Leveraging CX as a Differentiator", label: "Measuring and Leveraging CX as a Differentiator" },
+      { value: "Desire for Seamless Integration with Internal Systems", label: "Desire for Seamless Integration with Internal Systems" },
+      { value: "Challenges in Scaling Customer Support Operations", label: "Challenges in Scaling Customer Support Operations" },
+      { value: "AI for Operational Efficiency and Growth", label: "AI for Operational Efficiency and Growth" },
+      { value: "Cultural and Values Alignment for Seamless Collaboration", label: "Cultural and Values Alignment for Seamless Collaboration" },
+      { value: "Transitioning from Traditional Contact Centers to Experience Centers", label: "Transitioning from Traditional Contact Centers to Experience Centers" },
+      { value: "Customer Experience as a Strategic Differentiator", label: "Customer Experience as a Strategic Differentiator" },
+      { value: "Advanced Technology for Streamlined Operations", label: "Advanced Technology for Streamlined Operations" },
+      { value: "Ability to Integrate into the Company’s Brand and Culture", label: "Ability to Integrate into the Company’s Brand and Culture" },
+      { value: "Cost Sensitivity in Contract Negotiations", label: "Cost Sensitivity in Contract Negotiations" },
+      { value: "Resistance to Outsourcing Critical Customer Functions", label: "Resistance to Outsourcing Critical Customer Functions" },
     ],
   };
 
@@ -236,6 +265,7 @@ const Dashboard = () => {
         validations_json: selectedFilters["Validations"]?.length ? selectedFilters["Validations"] : null,
         classifications_json: selectedFilters["Classifications"]?.length ? selectedFilters["Classifications"] : null,
         challenges_json: selectedFilters["Challenges"]?.length ? selectedFilters["Challenges"] : null,
+        sales_insights_json: selectedFilters["Sales Insights"]?.length ? selectedFilters["Sales Insights"] : null,
         from_date: fromDateISO ? fromDateISO : null,
         to_date: toDateISO ? toDateISO : null,
         current_user_id: localStorage.getItem('current_user_id'),
@@ -265,7 +295,7 @@ const Dashboard = () => {
               return items.map(item => {
                 // If it's an object, extract just the name property
                 if (item && typeof item === 'object') {
-                  return item.challenge || item.challenges || item.Challenges || item.validation || item.objection || item.theme || '';
+                  return item.challenge || item.challenges || item.Challenges || item.validation || item.objection || item.theme || item.insight || '';
                 }
                 // Otherwise use as-is (string)
                 return item;
@@ -293,9 +323,20 @@ const Dashboard = () => {
         if (formattedItem.Challenges) {
           formattedItem.Challenges = formatArrayField(formattedItem.Challenges);
         }
+        if (formattedItem["Sales Insights"]) {
+          formattedItem["Sales Insights"] = formatArrayField(formattedItem["Sales Insights"]);
+        }
+
         // Handle other array fields
         arrayFields.forEach(field => {
-          if (field !== 'Themes' && field !== 'Objections' && field !== 'Validations' && field !== 'Challenges' && formattedItem[field]) {
+          if (
+            field !== 'Themes' &&
+            field !== 'Objections' &&
+            field !== 'Validations' &&
+            field !== 'Challenges' &&
+            field !== 'Sales Insights' &&
+            formattedItem[field]
+          ) {
             if (typeof formattedItem[field] === 'string') {
               formattedItem[field] = formattedItem[field]
                 .split(',')
@@ -304,6 +345,7 @@ const Dashboard = () => {
             }
           }
         });
+
 
 
         return formattedItem;
@@ -370,7 +412,7 @@ const Dashboard = () => {
         "Objections": {},
         "Validations": {},
         "Challenges": {},
-        "Insights": {}
+        "Sales Insights": {}
       };
 
       // Process the counts data
@@ -378,7 +420,7 @@ const Dashboard = () => {
         if (counts[category]) {
           counts[category][value] = {
             count,
-            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges'].includes(category) ? avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges','Sales Insights'].includes(category) ? avg_ranking : null
           };
         }
       });
@@ -393,7 +435,7 @@ const Dashboard = () => {
           return {
             ...option,
             count: countData.count,
-            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges'].includes(filterType) ? countData.avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges','Sales Insights'].includes(filterType) ? countData.avg_ranking : null
 
           };
         });
@@ -518,7 +560,7 @@ const Dashboard = () => {
       "Objections": [],
       "Validations": [],
       "Challenges": [],
-      "Insights": []
+      "Sales Insights": []
     });
     setFromDate("");
     setToDate("");
@@ -702,9 +744,10 @@ const Dashboard = () => {
           </div>
         </aside>
 
-        <div className="hidden md:block verflow-y-hidden w-px fixed h-[calc(100vh-6rem)] w-px bg-gray-600 left-[295px] -mt-6 "></div>
+
+        <div className="hidden md:block h-auto overflow-y-hidden w-px bg-gray-600 mx-4 ml-6 -mt-6"></div>
         {/* Table */}
-        <main className="flex-1 px-6 overflow-x-auto ml-9">
+        <main className="flex-1 px-6 overflow-x-auto">
           <div className="overflow-x-auto">
             <DraggableTable
               columns={columns}
@@ -719,6 +762,7 @@ const Dashboard = () => {
               loadingMore={loadingMore}
               alignRecord={false}
               themesRank={themesRank}
+              loadingRecord={true}
             />
           </div>
 
