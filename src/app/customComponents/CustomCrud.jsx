@@ -47,6 +47,7 @@ const OPTIONS = {
     "Video Type": [
         { value: "Summary Video", label: "Summary Video" },
         { value: "Full Episode", label: "Full Episode" },
+        { value: "Highlights Video", label: "Highlights Video" },
         { value: "Case Study", label: "Case Study" },
         { value: "ICP Advice", label: "ICP Advice" },
         { value: "Post-Podcast", label: "Post-Podcast" },
@@ -536,7 +537,17 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         supportingQuotes: Yup.string(),
                     })
                 );
-            } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
+            } else if (!["ranking", "Ranking Justification",
+                "Challenge Report_Unedited Video Link",
+                "Challenge Report_Unedited Transcript Link",
+                "Challenge Report_Summary",
+                "Podcast Report_Unedited Video Link",
+                "Podcast Report_Unedited Transcript Link",
+                "Podcast Report_Summary",
+                "Post-Podcast Report_Unedited Video Link",
+                "Post-Podcast Report_Unedited Transcript Link",
+                "Post-Podcast Report_Summary",
+                "Quote Card - Extended Media"].includes(field.key)) {
                 if (MULTISELECT_FIELDS.includes(field.key)) {
                     schema[field.key] = Yup.array()
                         .of(Yup.string())

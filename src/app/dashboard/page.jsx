@@ -53,7 +53,7 @@ const Dashboard = () => {
     { label: "Video Title", id: "Video Title" },
     { label: "Video Length", id: "Video Length" },
     // { label: "Videos", id: "Videos" },
-    { label: "Videos", id: "Videos Link",type:'url' },
+    { label: "Video Link", id: "Videos Link", type: 'url' },
     { label: "Video Description", id: "Video Description" },
     { label: "Top Three Takeaways", id: "Text comments for the rating (OPTIONAL input from the user)" },
     { label: "Key Quote", id: "Quote" },
@@ -69,18 +69,18 @@ const Dashboard = () => {
     { label: "Objections", id: "Objections" },
     { label: "Challenges", id: "Challenges" },
     { label: "Sales Insights", id: "Sales Insights" },
-    { label: "Challenge Report: Unedited Video Link", id: "Challenge Report_Unedited Video Link",type:'url' },
-    { label: "Challenge Report: Unedited Transcript Link", id: "Challenge Report_Unedited Transcript Link",type:'url' },
-    { label: "Challenge Report: Summary", id: "Challenge Report_Summary",type:'url' },
-    { label: "Podcast Report: Unedited Video Link", id: "Podcast Report_Unedited Video Link",type:'url' },
-    { label: "Podcast Report: Unedited Transcript Link", id: "Podcast Report_Unedited Transcript Link",type:'url' },
-    { label: "Podcast Report: Summary", id: "Podcast Report_Summary",type:'url' },
-    { label: "Post-Podcast Report: Unedited Video Link", id: "Post-Podcast Report_Unedited Video Link",type:'url' },
-    { label: "Post-Podcast Report: Unedited Transcript Link", id: "Post-Podcast Report_Unedited Transcript Link",type:'url' },
-    { label: "Post-Podcast Report_Summary", id: "Post-Podcast Report_Summary",type:'url' },
-    { label: "Podbook Link", id: "Podbook Link",type:'url' },
-    { label: "Article", id: "Article - Extended Media",type:'url' },
-    { label: "Quote Card", id: "Quote Card - Extended Media",type:'url' },
+    { label: "Challenge Report: Unedited Video Link", id: "Challenge Report_Unedited Video Link", type: 'url' },
+    { label: "Challenge Report: Unedited Transcript Link", id: "Challenge Report_Unedited Transcript Link", type: 'url' },
+    { label: "Challenge Report: Summary", id: "Challenge Report_Summary", type: 'url' },
+    { label: "Podcast Report: Unedited Video Link", id: "Podcast Report_Unedited Video Link", type: 'url' },
+    { label: "Podcast Report: Unedited Transcript Link", id: "Podcast Report_Unedited Transcript Link", type: 'url' },
+    { label: "Podcast Report: Summary", id: "Podcast Report_Summary", type: 'url' },
+    { label: "Post-Podcast Report: Unedited Video Link", id: "Post-Podcast Report_Unedited Video Link", type: 'url' },
+    { label: "Post-Podcast Report: Unedited Transcript Link", id: "Post-Podcast Report_Unedited Transcript Link", type: 'url' },
+    { label: "Post-Podcast Report_Summary", id: "Post-Podcast Report_Summary", type: 'url' },
+    { label: "Podbook Link", id: "Podbook Link", type: 'url' },
+    { label: "Article", id: "Article - Extended Media", type: 'url' },
+    { label: "Quote Card", id: "Quote Card - Extended Media", type: 'url' },
     { label: "Actions", id: "action" },
   ];
 
@@ -109,14 +109,14 @@ const Dashboard = () => {
     { label: "Video Type", key: "Video Type", placeholder: "Select Video Type", type: "multiselect" },
     { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
     { label: "Video Length", key: "Video Length", placeholder: "Enter Video Length" },
-    { label: "Videos", key: "Videos", placeholder: "Select Videos" },
-    { label: "Videos Link", key: "Videos Link", placeholder: "Enter Video Link" , type:'url' },
+    // { label: "Videos", key: "Videos", placeholder: "Select Videos" },
+    { label: "Video Link", key: "Videos Link", placeholder: "Enter Video Link", type: 'url' },
     { label: "Video Description", key: "Video Description", placeholder: "Enter Video Description" },
     { label: "Top Three Takeaways", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Key Quote", key: "Quote", placeholder: "Enter Quote" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
-    { label: "Discussion Guide", key: "Discussion Guide", placeholder: "Enter Discussion Guide", type: "url" },
+    { label: "Discussion Guide", key: "Discussion Guide", placeholder: "Enter Discussion Guide Link", type: "url" },
     { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
     { label: "Client", key: "Client", placeholder: "Select Client", type: "select" },
     { label: "Employee", key: "Employee", placeholder: "Enter Employee" },
@@ -127,13 +127,13 @@ const Dashboard = () => {
     { label: "Challenges", key: "Challenges", placeholder: "Select an ICP Challenge", type: "multiselect" },
     { label: "Sales Insights", key: "Sales Insights", placeholder: "Select Sales Insights", type: "multiselect" },
     { label: "Challenge Report: Unedited Video Link", key: "Challenge Report_Unedited Video Link", type: "url" },
-    { label: "Challenge Report: Unedited Transcript Link", key: "Challenge Report_Unedited Transcript Link" },
-    { label: "Challenge Report: Summary", key: "Challenge Report_Summary" },
-    { label: "Podcast Report: Unedited Video Link", key: "Podcast Report_Unedited Video Link" },
-    { label: "Podcast Report: Unedited Transcript Link", key: "Podcast Report_Unedited Transcript Link" },
+    { label: "Challenge Report: Unedited Transcript Link", key: "Challenge Report_Unedited Transcript Link", type: "url" },
+    { label: "Challenge Report: Summary", key: "Challenge Report_Summary", type: "url" },
+    { label: "Podcast Report: Unedited Video Link", key: "Podcast Report_Unedited Video Link", type: "url" },
+    { label: "Podcast Report: Unedited Transcript Link", key: "Podcast Report_Unedited Transcript Link", type: "url" },
     { label: "Podcast Report: Summary", key: "Podcast Report_Summary" },
-    { label: "Post-Podcast Report: Unedited Video Link", key: "Post-Podcast Report_Unedited Video Link" },
-    { label: "Post-Podcast Report: Unedited Transcript Link", key: "Post-Podcast Report_Unedited Transcript Link" },
+    { label: "Post-Podcast Report: Unedited Video Link", key: "Post-Podcast Report_Unedited Video Link", type: "url" },
+    { label: "Post-Podcast Report: Unedited Transcript Link", key: "Post-Podcast Report_Unedited Transcript Link", type: "url" },
     { label: "Post-Podcast Report_Summary", key: "Post-Podcast Report_Summary" },
     { label: "Podbook Link", key: "Podbook Link", placeholder: "Enter Podbook Link", type: "url" },
     { label: "Article", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
@@ -154,6 +154,7 @@ const Dashboard = () => {
     "Video Type": [
       { value: "Summary Video", label: "Summary Video", count: 0 },
       { value: "Full Episode", label: "Full Episode", count: 0 },
+      { value: "Highlights Video", label: "Highlights Video", count: 0 },
       { value: "Case Study", label: "Case Study", count: 0 },
       { value: "ICP Advice", label: "ICP Advice", count: 0 },
       { value: "Post-Podcast", label: "Post-Podcast", count: 0 },
@@ -420,7 +421,7 @@ const Dashboard = () => {
         if (counts[category]) {
           counts[category][value] = {
             count,
-            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges','Sales Insights'].includes(category) ? avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges', 'Sales Insights'].includes(category) ? avg_ranking : null
           };
         }
       });
@@ -435,7 +436,7 @@ const Dashboard = () => {
           return {
             ...option,
             count: countData.count,
-            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges','Sales Insights'].includes(filterType) ? countData.avg_ranking : null
+            avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges', 'Sales Insights'].includes(filterType) ? countData.avg_ranking : null
 
           };
         });

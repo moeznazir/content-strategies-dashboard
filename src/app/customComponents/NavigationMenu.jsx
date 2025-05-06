@@ -32,7 +32,7 @@ const NavigationMenu = () => {
     const menuItems = [
         { name: "Dashboard", href: "/dashboard", allowedRoles: ["end-user", "admin", "editor"] },
         { name: "User Management", href: "/user-management", allowedRoles: ["admin"] },
-        // { name: "Assistant", href: "/assistant", allowedRoles: ["end-user", "admin", "editor"] },
+        // { name: "Assistant", href: "/assistant", allowedRoles: ["end-user", "admin", "editor"] }
     ];
     useEffect(() => {
         const storedRole = localStorage.getItem("system_roles");
@@ -96,7 +96,7 @@ const NavigationMenu = () => {
     return (
         shouldShowDashboard && (
             <>
-                <header className=" shadow-md py-2  relative">
+                <header className=" shadow-md py-2 border-b border-gray-400 relative">
 
                     <div className="container-fluid mx-auto flex justify-between items-center px-10">
                         {/* Left Section: Logo and Menu */}
