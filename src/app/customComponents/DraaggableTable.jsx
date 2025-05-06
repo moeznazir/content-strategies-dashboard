@@ -11,6 +11,7 @@ import Modal from "./DetailModal";
 import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
 import RankingModal from "./CustomRankingModal";
+import { formatUrl } from "@/lib/utils";
 
 const ItemType = "COLUMN";
 
@@ -37,7 +38,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
 
     const shouldResizeColumn = (columnId) => {
         // Disable separator for these specific columns
-        return !['Guest Industry', 'Objections', 'Challenges', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
+        return !['Guest Industry', 'Objections', 'Challenges', 'Sales Insights', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
     };
 
     return (
@@ -93,6 +94,7 @@ const DraggableTable = ({
     onLoadMore,
     loadingMore,
     alignRecord,
+    loadingRecord,
     themesRank
 }) => {
     const [columns, setColumns] = useState(initialColumns);
@@ -102,8 +104,10 @@ const DraggableTable = ({
     const [selectedObjections, setSelectedObjections] = useState(null);
     const [selectedValidations, setSelectedValidations] = useState(null);
     const [selectedChallenges, setSelectedChallenges] = useState(null);
+    const [selectedSalesInsights, setSelectedSalesInsights] = useState(null);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
+
 
     const moveColumn = (fromIndex, toIndex) => {
         const updatedColumns = [...columns];
@@ -234,6 +238,39 @@ const DraggableTable = ({
         }
         return [];
     };
+
+    const normalizeSalesInsights = (rowId) => {
+        const salesInsightsData = themesRank.find(item => item.id === rowId)?.['Sales Insights'];
+        if (!salesInsightsData) return [];
+
+        if (Array.isArray(salesInsightsData)) {
+            return salesInsightsData.map(insight => {
+                if (typeof insight === 'object') {
+                    return {
+                        insight: insight.insight || '',
+                        ranking: insight.ranking || 0,
+                        justification: insight.justification || '',
+                        perceptionToAddress: insight.perception || '',
+                        whyItMatters: insight.whyItMatters || '',
+                        deeperInsight: insight.deeperInsight || '',
+                        supportingQuotes: insight.supportingQuotes || ''
+                    };
+                }
+                return {
+                    insight: insight || '',
+                    ranking: 0,
+                    justification: '',
+                    perceptionToAddress: '',
+                    whyItMatters: '',
+                    deeperInsight: '',
+                    supportingQuotes: ''
+                };
+            });
+        }
+
+        return [];
+    };
+
     return (
         <DndProvider backend={HTML5Backend}>
             <div className="overflow-x-auto  relative"
@@ -247,7 +284,7 @@ const DraggableTable = ({
                     borderRadius: '10px'
                 }}
             >
-                <table className="min-w-full divide-y  divide-gray-300 border-b ">
+                <table className="min-w-full divide-y  divide-gray-300">
 
                     <thead className="bg-[#1a1b41] sticky top-0 z-10">
                         <tr>
@@ -258,22 +295,8 @@ const DraggableTable = ({
 
                     </thead>
 
-                    <tbody className="bg-white/10 text-white divide-y divide-gray-600">
-                        {loading && (
-                            <tr>
-                                <td
-                                    colSpan={columns.length + (showActions ? 1 : 0)}
-                                    className="py-6 text-center"
-                                >
-                                    <div
-                                        className={`${alignRecord ? 'fixed top-3/2 left-1/2 transform -translate-x-[30px] -translate-y-1/2 z-50' : 'fixed top-3/2 left-1/2 transform translate-x-[100px] -translate-y-1/2 z-50'
-                                            }`}
-                                    >
-                                        <CustomSpinner className="w-8 h-8 text-gray-500  " />
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
+                    <tbody className=" text-white divide-y divide-gray-600">
+
                         {!loading && data?.length === 0 ? (
                             <tr>
                                 <td
@@ -289,10 +312,10 @@ const DraggableTable = ({
                                 </td>
                             </tr>
                         ) : (
-                            data?.map((row, rowIndex) => (
+                            !loading && data?.length > 0 && data?.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
-                                    className={`group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10 relative
+                                    className={`bg-white/10 group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10 relative
                                 
                                     `}
                                 >
@@ -301,7 +324,7 @@ const DraggableTable = ({
                                             key={column.id}
                                             className={`
                                        px-6 py-1 text-sm divide-y divide-gray-600 whitespace-nowrap
-                                       ${['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Video Type'].includes(column.label)
+                                       ${['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Sales Insights', 'Video Type'].includes(column.label)
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
@@ -377,26 +400,9 @@ const DraggableTable = ({
                                                                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
                                                             >
                                                                 {themeObj.theme}
-                                                                {/* {themeObj.ranking > 0 && (
-                                                                    <span className="ml-1 text-xs">({themeObj.ranking})</span>
-                                                                )} */}
                                                             </span>
                                                         ))}
                                                 </div>
-                                                //  column.id === "Themes" ? (
-                                                //     <div className="flex  gap-1">
-                                                //         {normalizeThemes(row.id).filter((item) => item && item !== "nan" && item !== "[]").map((themeObj, idx) => (
-                                                //             <span
-                                                //                 key={idx}
-                                                //                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
-                                                //             >
-                                                //                 {themeObj.theme}
-                                                //                 {/* {themeObj.ranking > 0 && (
-                                                //                     <span className="ml-1 text-xs">({themeObj.ranking})</span>
-                                                //                 )} */}
-                                                //             </span>
-                                                //         ))}
-                                                //     </div>
                                             ) : column.id === "Objections" ? (
                                                 <div
                                                     className="flex  gap-1 cursor-pointer"
@@ -419,26 +425,9 @@ const DraggableTable = ({
                                                                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
                                                             >
                                                                 {objectionObj.objection}
-                                                                {/* {themeObj.ranking > 0 && (
-                                                                    <span className="ml-1 text-xs">({themeObj.ranking})</span>
-                                                                )} */}
                                                             </span>
                                                         ))}
                                                 </div>
-                                                //  column.id === "Themes" ? (
-                                                //     <div className="flex  gap-1">
-                                                //         {normalizeThemes(row.id).filter((item) => item && item !== "nan" && item !== "[]").map((themeObj, idx) => (
-                                                //             <span
-                                                //                 key={idx}
-                                                //                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
-                                                //             >
-                                                //                 {themeObj.theme}
-                                                //                 {/* {themeObj.ranking > 0 && (
-                                                //                     <span className="ml-1 text-xs">({themeObj.ranking})</span>
-                                                //                 )} */}
-                                                //             </span>
-                                                //         ))}
-                                                //     </div>
                                             ) : column.id === "Validations" ? (
                                                 <div
                                                     className="flex  gap-1 cursor-pointer"
@@ -461,26 +450,9 @@ const DraggableTable = ({
                                                                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
                                                             >
                                                                 {validationObj.validation}
-                                                                {/* {themeObj.ranking > 0 && (
-                                                                    <span className="ml-1 text-xs">({themeObj.ranking})</span>
-                                                                )} */}
                                                             </span>
                                                         ))}
                                                 </div>
-                                                //  column.id === "Themes" ? (
-                                                //     <div className="flex  gap-1">
-                                                //         {normalizeThemes(row.id).filter((item) => item && item !== "nan" && item !== "[]").map((themeObj, idx) => (
-                                                //             <span
-                                                //                 key={idx}
-                                                //                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
-                                                //             >
-                                                //                 {themeObj.theme}
-                                                //                 {/* {themeObj.ranking > 0 && (
-                                                //                     <span className="ml-1 text-xs">({themeObj.ranking})</span>
-                                                //                 )} */}
-                                                //             </span>
-                                                //         ))}
-                                                //     </div>
                                             ) : column.id === "Challenges" ? (
                                                 <div
                                                     className="flex  gap-1 cursor-pointer"
@@ -503,32 +475,55 @@ const DraggableTable = ({
                                                                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
                                                             >
                                                                 {challengesObj.challenges}
-                                                                {/* {themeObj.ranking > 0 && (
-                                                                    <span className="ml-1 text-xs">({themeObj.ranking})</span>
-                                                                )} */}
                                                             </span>
                                                         ))}
                                                 </div>
-                                                //  column.id === "Themes" ? (
-                                                //     <div className="flex  gap-1">
-                                                //         {normalizeThemes(row.id).filter((item) => item && item !== "nan" && item !== "[]").map((themeObj, idx) => (
-                                                //             <span
-                                                //                 key={idx}
-                                                //                 className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
-                                                //             >
-                                                //                 {themeObj.theme}
-                                                //                 {/* {themeObj.ranking > 0 && (
-                                                //                     <span className="ml-1 text-xs">({themeObj.ranking})</span>
-                                                //                 )} */}
-                                                //             </span>
-                                                //         ))}
-                                                //     </div>
+                                            ) : column.id === "Sales Insights" ? (
+                                                <div
+                                                    className="flex gap-1 cursor-pointer"
+                                                    onClick={() => {
+                                                        const insightsData = normalizeSalesInsights(row.id);
+                                                        if (insightsData.length > 0) {
+                                                            setSelectedSalesInsights(insightsData); // make sure this state exists
+                                                        }
+                                                    }}
+                                                >
+                                                    {normalizeSalesInsights(row.id)
+                                                        .filter(insightObj => {
+                                                            if (!insightObj) return false;
+                                                            const insightStr = String(insightObj.insight).toLowerCase().trim();
+                                                            return insightStr !== 'nan' && insightStr !== '[]' && insightStr !== '';
+                                                        })
+                                                        .map((insightObj, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                            >
+                                                                {insightObj.insight}
+
+                                                            </span>
+                                                        ))}
+                                                </div>
                                             ) : column.id === "Likes" ? (
                                                 <LikeButton user_name={row?.Guest} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
                                             ) : column.id === "Comments" ? (
                                                 <div onClick={() => setCommentRow(row)} className="text-blue-500">
                                                     <FaCommentDots size={18} />
                                                 </div>
+                                            ) : column.type === 'url' ? (
+                                                row[column.id] ? (
+                                                    <a
+                                                        href={formatUrl(row[column.id])}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-500 hover:underline"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        {row[column.id]}
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-gray-400">N/A</span>
+                                                )
                                             ) : (
                                                 row[column.id] || "-"
                                             )}
@@ -604,11 +599,28 @@ const DraggableTable = ({
 
                     </tbody>
                 </table>
+                {loading && (
+                    <div className={`${loadingRecord
+                        ? 'fixed top-[50%] left-[60%] transform -translate-x-1/2 -translate-y-1/2 z-50' : alignRecord ? 'fixed top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 z-50' : ''}
+                        }`}>
+                        <CustomSpinner className="w-12 h-12 text-white" />
+                    </div>
+                )}
             </div>
 
             {/* Show Modal when a row is selected */}
             {selectedRow && (
-                <Modal data={selectedRow} onClose={() => setSelectedRow(null)} />
+                <Modal
+                    data={{
+                        ...selectedRow,
+                        Themes: normalizeThemes(selectedRow.id),
+                        Validations: normalizeValidations(selectedRow.id),
+                        Objections: normalizeObjections(selectedRow.id),
+                        Challenges: normalizeChallenges(selectedRow.id),
+                        "Sales Insights": normalizeSalesInsights(selectedRow.id)
+                    }}
+                    onClose={() => setSelectedRow(null)}
+                />
             )}
             {/* Comment Modal (For Comments) */}
             {commentRow && <CommentModal row={commentRow} onClose={() => setCommentRow(null)} />}
@@ -619,6 +631,7 @@ const DraggableTable = ({
                     data={selectedThemes}
                     onClose={() => setSelectedThemes(null)}
                 />
+
             )}
             {selectedValidations && (
                 <RankingModal
@@ -638,6 +651,12 @@ const DraggableTable = ({
                     onClose={() => setSelectedChallenges(null)}
                 />
             )}
+            {selectedSalesInsights && (
+                <RankingModal
+                    data={selectedSalesInsights}
+                    onClose={() => setSelectedSalesInsights(null)}
+                />
+            )}
         </DndProvider>
     );
 
@@ -646,3 +665,4 @@ const DraggableTable = ({
 
 
 export default DraggableTable;
+

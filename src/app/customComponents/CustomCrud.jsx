@@ -23,6 +23,7 @@ const MULTISELECT_FIELDS = [
     "Validations",
     "Objections",
     "Challenges",
+    "Sales Insights",
     "Themes",
 ];
 
@@ -31,6 +32,8 @@ const SINGLESELECT_FIELDS = [
     "Client",
     "Employee",
     "Public_vs_Private",
+    "Guest Role",
+    "Videos"
 
 ];
 
@@ -70,6 +73,24 @@ const OPTIONS = {
         { value: "Yes", label: "Yes" },
         { value: "No", label: "No" },
     ],
+    "Guest Role": [
+        { value: "Client", label: "Client" },
+        { value: "Employee", label: "Employee" },
+        { value: "Prospect", label: "Prospect" },
+        { value: "Partner", label: "Partner" },
+        { value: "Thought Leader", label: "Thought Leader" },
+        { value: "Expert", label: "Expert" },
+        { value: "VIP", label: "VIP" },
+        { value: "Company Executive", label: "Company Executive" },
+        { value: "Other", label: "Other" },
+    ],
+    "Videos": [
+        { value: "Highlights Video", label: "Highlights Video" },
+        { value: "Full Episode", label: "Full Episode" },
+        { value: "Summary Video", label: "Summary Video" },
+        { value: "YouTube Short", label: "YouTube Short" },
+        { value: "LinkedIn", label: "LinkedIn" },
+    ],
     "Public_vs_Private": [
         { value: "Public", label: "Public" },
         { value: "Private", label: "Private" },
@@ -90,8 +111,8 @@ const OPTIONS = {
         { value: "Customer Experience as the New Competitive Advantage (Podcast Guests)", label: "Customer Experience as the New Competitive Advantage (Podcast Guests)" },
         { value: "Linking Agent Experience Directly to Customer Loyalty (Podcast Guests)", label: "Linking Agent Experience Directly to Customer Loyalty (Podcast Guests)" },
         { value: "Using AI to Empower Agents, Not Replace Them (Podcast Guests)", label: "Using AI to Empower Agents, Not Replace Them (Podcast Guests)" },
-      ],
-      "Objections": [
+    ],
+    "Objections": [
         { value: "Cost vs. Value Perception", label: "Cost vs. Value Perception" },
         { value: "Brand Representation and Quality Control", label: "Brand Representation and Quality Control" },
         { value: "Fear of Losing Operational Control", label: "Fear of Losing Operational Control" },
@@ -101,8 +122,8 @@ const OPTIONS = {
         { value: "Transparency and Performance Accountabilitys", label: "Transparency and Performance Accountabilitys" },
         { value: "Previous Negative Outsourcing Experience", label: "Previous Negative Outsourcing Experience" },
         { value: "Internal Resistance to Change", label: "Internal Resistance to Change" },
-      ],
-      "Validations": [
+    ],
+    "Validations": [
         { value: "Transform Cost Centers into Strategic Experience Centers", label: "Transform Cost Centers into Strategic Experience Centers" },
         { value: "Every Interaction is a Revenue Opportunity", label: "Every Interaction is a Revenue Opportunity" },
         { value: "Operationalizing Revenue From Every Interaction", label: "Operationalizing Revenue From Every Interaction" },
@@ -110,7 +131,7 @@ const OPTIONS = {
         { value: "Seamless Integration as an Extension of Your Team", label: "Seamless Integration as an Extension of Your Team" },
         { value: "Proven Tangible Results and Measurable Success", label: "Proven Tangible Results and Measurable Success" },
         { value: "Empowering Executives to Become Strategic Business Partners", label: "Role as Consultant/Partner" },
-      ],
+    ],
     "Challenges": [
         { value: "Misalignment Between Short-Term Targets and Long-Term Value", label: "Misalignment Between Short-Term Targets and Long-Term Value" },
         { value: "Underutilization of Voice-of-Customer Data", label: "Underutilization of Voice-of-Customer Data" },
@@ -123,6 +144,26 @@ const OPTIONS = {
         { value: "Tool Overload and AI Misalignment", label: "Tool Overload and AI Misalignment" },
         { value: "Organizational Dysfunction and Scaling Expertise", label: "Organizational Dysfunction and Scaling Expertise" },
     ],
+    "Sales Insights": [
+        { value: "Evolving Expectations of Data Security", label: "Evolving Expectations of Data Security" },
+        { value: "Understanding Buyer Priorities in Scaling Operations", label: "Understanding Buyer Priorities in Scaling Operations" },
+        { value: "Proven Experience and Service Quality", label: "Proven Experience and Service Quality" },
+        { value: "Customer Experience as a Competitive Advantage", label: "Customer Experience as a Competitive Advantage" },
+        { value: "Skepticism About Long-Term Partnership Viability", label: "Skepticism About Long-Term Partnership Viability" },
+        { value: "Flexibility in Service and Partnership Models", label: "Flexibility in Service and Partnership Models" },
+        { value: "Pressure to Reduce Time-to-Resolution", label: "Pressure to Reduce Time-to-Resolution" },
+        { value: "Measuring and Leveraging CX as a Differentiator", label: "Measuring and Leveraging CX as a Differentiator" },
+        { value: "Desire for Seamless Integration with Internal Systems", label: "Desire for Seamless Integration with Internal Systems" },
+        { value: "Challenges in Scaling Customer Support Operations", label: "Challenges in Scaling Customer Support Operations" },
+        { value: "AI for Operational Efficiency and Growth", label: "AI for Operational Efficiency and Growth" },
+        { value: "Cultural and Values Alignment for Seamless Collaboration", label: "Cultural and Values Alignment for Seamless Collaboration" },
+        { value: "Transitioning from Traditional Contact Centers to Experience Centers", label: "Transitioning from Traditional Contact Centers to Experience Centers" },
+        { value: "Customer Experience as a Strategic Differentiator", label: "Customer Experience as a Strategic Differentiator" },
+        { value: "Advanced Technology for Streamlined Operations", label: "Advanced Technology for Streamlined Operations" },
+        { value: "Ability to Integrate into the Company’s Brand and Culture", label: "Ability to Integrate into the Company’s Brand and Culture" },
+        { value: "Cost Sensitivity in Contract Negotiations", label: "Cost Sensitivity in Contract Negotiations" },
+        { value: "Resistance to Outsourcing Critical Customer Functions", label: "Resistance to Outsourcing Critical Customer Functions" },
+    ],
 
 };
 
@@ -134,8 +175,8 @@ const ThemeEntry = ({ theme, ranking, justification, perception, whyItMatters, d
             <div className="flex justify-between items-start">
                 <div className="flex-1">
                     <p><span className="font-medium">Theme:</span> <span className='text-gray-400 text-sm'>{theme || "No theme selected"}</span></p>
-                    <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
-                    <p><span className="font-medium">Ranking Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Match Rating (1-10):</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Rating Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
                     <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
                     <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
                     <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
@@ -160,8 +201,8 @@ const ObjectionEntry = ({ objection, ranking, justification, perception, whyItMa
             <div className="flex justify-between items-start">
                 <div className="flex-1">
                     <p><span className="font-medium">Objection:</span> <span className='text-gray-400 text-sm'>{objection || "No objection selected"}</span></p>
-                    <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
-                    <p><span className="font-medium">Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Match Rating (1-10):</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Rating Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
                     <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
                     <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
                     <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
@@ -186,8 +227,34 @@ const ChallengesEntry = ({ challenge, ranking, justification, perception, whyItM
             <div className="flex justify-between items-start">
                 <div className="flex-1">
                     <p><span className="font-medium">Challenge:</span> <span className='text-gray-400 text-sm'>{challenge || "No challenge selected"}</span></p>
-                    <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
-                    <p><span className="font-medium">Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Match Rating (1-10):</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Rating Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
+                    <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
+                    <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
+                    <p><span className="font-medium">Supporting Quotes:</span> <span className='text-gray-400 text-sm'>{supportingQuotes || "Not specified"}</span></p>
+                </div>
+                <div className="flex space-x-1">
+                    <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700">
+                        <PencilIcon className="h-5 w-5" />
+                    </div>
+                    <div onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700">
+                        <TrashIcon className="h-5 w-5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const SalesInsightsEntry = ({ insight, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <p><span className="font-medium">Sales Insight:</span> <span className='text-gray-400 text-sm'>{insight || "No insight provided"}</span></p>
+                    <p><span className="font-medium">Match Rating (1–10):</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Rating Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
                     <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
                     <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
                     <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
@@ -212,8 +279,8 @@ const ValidationEntry = ({ validation, ranking, justification, perception, whyIt
             <div className="flex justify-between items-start">
                 <div className="flex-1">
                     <p><span className="font-medium">Validation:</span> <span className='text-gray-400 text-sm'>{validation || "No validation selected"}</span></p>
-                    <p><span className="font-medium">Ranking:</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
-                    <p><span className="font-medium">Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
+                    <p><span className="font-medium">Match Rating (1-10):</span> <span className='text-gray-400 text-sm'>{ranking || "N/A"}</span></p>
+                    <p><span className="font-medium">Rating Justification:</span> <span className='text-gray-400 text-sm'>{justification || "No justification available"}</span></p>
                     <p><span className="font-medium">Perception to Address:</span> <span className='text-gray-400 text-sm'>{perception || "Not specified"}</span></p>
                     <p><span className="font-medium">Why It Matters:</span> <span className='text-gray-400 text-sm'>{whyItMatters || "Not specified"}</span></p>
                     <p><span className="font-medium">Deeper Insight:</span> <span className='text-gray-400 text-sm'>{deeperInsight || "Not specified"}</span></p>
@@ -279,6 +346,16 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [challengesEntries, setChallengesEntries] = useState([]);
     const [challengesEditIndex, setChallengesEditIndex] = useState(null);
 
+    //Sales Insights
+    const [currentSalesInsight, setCurrentSalesInsight] = useState("");
+    const [currentSalesInsightRanking, setCurrentSalesInsightRanking] = useState("");
+    const [currentSalesInsightJustification, setCurrentSalesInsightJustification] = useState("");
+    const [currentSalesInsightPerception, setCurrentSalesInsightPerception] = useState("");
+    const [currentSalesInsightWhyItMatters, setCurrentSalesInsightWhyItMatters] = useState("");
+    const [currentSalesInsightDeeperInsight, setCurrentSalesInsightDeeperInsight] = useState("");
+    const [currentSalesInsightSupportingQuotes, setCurrentSalesInsightSupportingQuotes] = useState("");
+    const [salesInsightsEntries, setSalesInsightsEntries] = useState([]);
+    const [salesInsightsEditIndex, setSalesInsightsEditIndex] = useState(null);
 
     function normalizeThemes(data) {
         if (!Array.isArray(data)) return [];
@@ -331,6 +408,24 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             if (typeof entry === "string") {
                 return {
                     challenges: entry, ranking: "", justification: "", perception: "",
+                    whyItMatters: "",
+                    deeperInsight: "",
+                    supportingQuotes: ""
+                };
+            }
+            return entry;
+        });
+    }
+
+    function normalizeSalesInsights(data) {
+        if (!Array.isArray(data)) return [];
+        return data.map(entry => {
+            if (typeof entry === "string") {
+                return {
+                    insight: entry,
+                    ranking: "",
+                    justification: "",
+                    perception: "",
                     whyItMatters: "",
                     deeperInsight: "",
                     supportingQuotes: ""
@@ -398,19 +493,35 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             } else {
                 setChallengesEntries([]);
             }
+
+            // --- Handle Sales Insights 
+            const salesInsightsData = matchedData?.["Sales Insights"];
+            if (salesInsightsData) {
+                try {
+                    const parsed = Array.isArray(salesInsightsData) ? salesInsightsData : JSON.parse(salesInsightsData);
+                    setSalesInsightsEntries(normalizeSalesInsights(parsed));
+                } catch (e) {
+                    console.log("Error parsing Sales Insights:", e);
+                    setSalesInsightsEntries([]);
+                }
+            } else {
+                setSalesInsightsEntries([]);
+            }
+
         } else {
             // Clear on new entry
             setThemeEntries([]);
             setValidationEntries([]);
             setObjectionEntries([]);
             setChallengesEntries([]);
+            setSalesInsightsEntries([]);
         }
     }, [entityData, themesRank]);
 
 
     const validationSchema = Yup.object(
         displayFields.reduce((schema, field) => {
-            if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key == "Challenges") {
+            if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key == "Challenges" || field.key == "Sales Insights") {
                 schema[field.key] = Yup.array().of(
                     Yup.object().shape({
                         [field.key.toLowerCase().slice(0, -1)]: Yup.string().required(`${field.key.slice(0, -1)} is required`),
@@ -454,7 +565,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Initialize form values properly
     const initialValues = {};
     displayFields.forEach(field => {
-        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges") {
+        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges" || field.key == "Sales Insights") {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
             initialValues[field.key] = entityData?.[field.key] ||
@@ -522,6 +633,19 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     }));
                 }
 
+                let salesInsightsData = null;
+                if (salesInsightsEntries.length > 0) {
+                    salesInsightsData = salesInsightsEntries.map(entry => ({
+                        insight: String(entry.insight || ""),
+                        ranking: parseInt(entry.ranking) || 0,
+                        justification: String(entry.justification || ""),
+                        perception: String(entry.perception || ""),
+                        whyItMatters: String(entry.whyItMatters || ""),
+                        deeperInsight: String(entry.deeperInsight || ""),
+                        supportingQuotes: String(entry.supportingQuotes || "")
+                    }));
+                }
+
 
                 // Create the payload with properly formatted values
                 const formattedValues = {
@@ -530,6 +654,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     Objections: objectionEntries.length > 0 ? objectionEntries : null,
                     Validations: validationEntries.length > 0 ? validationEntries : null,
                     Challenges: challengesEntries.length > 0 ? challengesEntries : null,
+                    "Sales Insights": salesInsightsEntries.length > 0 ? salesInsightsEntries : null,
                     company_id: localStorage.getItem('company_id')
                 };
 
@@ -810,6 +935,71 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setChallengesEditIndex(challengesEditIndex - 1);
         }
     };
+
+    // Sales Insights handlers
+    const handleAddSalesInsight = () => {
+        if (!currentSalesInsight || !currentSalesInsightRanking || !currentSalesInsightJustification) {
+            ShowCustomToast("Please fill all Sales Insight fields before adding.", "error");
+            return;
+        }
+
+        const newEntry = {
+            insight: currentSalesInsight,
+            ranking: parseInt(currentSalesInsightRanking) || 0,
+            justification: currentSalesInsightJustification,
+            perception: currentSalesInsightPerception,
+            whyItMatters: currentSalesInsightWhyItMatters,
+            deeperInsight: currentSalesInsightDeeperInsight,
+            supportingQuotes: currentSalesInsightSupportingQuotes
+        };
+
+        if (salesInsightsEditIndex !== null) {
+            const updated = [...salesInsightsEntries];
+            updated[salesInsightsEditIndex] = newEntry;
+            setSalesInsightsEntries(updated);
+            setSalesInsightsEditIndex(null);
+        } else {
+            setSalesInsightsEntries([...salesInsightsEntries, newEntry]);
+        }
+
+        setCurrentSalesInsight("");
+        setCurrentSalesInsightRanking("");
+        setCurrentSalesInsightJustification("");
+        setCurrentSalesInsightPerception("");
+        setCurrentSalesInsightWhyItMatters("");
+        setCurrentSalesInsightDeeperInsight("");
+        setCurrentSalesInsightSupportingQuotes("");
+    };
+
+    const handleEditSalesInsight = (index) => {
+        const entry = salesInsightsEntries[index];
+        setCurrentSalesInsight(entry.insight);
+        setCurrentSalesInsightRanking(entry.ranking);
+        setCurrentSalesInsightJustification(entry.justification);
+        setCurrentSalesInsightPerception(entry.perception);
+        setCurrentSalesInsightWhyItMatters(entry.whyItMatters);
+        setCurrentSalesInsightDeeperInsight(entry.deeperInsight);
+        setCurrentSalesInsightSupportingQuotes(entry.supportingQuotes);
+        setSalesInsightsEditIndex(index);
+    };
+
+    const handleRemoveSalesInsight = (index) => {
+        const updated = salesInsightsEntries.filter((_, i) => i !== index);
+        setSalesInsightsEntries(updated);
+        if (salesInsightsEditIndex === index) {
+            setCurrentSalesInsight("");
+            setCurrentSalesInsightRanking("");
+            setCurrentSalesInsightJustification("");
+            setCurrentSalesInsightPerception("");
+            setCurrentSalesInsightWhyItMatters("");
+            setCurrentSalesInsightDeeperInsight("");
+            setCurrentSalesInsightSupportingQuotes("");
+            setSalesInsightsEditIndex(null);
+        } else if (salesInsightsEditIndex > index) {
+            setSalesInsightsEditIndex(salesInsightsEditIndex - 1);
+        }
+    };
+
     // Validation handlers 
     const handleAddValidation = () => {
         if (!currentValidation || !currentValidationRanking || !currentValidationJustification) {
@@ -894,11 +1084,16 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             ...entry,
             ranking: Number(entry.ranking)
         }));
+        const validatedSalesInsightsEntries = salesInsightsEntries.map(entry => ({
+            ...entry,
+            ranking: Number(entry.ranking)
+        }));
 
         setThemeEntries(validatedThemeEntries);
         setObjectionEntries(validatedObjectionEntries);
         setValidationEntries(validatedValidationEntries);
         setChallengesEntries(validatedChallengesEntries);
+        setSalesInsightsEntries(validatedSalesInsightsEntries);
 
 
         const errors = await formik.validateForm();
@@ -923,7 +1118,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         <div className="max-h-[60vh] overflow-y-auto pr-2">
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
-                                    {!['Themes', 'Objections', 'Validations', 'Challenges', 'ranking', 'Ranking Justification'].includes(field.key) ? (
+                                    {!['Themes', 'Objections', 'Validations', 'Challenges', 'Sales Insights', 'ranking', 'Ranking Justification', 'Challenge Report_Unedited Video Link', 'Challenge Report_Unedited Transcript Link', 'Challenge Report_Summary', 'Podcast Report_Unedited Video Link', 'Podcast Report_Unedited Transcript Link', 'Podcast Report_Summary', 'Post-Podcast Report_Unedited Video Link', 'Post-Podcast Report_Unedited Transcript Link', 'Post-Podcast Report_Summary'].includes(field.key) ? (
                                         <>
                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                 {field.label}:
@@ -1005,7 +1200,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 type="number"
                                                                 min="1"
                                                                 max="10"
-                                                                label="Ranking (1-10)"
+                                                                label="Match Rating (1-10)"
                                                                 value={currentRanking}
                                                                 onChange={(e) => setCurrentRanking(e.target.value)}
                                                                 className="w-full p-2 border rounded"
@@ -1016,7 +1211,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Justification"
+                                                                label="Rating Justification"
                                                                 value={currentJustification}
                                                                 onChange={(e) => setCurrentJustification(e.target.value)}
                                                                 className="w-full p-2 border rounded"
@@ -1130,7 +1325,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 type="number"
                                                                 min="1"
                                                                 max="10"
-                                                                label="Ranking (1-10)"
+                                                                label="Match Rating (1-10)"
                                                                 value={currentObjectionRanking}
                                                                 onChange={(e) => setCurrentObjectionRanking(e.target.value)}
                                                                 className="w-full p-2 border rounded"
@@ -1140,7 +1335,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Justification"
+                                                                label="Rating Justification"
                                                                 value={currentObjectionJustification}
                                                                 onChange={(e) => setCurrentObjectionJustification(e.target.value)}
                                                                 className="w-full p-2 border rounded"
@@ -1254,7 +1449,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 type="number"
                                                                 min="1"
                                                                 max="10"
-                                                                label="Ranking (1-10)"
+                                                                label="Match Rating (1-10)"
                                                                 value={currentValidationRanking}
                                                                 onChange={(e) => setCurrentValidationRanking(e.target.value)}
                                                                 className="w-full p-2 border rounded"
@@ -1262,29 +1457,19 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             />
                                                         </div>
 
-
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Supporting Quotes"
-                                                                value={currentValidationSupportingQuotes}
-                                                                onChange={(e) => setCurrentValidationSupportingQuotes(e.target.value)}
-                                                                className="w-full p-2 border rounded mb-2"
-                                                                placeholder="Enter supporting quotes"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                            <CustomInput
-                                                                type="text"
-                                                                label="Justification"
+                                                                label="Rating Justification"
                                                                 value={currentValidationJustification}
                                                                 onChange={(e) => setCurrentValidationJustification(e.target.value)}
                                                                 className="w-full p-2 border rounded"
                                                                 placeholder="Enter justification"
                                                             />
                                                         </div>
-                                                        <div>
+                                                    </div>
+
+                                                    <div>
                                                         <CustomInput
                                                             type="text"
                                                             label="Perception to Address"
@@ -1294,7 +1479,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             placeholder="Enter perception to address"
                                                         />
                                                     </div>
-    
+
                                                     <div>
                                                         <CustomInput
                                                             type="text"
@@ -1305,7 +1490,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             placeholder="Enter why it matters"
                                                         />
                                                     </div>
-    
+
                                                     <div>
                                                         <CustomInput
                                                             type="text"
@@ -1314,6 +1499,16 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             onChange={(e) => setCurrentValidationDeeperInsight(e.target.value)}
                                                             className="w-full p-2 border rounded mb-2"
                                                             placeholder="Enter deeper insight"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Supporting Quotes"
+                                                            value={currentValidationSupportingQuotes}
+                                                            onChange={(e) => setCurrentValidationSupportingQuotes(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter supporting quotes"
                                                         />
                                                     </div>
                                                     <div className="flex justify-end">
@@ -1337,6 +1532,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                     validation={entry.validation}
                                                                     ranking={entry.ranking}
                                                                     justification={entry.justification}
+                                                                    perception={entry.perception}
+                                                                    whyItMatters={entry.whyItMatters}
+                                                                    deeperInsight={entry.deeperInsight}
+                                                                    supportingQuotes={entry.supportingQuotes}
                                                                     onEdit={handleEditValidation}
                                                                     onRemove={handleRemoveValidation}
                                                                 />
@@ -1349,7 +1548,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                 <p className="text-red-500 text-sm mb-2">{formik.errors['Validations']}</p>
                                             )}
                                         </div>
-                                    ) : field.key === 'Challenges' && (
+                                    ) : field.key === 'Challenges' ? (
                                         <div>
                                             <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
                                                 Challenges:
@@ -1373,7 +1572,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 type="number"
                                                                 min="1"
                                                                 max="10"
-                                                                label="Ranking (1-10)"
+                                                                label="Match Rating (1-10)"
                                                                 value={currentChallengesRanking}
                                                                 onChange={(e) => setCurrentChallengesRanking(e.target.value)}
                                                                 className="w-full p-2 border rounded"
@@ -1383,7 +1582,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Justification"
+                                                                label="Rating Justification"
                                                                 value={currentChallengesJustification}
                                                                 onChange={(e) => setCurrentChallengesJustification(e.target.value)}
                                                                 className="w-full p-2 border rounded"
@@ -1473,6 +1672,322 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                 <p className="text-red-500 text-sm mb-2">{formik.errors['Challenges']}</p>
                                             )}
                                         </div>
+                                    ) : field.key === 'Sales Insights' ? (
+                                        <div>
+                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                Sales Insights:
+                                            </label>
+                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <CustomSelect
+                                                            id="sales-insights-select"
+                                                            options={OPTIONS['Sales Insights'] || []}
+                                                            value={currentSalesInsight}
+                                                            isMulti={false}
+                                                            onChange={(value) => setCurrentSalesInsight(value)}
+                                                            placeholder="Select a sales insight..."
+                                                            className="w-full mb-2"
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <CustomInput
+                                                                type="number"
+                                                                min="1"
+                                                                max="10"
+                                                                label="Match Rating (1-10)"
+                                                                value={currentSalesInsightRanking}
+                                                                onChange={(e) => setCurrentSalesInsightRanking(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="1-10"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Rating Justification"
+                                                                value={currentSalesInsightJustification}
+                                                                onChange={(e) => setCurrentSalesInsightJustification(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter justification"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Perception to Address"
+                                                            value={currentSalesInsightPerception}
+                                                            onChange={(e) => setCurrentSalesInsightPerception(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter perception"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Why It Matters"
+                                                            value={currentSalesInsightWhyItMatters}
+                                                            onChange={(e) => setCurrentSalesInsightWhyItMatters(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter why it matters"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Deeper Insight"
+                                                            value={currentSalesInsightDeeperInsight}
+                                                            onChange={(e) => setCurrentSalesInsightDeeperInsight(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter deeper insight"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <CustomInput
+                                                            type="text"
+                                                            label="Supporting Quotes"
+                                                            value={currentSalesInsightSupportingQuotes}
+                                                            onChange={(e) => setCurrentSalesInsightSupportingQuotes(e.target.value)}
+                                                            className="w-full p-2 border rounded mb-2"
+                                                            placeholder="Enter supporting quotes"
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex justify-end">
+                                                        <CustomButton
+                                                            type="button"
+                                                            onClick={handleAddSalesInsight}
+                                                            disabled={!currentSalesInsight || !currentSalesInsightRanking || !currentSalesInsightJustification}
+                                                            className="flex items-center gap-1"
+                                                        >
+                                                            <PlusIcon className="h-4 w-4" />
+                                                            {salesInsightsEditIndex !== null ? "Update Insight" : "Add Insight"}
+                                                        </CustomButton>
+                                                    </div>
+
+                                                    {salesInsightsEntries.length > 0 && (
+                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                            <h4 className="font-medium text-sm mb-2">Added Sales Insights:</h4>
+                                                            {salesInsightsEntries.map((entry, index) => (
+                                                                <SalesInsightsEntry // You may want to create a `SalesInsightEntry` component
+                                                                    key={index}
+                                                                    index={index}
+                                                                    insight={entry.insight}
+                                                                    ranking={entry.ranking}
+                                                                    justification={entry.justification}
+                                                                    perception={entry.perception}
+                                                                    whyItMatters={entry.whyItMatters}
+                                                                    deeperInsight={entry.deeperInsight}
+                                                                    supportingQuotes={entry.supportingQuotes}
+                                                                    onEdit={handleEditSalesInsight}
+                                                                    onRemove={handleRemoveSalesInsight}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {formik.errors['Sales Insights'] && formik.touched['Sales Insights'] && (
+                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Sales Insights']}</p>
+                                            )}
+                                        </div>
+
+                                    ) : field.key === "Challenge Report_Unedited Video Link" ? (
+                                        <>
+                                            <label className="font-bold mb-2">Challenge Report:</label>
+                                            <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+
+                                                <div className="space-y-4">
+                                                    {/* Challenge Report fields */}
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Unedited Video Link:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="url"
+                                                            name="Challenge Report_Unedited Video Link"
+                                                            value={formik.values["Challenge Report_Unedited Video Link"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter unedited video link"
+                                                        />
+                                                        {formik.errors["Challenge Report_Unedited Video Link"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Unedited Video Link"]}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Unedited Transcript Link:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="url"
+                                                            name="Challenge Report_Unedited Transcript Link"
+                                                            value={formik.values["Challenge Report_Unedited Transcript Link"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter unedited transcript link"
+                                                        />
+                                                        {formik.errors["Challenge Report_Unedited Transcript Link"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Unedited Transcript Link"]}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Summary:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="text"
+                                                            name="Challenge Report_Summary"
+                                                            value={formik.values["Challenge Report_Summary"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter summary"
+                                                        />
+                                                        {formik.errors["Challenge Report_Summary"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Summary"]}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+
+                                    ) : field.key === "Podcast Report_Unedited Video Link" ? (
+                                        <>
+                                            <label className="font-bold mb-2">Podcast Report:</label>
+                                            <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                <div className="space-y-4">
+                                                    {/* Podcast Report fields */}
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Unedited Video Link:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="url"
+                                                            name="Podcast Report_Unedited Video Link"
+                                                            value={formik.values["Podcast Report_Unedited Video Link"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter unedited video link"
+                                                        />
+                                                        {formik.errors["Podcast Report_Unedited Video Link"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Unedited Video Link"]}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Unedited Transcript Link:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="url"
+                                                            name="Podcast Report_Unedited Transcript Link"
+                                                            value={formik.values["Podcast Report_Unedited Transcript Link"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter unedited transcript link"
+                                                        />
+                                                        {formik.errors["Podcast Report_Unedited Transcript Link"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Unedited Transcript Link"]}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Summary:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="text"
+                                                            name="Podcast Report_Summary"
+                                                            value={formik.values["Podcast Report_Summary"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter summary"
+                                                        />
+                                                        {formik.errors["Podcast Report_Summary"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Summary"]}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+
+                                    ) : field.key === "Post-Podcast Report_Unedited Video Link" && (
+                                        <>
+                                            <label className="font-bold mb-2">Post-Podcast Report:</label>
+                                            <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+
+                                                <div className="space-y-4">
+                                                    {/* Post-Podcast Report fields */}
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Unedited Video Link:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="url"
+                                                            name="Post-Podcast Report_Unedited Video Link"
+                                                            value={formik.values["Post-Podcast Report_Unedited Video Link"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter unedited video link"
+                                                        />
+                                                        {formik.errors["Post-Podcast Report_Unedited Video Link"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Unedited Video Link"]}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Unedited Transcript Link:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="url"
+                                                            name="Post-Podcast Report_Unedited Transcript Link"
+                                                            value={formik.values["Post-Podcast Report_Unedited Transcript Link"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter unedited transcript link"
+                                                        />
+                                                        {formik.errors["Post-Podcast Report_Unedited Transcript Link"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Unedited Transcript Link"]}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            Summary:
+                                                        </label>
+                                                        <CustomInput
+                                                            type="text"
+                                                            name="Post-Podcast Report_Summary"
+                                                            value={formik.values["Post-Podcast Report_Summary"] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder="Enter summary"
+                                                        />
+                                                        {formik.errors["Post-Podcast Report_Summary"] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Summary"]}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
                                     )}
                                 </div>
                             ))}

@@ -6,7 +6,7 @@ const RankingModal = ({ data, onClose }) => {
     // Determine the data type based on the first item's properties
     const dataType = data.length > 0
         ? Object.keys(data[0]).find(key =>
-            ['theme', 'validation', 'objection', 'challenges'].includes(key)
+            ['theme', 'validation', 'objection', 'challenges', 'insight'].includes(key)
         )
         : null;
 
@@ -16,6 +16,7 @@ const RankingModal = ({ data, onClose }) => {
             case 'validation': return 'Validation Details';
             case 'objection': return 'Objection Details';
             case 'challenges': return 'Challenge Details';
+            case 'insight': return 'Sales Insight Details';
             default: return 'Details';
         }
     };
@@ -26,10 +27,11 @@ const RankingModal = ({ data, onClose }) => {
             case 'validation': return 'Validation';
             case 'objection': return 'Objection';
             case 'challenges': return 'Challenge';
+            case 'insight': return 'Sales Insights';
             default: return 'Item';
         }
     };
-console.log("dataaaaaa",data);
+    console.log("dataaaaaa", data);
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center">
             <div
@@ -37,7 +39,7 @@ console.log("dataaaaaa",data);
                 style={{
                     backgroundColor: appColors.primaryColor,
                     color: appColors.textColor,
-                    maxHeight: '80vh' 
+                    maxHeight: '80vh'
                 }}
             >
                 <div className="flex justify-between items-center mb-4">

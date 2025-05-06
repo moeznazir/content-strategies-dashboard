@@ -47,8 +47,6 @@ const ResetPassword = () => {
                 <h2 className="text-2xl font-bold text-center mb-4">
                     <span className="border-l-4 border-[#1a1b41] pl-2">Reset Password</span>
                 </h2>
-
-
                 <form onSubmit={handleResetPassword}>
                     <label className="block text-sm text-[#1a1b41] font-bold mb-1" >New Password</label>
                     <CustomInput

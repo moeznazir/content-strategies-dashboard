@@ -48,10 +48,17 @@ export const loginUser = async (loginData) => {
 
 
 
-export const signUpUser = async (signUpData) => {
+export const signUpUser = async (signUpData, companyId) => {
     try {
         const systemRoles = ["end-user"];
+        const { data: company, error: companyError } = await supabase
+            .from('companies')
+            .select('id')
+            .eq('id', companyId)
+            .maybeSingle();
 
+        if (companyError) throw companyError;
+        if (!company) throw new Error("Company does not exist");
         // Step 1: Sign up the user
         const { data, error } = await supabase.auth.signUp({
             email: signUpData.email,
@@ -68,21 +75,19 @@ export const signUpUser = async (signUpData) => {
 
         const userId = data?.user?.id;
         if (!userId) throw new Error("User ID not returned during signup.");
+
         const { error: profileError } = await supabase
             .from("users_profiles")
             .insert([
                 {
                     id: userId,
-                    company_id: 1
+                    company_id: companyId
                 },
             ]);
 
-            console.log("daaaaa",profileError);
         if (profileError) {
             return { error: "This email is already registered and verified. Try signing in." };
         }
-
-        // if (profileError) throw profileError;
 
         return { user: data.user };
     } catch (error) {

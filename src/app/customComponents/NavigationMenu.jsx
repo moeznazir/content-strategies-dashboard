@@ -11,6 +11,7 @@ import { EXCLUED_PATHS, accessibleRoutes } from "../constants/constant";
 import Alert from "./Alert";
 import { ShowCustomToast } from "./CustomToastify";
 import { DivideIcon } from "lucide-react";
+import { useParams } from "next/navigation";
 
 const NavigationMenu = () => {
     const [selectedItem, setSelectedItem] = useState();
@@ -21,11 +22,17 @@ const NavigationMenu = () => {
     const pathname = usePathname();
     const router = useRouter();
 
-
+    const isExcludedPath =
+        pathname.endsWith("/") ||
+        pathname.endsWith("/login") ||
+        pathname.endsWith("/forgot-password") ||
+        pathname.endsWith("/reset-password") ||
+        pathname.endsWith("/sign-up");
 
     const menuItems = [
         { name: "Dashboard", href: "/dashboard", allowedRoles: ["end-user", "admin", "editor"] },
-        { name: "User Management", href: "/user-management", allowedRoles: ["admin"] }
+        { name: "User Management", href: "/user-management", allowedRoles: ["admin"] },
+        // { name: "Assistant", href: "/assistant", allowedRoles: ["end-user", "admin", "editor"] },
     ];
     useEffect(() => {
         const storedRole = localStorage.getItem("system_roles");
@@ -40,32 +47,31 @@ const NavigationMenu = () => {
     };
 
     console.log('useruser', user);
-    const shouldShowDashboard = !EXCLUED_PATHS.includes(pathname);
-
+    const shouldShowDashboard = !isExcludedPath;
 
     useEffect(() => {
-        if (!user || !user.role) return;
-        if (EXCLUED_PATHS.includes(pathname)) return;
+        if (!userRoles) return; // Exit if userRoles is null
 
-        const isRouteAccessible = accessibleRoutes[user.role]?.includes(pathname);
-        console.log("isRouteAccessible", isRouteAccessible);
-        if (!isRouteAccessible) {
-            setAlertVisible(true);
-            Alert.show(
-                "Access Denied",
-                "You are not authorized to access this page.",
-                [
-                    {
-                        text: "OK",
-                        primary: true,
-                        onPress: () => {
-                            router.push('/');
+        if (!isExcludedPath) {
+            const isRouteAccessible = accessibleRoutes[userRoles]?.includes(pathname);
+            if (!isRouteAccessible) {
+                setAlertVisible(true);
+                Alert.show(
+                    "Access Denied",
+                    "You are not authorized to access this page.",
+                    [
+                        {
+                            text: "OK",
+                            primary: true,
+                            onPress: () => {
+                                router.push('/dashboard');
+                            },
                         },
-                    },
-                ]
-            );
+                    ]
+                );
+            }
         }
-    }, [userRoles, menuItems, router]);
+    }, [userRoles, pathname]);
 
     useEffect(() => {
         const currentItem = menuItems.find(item => item.href === pathname)?.name;
@@ -82,7 +88,7 @@ const NavigationMenu = () => {
     const handleLogout = () => {
         setTimeout(() => {
             localStorage.clear();
-            router.push('/');
+            router.push(`/login`);
             ShowCustomToast("Logout successfully", 'success', 2000);
         }, 2000);
     };
