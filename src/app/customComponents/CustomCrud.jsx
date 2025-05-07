@@ -17,7 +17,6 @@ const supabase = createClient(
 
 
 const MULTISELECT_FIELDS = [
-    "Guest Industry",
     "Video Type",
     // "Tags",
     "Validations",
@@ -32,18 +31,13 @@ const SINGLESELECT_FIELDS = [
     "Client",
     "Employee",
     "Public_vs_Private",
-    "Guest Role",
+    // "Guest Role",
     "Videos"
 
 ];
 
 const OPTIONS = {
-    "Guest Industry": [
-        { value: "Ecommerce", label: "Ecommerce" },
-        { value: "Technology", label: "Technology" },
-        { value: "Healthcare", label: "Healthcare" },
-        { value: "Finance", label: "Finance" },
-    ],
+
     "Video Type": [
         { value: "Summary Video", label: "Summary Video" },
         { value: "Full Episode", label: "Full Episode" },
@@ -74,17 +68,17 @@ const OPTIONS = {
         { value: "Yes", label: "Yes" },
         { value: "No", label: "No" },
     ],
-    "Guest Role": [
-        { value: "Client", label: "Client" },
-        { value: "Employee", label: "Employee" },
-        { value: "Prospect", label: "Prospect" },
-        { value: "Partner", label: "Partner" },
-        { value: "Thought Leader", label: "Thought Leader" },
-        { value: "Expert", label: "Expert" },
-        { value: "VIP", label: "VIP" },
-        { value: "Company Executive", label: "Company Executive" },
-        { value: "Other", label: "Other" },
-    ],
+    // "Guest Role": [
+    //     { value: "Client", label: "Client" },
+    //     { value: "Employee", label: "Employee" },
+    //     { value: "Prospect", label: "Prospect" },
+    //     { value: "Partner", label: "Partner" },
+    //     { value: "Thought Leader", label: "Thought Leader" },
+    //     { value: "Expert", label: "Expert" },
+    //     { value: "VIP", label: "VIP" },
+    //     { value: "Company Executive", label: "Company Executive" },
+    //     { value: "Other", label: "Other" },
+    // ],
     "Videos": [
         { value: "Highlights Video", label: "Highlights Video" },
         { value: "Full Episode", label: "Full Episode" },
