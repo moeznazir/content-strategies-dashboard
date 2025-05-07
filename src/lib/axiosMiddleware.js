@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create Axios instance
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/',
+  baseURL: 'https://content-strategies.onrender.com',
   timeout: 10000, // Request timeout
   headers: {
     'Content-Type': 'application/json',

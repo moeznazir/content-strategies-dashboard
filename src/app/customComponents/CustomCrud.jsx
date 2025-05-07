@@ -19,7 +19,7 @@ const supabase = createClient(
 const MULTISELECT_FIELDS = [
     "Guest Industry",
     "Video Type",
-    "Tags",
+    // "Tags",
     "Validations",
     "Objections",
     "Challenges",
@@ -55,13 +55,13 @@ const OPTIONS = {
         { value: "Sales Insights", label: "Sales Insights" },
         { value: "Challenge Questions", label: "Challenge Questions" },
     ],
-    "Tags": [
-        { value: "Agent Empowerment", label: "Agent Empowerment" },
-        { value: "Agent Satisfaction", label: "Agent Satisfaction" },
-        { value: "Customer Loyalty", label: "Customer Loyalty" },
-        { value: "Data & Analytics", label: "Data & Analytics" },
-        { value: "AI", label: "AI" },
-    ],
+    // "Tags": [
+    //     { value: "Agent Empowerment", label: "Agent Empowerment" },
+    //     { value: "Agent Satisfaction", label: "Agent Satisfaction" },
+    //     { value: "Customer Loyalty", label: "Customer Loyalty" },
+    //     { value: "Data & Analytics", label: "Data & Analytics" },
+    //     { value: "AI", label: "AI" },
+    // ],
     "Mentions": [
         { value: "Yes", label: "Yes" },
         { value: "No", label: "No" },
