@@ -32,7 +32,7 @@ const NavigationMenu = () => {
     const menuItems = [
         { name: "Dashboard", href: "/dashboard", allowedRoles: ["end-user", "admin", "editor"] },
         { name: "User Management", href: "/user-management", allowedRoles: ["admin"] },
-        { name: "Assistant", href: "/assistant", allowedRoles: ["end-user", "admin", "editor"] }
+        // { name: "Assistant", href: "/assistant", allowedRoles: ["end-user", "admin", "editor"] }
     ];
     useEffect(() => {
         const storedRole = localStorage.getItem("system_roles");
