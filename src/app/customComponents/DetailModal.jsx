@@ -9,7 +9,7 @@ const Modal = ({ data, onClose }) => {
     // Array fields that should be displayed as tags
     const arrayFields = [
         "Video Type",
-        "Tags",
+        // "Tags",
         "Mentions"
     ];
 
@@ -67,7 +67,7 @@ const Modal = ({ data, onClose }) => {
         "Article - Extended Media",
         "Client",
         "Employee",
-        "Tags",
+        // "Tags",
         "Themes",
         "Validations",
         "Objections",
