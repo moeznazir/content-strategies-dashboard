@@ -15,6 +15,17 @@ html, body {
   padding: 0;
 }
 
+/* Fully hide scrollbar on all browsers */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent; /* Remove white background in WebKit */
+}
 
 
 

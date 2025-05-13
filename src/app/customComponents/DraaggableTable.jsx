@@ -273,7 +273,7 @@ const DraggableTable = ({
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="overflow-x-auto  relative"
+            <div className="overflow-x-auto  relative no-scrollbar"
                 style={{
                     height: 'calc(100vh - 18rem)',
                     minHeight: '450px',
