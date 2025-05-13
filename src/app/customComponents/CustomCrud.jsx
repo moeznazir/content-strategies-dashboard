@@ -572,6 +572,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     displayFields.forEach(field => {
         if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges" || field.key == "Sales Insights") {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
+        } else if (field.key === "Mentioned_Quotes") {
+            initialValues[field.key] = entityData?.[field.key] || "";
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
             initialValues[field.key] = entityData?.[field.key] ||
                 (MULTISELECT_FIELDS.includes(field.key) ? [] :
@@ -581,7 +583,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 "");
         }
     });
-
+    console.log("Entity data from Supabase:", entityData);
+    console.log("Mentioned_Quotes value:", entityData?.Mentioned_Quotes);
 
     const formik = useFormik({
         initialValues,
@@ -660,6 +663,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     Validations: validationEntries.length > 0 ? validationEntries : null,
                     Challenges: challengesEntries.length > 0 ? challengesEntries : null,
                     "Sales Insights": salesInsightsEntries.length > 0 ? salesInsightsEntries : null,
+                    Mentioned_Quotes: entityData?.Mentioned_Quotes || "",
                     company_id: localStorage.getItem('company_id')
                 };
 
@@ -1124,876 +1128,878 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
                                     {!['Themes', 'Objections', 'Validations', 'Challenges', 'Sales Insights', 'ranking', 'Ranking Justification', 'Challenge Report_Unedited Video Link', 'Challenge Report_Unedited Transcript Link', 'Challenge Report_Summary', 'Podcast Report_Unedited Video Link', 'Podcast Report_Unedited Transcript Link', 'Podcast Report_Summary', 'Post-Podcast Report_Unedited Video Link', 'Post-Podcast Report_Unedited Transcript Link', 'Post-Podcast Report_Summary'].includes(field.key) ? (
-                                        <>
-                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                {field.label}:
-                                            </label>
+                                        !(field.key === "Mentioned_Quotes" && formik.values["Mentions"] !== "Yes") && (
+                                            <>
+                                                <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                    {field.label}:
+                                                </label>
 
-                                            {MULTISELECT_FIELDS.includes(field.key) ? (
-                                                <CustomSelect
-                                                    id={field.key}
-                                                    options={OPTIONS[field.key] || []}
-                                                    value={formik.values[field.key] || []}
-                                                    isMulti={true}
-                                                    onChange={(value) => formik.setFieldValue(field.key, value)}
-                                                    placeholder={field.placeholder || `Select ${field.label}...`}
-                                                    className="w-full mb-2"
-                                                />
-                                            ) : SINGLESELECT_FIELDS.includes(field.key) ? (
-                                                <CustomSelect
-                                                    id={field.key}
-                                                    options={OPTIONS[field.key] || []}
-                                                    value={formik.values[field.key] || ""}
-                                                    isMulti={false}
-                                                    onChange={(value) => formik.setFieldValue(field.key, value)}
-                                                    placeholder={field.placeholder || `Select ${field.label}...`}
-                                                    className="w-full mb-2"
-                                                />
-                                            ) : field.type === "image" ? (
-                                                <>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(event) => {
-                                                            const file = event.currentTarget.files[0];
-                                                            formik.setFieldValue(field.key, file);
-                                                        }}
+                                                {MULTISELECT_FIELDS.includes(field.key) ? (
+                                                    <CustomSelect
+                                                        id={field.key}
+                                                        options={OPTIONS[field.key] || []}
+                                                        value={formik.values[field.key] || []}
+                                                        isMulti={true}
+                                                        onChange={(value) => formik.setFieldValue(field.key, value)}
+                                                        placeholder={field.placeholder || `Select ${field.label}...`}
+                                                        className="w-full mb-2"
                                                     />
-                                                    {formik.values[field.key] && typeof formik.values[field.key] === "string" && (
-                                                        <img src={formik.values[field.key]} alt="Uploaded Avatar" className="mt-2 h-16 rounded" />
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <CustomInput
-                                                    type={field.type || "text"}
-                                                    name={field.key}
-                                                    value={formik.values[field.key] || ""}
-                                                    onChange={formik.handleChange}
-                                                    onBlur={formik.handleBlur}
-                                                    className="w-full p-2 border rounded"
-                                                    placeholder={field.placeholder || `Select ${field.label}...`}
-                                                />
-                                            )}
-
-                                            {formik.errors[field.key] && (
-                                                <p className="text-red-500 text-sm">{formik.errors[field.key]}</p>
-                                            )}
-                                        </>
-                                    ) : field.key === 'Themes' ? (
-                                        <div>
-                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
-                                                Themes:
-                                            </label>
-
-                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <div>
-                                                        <CustomSelect
-                                                            id="theme-select"
-                                                            options={OPTIONS['Themes'] || []}
-                                                            value={currentTheme}
-                                                            isMulti={false}
-                                                            onChange={(value) => setCurrentTheme(value)}
-                                                            placeholder="Select a theme..."
-                                                            className="w-full mb-2"
+                                                ) : SINGLESELECT_FIELDS.includes(field.key) ? (
+                                                    <CustomSelect
+                                                        id={field.key}
+                                                        options={OPTIONS[field.key] || []}
+                                                        value={formik.values[field.key] || ""}
+                                                        isMulti={false}
+                                                        onChange={(value) => formik?.setFieldValue(field.key, value)}
+                                                        placeholder={field.placeholder || `Select ${field.label}...`}
+                                                        className="w-full mb-2"
+                                                    />
+                                                ) : field.type === "image" ? (
+                                                    <>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(event) => {
+                                                                const file = event.currentTarget.files[0];
+                                                                formik.setFieldValue(field.key, file);
+                                                            }}
                                                         />
-                                                    </div>
+                                                        {formik.values[field.key] && typeof formik.values[field.key] === "string" && (
+                                                            <img src={formik.values[field.key]} alt="Uploaded Avatar" className="mt-2 h-16 rounded" />
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <CustomInput
+                                                        type={field.type || "text"}
+                                                        name={field.key}
+                                                        value={formik.values[field.key] || ""}
+                                                        onChange={formik.handleChange}
+                                                        onBlur={formik.handleBlur}
+                                                        className="w-full p-2 border rounded"
+                                                        placeholder={field.placeholder || `Select ${field.label}...`}
+                                                    />
+                                                )}
 
-                                                    <div className="grid grid-cols-2 gap-4">
+                                                {formik.errors[field.key] && (
+                                                    <p className="text-red-500 text-sm">{formik.errors[field.key]}</p>
+                                                )}
+
+                                            </>
+                                        )) : field.key === 'Themes' ? (
+                                            <div>
+                                                <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                    Themes:
+                                                </label>
+
+                                                <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        <div>
+                                                            <CustomSelect
+                                                                id="theme-select"
+                                                                options={OPTIONS['Themes'] || []}
+                                                                value={currentTheme}
+                                                                isMulti={false}
+                                                                onChange={(value) => setCurrentTheme(value)}
+                                                                placeholder="Select a theme..."
+                                                                className="w-full mb-2"
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="number"
+                                                                    min="1"
+                                                                    max="10"
+                                                                    label="Match Rating (1-10)"
+                                                                    value={currentRanking}
+                                                                    onChange={(e) => setCurrentRanking(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="1-10"
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    label="Rating Justification"
+                                                                    value={currentJustification}
+                                                                    onChange={(e) => setCurrentJustification(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="Enter justification"
+                                                                />
+                                                            </div>
+                                                        </div>
+
                                                         <div>
                                                             <CustomInput
-                                                                type="number"
-                                                                min="1"
-                                                                max="10"
-                                                                label="Match Rating (1-10)"
-                                                                value={currentRanking}
-                                                                onChange={(e) => setCurrentRanking(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="1-10"
+                                                                type="text"
+                                                                label="Perception to Address"
+                                                                value={currentPerception}
+                                                                onChange={(e) => setCurrentPerception(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter perception to address"
                                                             />
                                                         </div>
 
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Rating Justification"
-                                                                value={currentJustification}
-                                                                onChange={(e) => setCurrentJustification(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="Enter justification"
+                                                                label="Why It Matters"
+                                                                value={currentWhyItMatters}
+                                                                onChange={(e) => setCurrentWhyItMatters(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter why it matters"
                                                             />
                                                         </div>
-                                                    </div>
 
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Perception to Address"
-                                                            value={currentPerception}
-                                                            onChange={(e) => setCurrentPerception(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter perception to address"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Why It Matters"
-                                                            value={currentWhyItMatters}
-                                                            onChange={(e) => setCurrentWhyItMatters(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter why it matters"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Deeper Insight"
-                                                            value={currentDeeperInsight}
-                                                            onChange={(e) => setCurrentDeeperInsight(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter deeper insight"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Supporting Quotes"
-                                                            value={currentSupportingQuotes}
-                                                            onChange={(e) => setCurrentSupportingQuotes(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter supporting quotes"
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex justify-end">
-                                                        <CustomButton
-                                                            type="button"
-                                                            onClick={handleAddTheme}
-                                                            disabled={!currentTheme || !currentRanking || !currentJustification}
-                                                            className="flex items-center gap-1"
-                                                        >
-                                                            <PlusIcon className="h-4 w-4" />
-                                                            {editIndex !== null ? "Update Theme" : "Add Theme"}
-                                                        </CustomButton>
-                                                    </div>
-                                                </div>
-                                                {themeEntries.length > 0 && (
-                                                    <div className="mt-2 max-h-[200px] overflow-y-auto">
-                                                        <h4 className="font-medium text-sm mb-2">Added Themes:</h4>
-                                                        {themeEntries.map((entry, index) => (
-                                                            <ThemeEntry
-                                                                key={index}
-                                                                index={index}
-                                                                theme={entry.theme}
-                                                                ranking={entry.ranking}
-                                                                justification={entry.justification}
-                                                                perception={entry.perception}
-                                                                whyItMatters={entry.whyItMatters}
-                                                                deeperInsight={entry.deeperInsight}
-                                                                supportingQuotes={entry.supportingQuotes}
-                                                                onEdit={handleEditTheme}
-                                                                onRemove={handleRemoveTheme}
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Deeper Insight"
+                                                                value={currentDeeperInsight}
+                                                                onChange={(e) => setCurrentDeeperInsight(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter deeper insight"
                                                             />
-                                                        ))}
+                                                        </div>
+
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Supporting Quotes"
+                                                                value={currentSupportingQuotes}
+                                                                onChange={(e) => setCurrentSupportingQuotes(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter supporting quotes"
+                                                            />
+                                                        </div>
+
+                                                        <div className="flex justify-end">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={handleAddTheme}
+                                                                disabled={!currentTheme || !currentRanking || !currentJustification}
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                <PlusIcon className="h-4 w-4" />
+                                                                {editIndex !== null ? "Update Theme" : "Add Theme"}
+                                                            </CustomButton>
+                                                        </div>
                                                     </div>
+                                                    {themeEntries.length > 0 && (
+                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                            <h4 className="font-medium text-sm mb-2">Added Themes:</h4>
+                                                            {themeEntries.map((entry, index) => (
+                                                                <ThemeEntry
+                                                                    key={index}
+                                                                    index={index}
+                                                                    theme={entry.theme}
+                                                                    ranking={entry.ranking}
+                                                                    justification={entry.justification}
+                                                                    perception={entry.perception}
+                                                                    whyItMatters={entry.whyItMatters}
+                                                                    deeperInsight={entry.deeperInsight}
+                                                                    supportingQuotes={entry.supportingQuotes}
+                                                                    onEdit={handleEditTheme}
+                                                                    onRemove={handleRemoveTheme}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {formik.errors['Themes'] && formik.touched['Themes'] && (
+                                                    <p className="text-red-500 text-sm mb-2">{formik.errors['Themes']}</p>
                                                 )}
                                             </div>
-                                            {formik.errors['Themes'] && formik.touched['Themes'] && (
-                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Themes']}</p>
-                                            )}
-                                        </div>
-                                    ) : field.key === 'Objections' ? (
-                                        <div>
-                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
-                                                Objections:
-                                            </label>
-                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <div>
-                                                        <CustomSelect
-                                                            id="objection-select"
-                                                            options={OPTIONS['Objections'] || []}
-                                                            value={currentObjection}
-                                                            isMulti={false}
-                                                            onChange={(value) => setCurrentObjection(value)}
-                                                            placeholder="Select an objection..."
-                                                            className="w-full mb-2"
-                                                        />
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-4">
+                                        ) : field.key === 'Objections' ? (
+                                            <div>
+                                                <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                    Objections:
+                                                </label>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                    <div className="grid grid-cols-1 gap-4">
                                                         <div>
-                                                            <CustomInput
-                                                                type="number"
-                                                                min="1"
-                                                                max="10"
-                                                                label="Match Rating (1-10)"
-                                                                value={currentObjectionRanking}
-                                                                onChange={(e) => setCurrentObjectionRanking(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="1-10"
+                                                            <CustomSelect
+                                                                id="objection-select"
+                                                                options={OPTIONS['Objections'] || []}
+                                                                value={currentObjection}
+                                                                isMulti={false}
+                                                                onChange={(value) => setCurrentObjection(value)}
+                                                                placeholder="Select an objection..."
+                                                                className="w-full mb-2"
                                                             />
                                                         </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="number"
+                                                                    min="1"
+                                                                    max="10"
+                                                                    label="Match Rating (1-10)"
+                                                                    value={currentObjectionRanking}
+                                                                    onChange={(e) => setCurrentObjectionRanking(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="1-10"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    label="Rating Justification"
+                                                                    value={currentObjectionJustification}
+                                                                    onChange={(e) => setCurrentObjectionJustification(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="Enter justification"
+                                                                />
+                                                            </div>
+                                                        </div>
+
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Rating Justification"
-                                                                value={currentObjectionJustification}
-                                                                onChange={(e) => setCurrentObjectionJustification(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="Enter justification"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Perception to Address"
-                                                            value={currentObjectionPerception}
-                                                            onChange={(e) => setCurrentObjectionPerception(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter perception to address"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Why It Matters"
-                                                            value={currentObjectionWhyItMatters}
-                                                            onChange={(e) => setCurrentObjectionWhyItMatters(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter why it matters"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Deeper Insight"
-                                                            value={currentObjectionDeeperInsight}
-                                                            onChange={(e) => setCurrentObjectionDeeperInsight(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter deeper insight"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Supporting Quotes"
-                                                            value={currentObjectionSupportingQuotes}
-                                                            onChange={(e) => setCurrentObjectionSupportingQuotes(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter supporting quotes"
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex justify-end">
-                                                        <CustomButton
-                                                            type="button"
-                                                            onClick={handleAddObjection}
-                                                            disabled={!currentObjection || !currentObjectionRanking || !currentObjectionJustification}
-                                                            className="flex items-center gap-1"
-                                                        >
-                                                            <PlusIcon className="h-4 w-4" />
-                                                            {objectionEditIndex !== null ? "Update Objection" : "Add Objection"}
-                                                        </CustomButton>
-                                                    </div>
-                                                    {objectionEntries.length > 0 && (
-                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
-                                                            <h4 className="font-medium text-sm mb-2">Added Objections:</h4>
-                                                            {objectionEntries.map((entry, index) => (
-                                                                <ObjectionEntry
-                                                                    key={index}
-                                                                    index={index}
-                                                                    objection={entry.objection}
-                                                                    ranking={entry.ranking}
-                                                                    justification={entry.justification}
-                                                                    perception={entry.perception}
-                                                                    whyItMatters={entry.whyItMatters}
-                                                                    deeperInsight={entry.deeperInsight}
-                                                                    supportingQuotes={entry.supportingQuotes}
-                                                                    onEdit={handleEditObjection}
-                                                                    onRemove={handleRemoveObjection}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {formik.errors['Objections'] && formik.touched['Objections'] && (
-                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Objections']}</p>
-                                            )}
-                                        </div>
-                                    ) : field.key === 'Validations' ? (
-                                        <div>
-                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
-                                                Validations:
-                                            </label>
-                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <div>
-                                                        <CustomSelect
-                                                            id="validation-select"
-                                                            options={OPTIONS['Validations'] || []}
-                                                            value={currentValidation}
-                                                            isMulti={false}
-                                                            onChange={(value) => setCurrentValidation(value)}
-                                                            placeholder="Select a validation..."
-                                                            className="w-full mb-2"
-                                                        />
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div>
-                                                            <CustomInput
-                                                                type="number"
-                                                                min="1"
-                                                                max="10"
-                                                                label="Match Rating (1-10)"
-                                                                value={currentValidationRanking}
-                                                                onChange={(e) => setCurrentValidationRanking(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="1-10"
+                                                                label="Perception to Address"
+                                                                value={currentObjectionPerception}
+                                                                onChange={(e) => setCurrentObjectionPerception(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter perception to address"
                                                             />
                                                         </div>
 
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Rating Justification"
-                                                                value={currentValidationJustification}
-                                                                onChange={(e) => setCurrentValidationJustification(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="Enter justification"
+                                                                label="Why It Matters"
+                                                                value={currentObjectionWhyItMatters}
+                                                                onChange={(e) => setCurrentObjectionWhyItMatters(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter why it matters"
                                                             />
                                                         </div>
-                                                    </div>
 
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Perception to Address"
-                                                            value={currentValidationPerception}
-                                                            onChange={(e) => setCurrentValidationPerception(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter perception to address"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Why It Matters"
-                                                            value={currentValidationWhyItMatters}
-                                                            onChange={(e) => setCurrentValidationWhyItMatters(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter why it matters"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Deeper Insight"
-                                                            value={currentValidationDeeperInsight}
-                                                            onChange={(e) => setCurrentValidationDeeperInsight(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter deeper insight"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Supporting Quotes"
-                                                            value={currentValidationSupportingQuotes}
-                                                            onChange={(e) => setCurrentValidationSupportingQuotes(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter supporting quotes"
-                                                        />
-                                                    </div>
-                                                    <div className="flex justify-end">
-                                                        <CustomButton
-                                                            type="button"
-                                                            onClick={handleAddValidation}
-                                                            disabled={!currentValidation || !currentValidationRanking || !currentValidationJustification}
-                                                            className="flex items-center gap-1"
-                                                        >
-                                                            <PlusIcon className="h-4 w-4" />
-                                                            {validationEditIndex !== null ? "Update Validation" : "Add Validation"}
-                                                        </CustomButton>
-                                                    </div>
-                                                    {validationEntries.length > 0 && (
-                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
-                                                            <h4 className="font-medium text-sm mb-2">Added Validations:</h4>
-                                                            {validationEntries.map((entry, index) => (
-                                                                <ValidationEntry
-                                                                    key={index}
-                                                                    index={index}
-                                                                    validation={entry.validation}
-                                                                    ranking={entry.ranking}
-                                                                    justification={entry.justification}
-                                                                    perception={entry.perception}
-                                                                    whyItMatters={entry.whyItMatters}
-                                                                    deeperInsight={entry.deeperInsight}
-                                                                    supportingQuotes={entry.supportingQuotes}
-                                                                    onEdit={handleEditValidation}
-                                                                    onRemove={handleRemoveValidation}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {formik.errors['Validations'] && formik.touched['Validations'] && (
-                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Validations']}</p>
-                                            )}
-                                        </div>
-                                    ) : field.key === 'Challenges' ? (
-                                        <div>
-                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
-                                                Challenges:
-                                            </label>
-                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <div>
-                                                        <CustomSelect
-                                                            id="challenges-select"
-                                                            options={OPTIONS['Challenges'] || []}
-                                                            value={currentChallenges}
-                                                            isMulti={false}
-                                                            onChange={(value) => setCurrentChallenges(value)}
-                                                            placeholder="Select a challenge..."
-                                                            className="w-full mb-2"
-                                                        />
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-4">
                                                         <div>
                                                             <CustomInput
-                                                                type="number"
-                                                                min="1"
-                                                                max="10"
-                                                                label="Match Rating (1-10)"
-                                                                value={currentChallengesRanking}
-                                                                onChange={(e) => setCurrentChallengesRanking(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="1-10"
+                                                                type="text"
+                                                                label="Deeper Insight"
+                                                                value={currentObjectionDeeperInsight}
+                                                                onChange={(e) => setCurrentObjectionDeeperInsight(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter deeper insight"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Supporting Quotes"
+                                                                value={currentObjectionSupportingQuotes}
+                                                                onChange={(e) => setCurrentObjectionSupportingQuotes(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter supporting quotes"
+                                                            />
+                                                        </div>
+
+                                                        <div className="flex justify-end">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={handleAddObjection}
+                                                                disabled={!currentObjection || !currentObjectionRanking || !currentObjectionJustification}
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                <PlusIcon className="h-4 w-4" />
+                                                                {objectionEditIndex !== null ? "Update Objection" : "Add Objection"}
+                                                            </CustomButton>
+                                                        </div>
+                                                        {objectionEntries.length > 0 && (
+                                                            <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                                <h4 className="font-medium text-sm mb-2">Added Objections:</h4>
+                                                                {objectionEntries.map((entry, index) => (
+                                                                    <ObjectionEntry
+                                                                        key={index}
+                                                                        index={index}
+                                                                        objection={entry.objection}
+                                                                        ranking={entry.ranking}
+                                                                        justification={entry.justification}
+                                                                        perception={entry.perception}
+                                                                        whyItMatters={entry.whyItMatters}
+                                                                        deeperInsight={entry.deeperInsight}
+                                                                        supportingQuotes={entry.supportingQuotes}
+                                                                        onEdit={handleEditObjection}
+                                                                        onRemove={handleRemoveObjection}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {formik.errors['Objections'] && formik.touched['Objections'] && (
+                                                    <p className="text-red-500 text-sm mb-2">{formik.errors['Objections']}</p>
+                                                )}
+                                            </div>
+                                        ) : field.key === 'Validations' ? (
+                                            <div>
+                                                <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                    Validations:
+                                                </label>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        <div>
+                                                            <CustomSelect
+                                                                id="validation-select"
+                                                                options={OPTIONS['Validations'] || []}
+                                                                value={currentValidation}
+                                                                isMulti={false}
+                                                                onChange={(value) => setCurrentValidation(value)}
+                                                                placeholder="Select a validation..."
+                                                                className="w-full mb-2"
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="number"
+                                                                    min="1"
+                                                                    max="10"
+                                                                    label="Match Rating (1-10)"
+                                                                    value={currentValidationRanking}
+                                                                    onChange={(e) => setCurrentValidationRanking(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="1-10"
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    label="Rating Justification"
+                                                                    value={currentValidationJustification}
+                                                                    onChange={(e) => setCurrentValidationJustification(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="Enter justification"
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Perception to Address"
+                                                                value={currentValidationPerception}
+                                                                onChange={(e) => setCurrentValidationPerception(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter perception to address"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Why It Matters"
+                                                                value={currentValidationWhyItMatters}
+                                                                onChange={(e) => setCurrentValidationWhyItMatters(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter why it matters"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Deeper Insight"
+                                                                value={currentValidationDeeperInsight}
+                                                                onChange={(e) => setCurrentValidationDeeperInsight(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter deeper insight"
                                                             />
                                                         </div>
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Rating Justification"
-                                                                value={currentChallengesJustification}
-                                                                onChange={(e) => setCurrentChallengesJustification(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="Enter justification"
+                                                                label="Supporting Quotes"
+                                                                value={currentValidationSupportingQuotes}
+                                                                onChange={(e) => setCurrentValidationSupportingQuotes(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter supporting quotes"
                                                             />
                                                         </div>
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Perception to Address"
-                                                            value={currentChallengesPerception}
-                                                            onChange={(e) => setCurrentChallengesPerception(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter perception to address"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Why It Matters"
-                                                            value={currentChallengesWhyItMatters}
-                                                            onChange={(e) => setCurrentChallengesWhyItMatters(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter why it matters"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Deeper Insight"
-                                                            value={currentChallengesDeeperInsight}
-                                                            onChange={(e) => setCurrentChallengesDeeperInsight(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter deeper insight"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Supporting Quotes"
-                                                            value={currentChallengesSupportingQuotes}
-                                                            onChange={(e) => setCurrentChallengesSupportingQuotes(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter supporting quotes"
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex justify-end">
-                                                        <CustomButton
-                                                            type="button"
-                                                            onClick={handleAddChallenges}
-                                                            disabled={!currentChallenges || !currentChallengesRanking || !currentChallengesJustification}
-                                                            className="flex items-center gap-1"
-                                                        >
-                                                            <PlusIcon className="h-4 w-4" />
-                                                            {challengesEditIndex !== null ? "Update Challenge" : "Add Challenge"}
-                                                        </CustomButton>
-                                                    </div>
-                                                    {challengesEntries.length > 0 && (
-                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
-                                                            <h4 className="font-medium text-sm mb-2">Added Challenges:</h4>
-                                                            {challengesEntries.map((entry, index) => (
-                                                                <ChallengesEntry
-                                                                    key={index}
-                                                                    index={index}
-                                                                    challenge={entry.challenges}
-                                                                    ranking={entry.ranking}
-                                                                    justification={entry.justification}
-                                                                    perception={entry.perception}
-                                                                    whyItMatters={entry.whyItMatters}
-                                                                    deeperInsight={entry.deeperInsight}
-                                                                    supportingQuotes={entry.supportingQuotes}
-                                                                    onEdit={handleEditChallenges}
-                                                                    onRemove={handleRemoveChallenges}
-                                                                />
-                                                            ))}
+                                                        <div className="flex justify-end">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={handleAddValidation}
+                                                                disabled={!currentValidation || !currentValidationRanking || !currentValidationJustification}
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                <PlusIcon className="h-4 w-4" />
+                                                                {validationEditIndex !== null ? "Update Validation" : "Add Validation"}
+                                                            </CustomButton>
                                                         </div>
-                                                    )}
+                                                        {validationEntries.length > 0 && (
+                                                            <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                                <h4 className="font-medium text-sm mb-2">Added Validations:</h4>
+                                                                {validationEntries.map((entry, index) => (
+                                                                    <ValidationEntry
+                                                                        key={index}
+                                                                        index={index}
+                                                                        validation={entry.validation}
+                                                                        ranking={entry.ranking}
+                                                                        justification={entry.justification}
+                                                                        perception={entry.perception}
+                                                                        whyItMatters={entry.whyItMatters}
+                                                                        deeperInsight={entry.deeperInsight}
+                                                                        supportingQuotes={entry.supportingQuotes}
+                                                                        onEdit={handleEditValidation}
+                                                                        onRemove={handleRemoveValidation}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
+                                                {formik.errors['Validations'] && formik.touched['Validations'] && (
+                                                    <p className="text-red-500 text-sm mb-2">{formik.errors['Validations']}</p>
+                                                )}
                                             </div>
-                                            {formik.errors['Challenges'] && formik.touched['Challenges'] && (
-                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Challenges']}</p>
-                                            )}
-                                        </div>
-                                    ) : field.key === 'Sales Insights' ? (
-                                        <div>
-                                            <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
-                                                Sales Insights:
-                                            </label>
-                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <div>
-                                                        <CustomSelect
-                                                            id="sales-insights-select"
-                                                            options={OPTIONS['Sales Insights'] || []}
-                                                            value={currentSalesInsight}
-                                                            isMulti={false}
-                                                            onChange={(value) => setCurrentSalesInsight(value)}
-                                                            placeholder="Select a sales insight..."
-                                                            className="w-full mb-2"
-                                                        />
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-4">
+                                        ) : field.key === 'Challenges' ? (
+                                            <div>
+                                                <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                    Challenges:
+                                                </label>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                    <div className="grid grid-cols-1 gap-4">
                                                         <div>
-                                                            <CustomInput
-                                                                type="number"
-                                                                min="1"
-                                                                max="10"
-                                                                label="Match Rating (1-10)"
-                                                                value={currentSalesInsightRanking}
-                                                                onChange={(e) => setCurrentSalesInsightRanking(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="1-10"
+                                                            <CustomSelect
+                                                                id="challenges-select"
+                                                                options={OPTIONS['Challenges'] || []}
+                                                                value={currentChallenges}
+                                                                isMulti={false}
+                                                                onChange={(value) => setCurrentChallenges(value)}
+                                                                placeholder="Select a challenge..."
+                                                                className="w-full mb-2"
                                                             />
                                                         </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="number"
+                                                                    min="1"
+                                                                    max="10"
+                                                                    label="Match Rating (1-10)"
+                                                                    value={currentChallengesRanking}
+                                                                    onChange={(e) => setCurrentChallengesRanking(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="1-10"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    label="Rating Justification"
+                                                                    value={currentChallengesJustification}
+                                                                    onChange={(e) => setCurrentChallengesJustification(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="Enter justification"
+                                                                />
+                                                            </div>
+                                                        </div>
+
                                                         <div>
                                                             <CustomInput
                                                                 type="text"
-                                                                label="Rating Justification"
-                                                                value={currentSalesInsightJustification}
-                                                                onChange={(e) => setCurrentSalesInsightJustification(e.target.value)}
-                                                                className="w-full p-2 border rounded"
-                                                                placeholder="Enter justification"
+                                                                label="Perception to Address"
+                                                                value={currentChallengesPerception}
+                                                                onChange={(e) => setCurrentChallengesPerception(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter perception to address"
                                                             />
                                                         </div>
-                                                    </div>
 
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Perception to Address"
-                                                            value={currentSalesInsightPerception}
-                                                            onChange={(e) => setCurrentSalesInsightPerception(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter perception"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Why It Matters"
-                                                            value={currentSalesInsightWhyItMatters}
-                                                            onChange={(e) => setCurrentSalesInsightWhyItMatters(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter why it matters"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Deeper Insight"
-                                                            value={currentSalesInsightDeeperInsight}
-                                                            onChange={(e) => setCurrentSalesInsightDeeperInsight(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter deeper insight"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <CustomInput
-                                                            type="text"
-                                                            label="Supporting Quotes"
-                                                            value={currentSalesInsightSupportingQuotes}
-                                                            onChange={(e) => setCurrentSalesInsightSupportingQuotes(e.target.value)}
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            placeholder="Enter supporting quotes"
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex justify-end">
-                                                        <CustomButton
-                                                            type="button"
-                                                            onClick={handleAddSalesInsight}
-                                                            disabled={!currentSalesInsight || !currentSalesInsightRanking || !currentSalesInsightJustification}
-                                                            className="flex items-center gap-1"
-                                                        >
-                                                            <PlusIcon className="h-4 w-4" />
-                                                            {salesInsightsEditIndex !== null ? "Update Insight" : "Add Insight"}
-                                                        </CustomButton>
-                                                    </div>
-
-                                                    {salesInsightsEntries.length > 0 && (
-                                                        <div className="mt-2 max-h-[200px] overflow-y-auto">
-                                                            <h4 className="font-medium text-sm mb-2">Added Sales Insights:</h4>
-                                                            {salesInsightsEntries.map((entry, index) => (
-                                                                <SalesInsightsEntry // You may want to create a `SalesInsightEntry` component
-                                                                    key={index}
-                                                                    index={index}
-                                                                    insight={entry.insight}
-                                                                    ranking={entry.ranking}
-                                                                    justification={entry.justification}
-                                                                    perception={entry.perception}
-                                                                    whyItMatters={entry.whyItMatters}
-                                                                    deeperInsight={entry.deeperInsight}
-                                                                    supportingQuotes={entry.supportingQuotes}
-                                                                    onEdit={handleEditSalesInsight}
-                                                                    onRemove={handleRemoveSalesInsight}
-                                                                />
-                                                            ))}
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Why It Matters"
+                                                                value={currentChallengesWhyItMatters}
+                                                                onChange={(e) => setCurrentChallengesWhyItMatters(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter why it matters"
+                                                            />
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {formik.errors['Sales Insights'] && formik.touched['Sales Insights'] && (
-                                                <p className="text-red-500 text-sm mb-2">{formik.errors['Sales Insights']}</p>
-                                            )}
-                                        </div>
 
-                                    ) : field.key === "Challenge Report_Unedited Video Link" ? (
-                                        <>
-                                            <label className="font-bold mb-2">Challenge Report:</label>
-                                            <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Deeper Insight"
+                                                                value={currentChallengesDeeperInsight}
+                                                                onChange={(e) => setCurrentChallengesDeeperInsight(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter deeper insight"
+                                                            />
+                                                        </div>
 
-                                                <div className="space-y-4">
-                                                    {/* Challenge Report fields */}
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Unedited Video Link:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="url"
-                                                            name="Challenge Report_Unedited Video Link"
-                                                            value={formik.values["Challenge Report_Unedited Video Link"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter unedited video link"
-                                                        />
-                                                        {formik.errors["Challenge Report_Unedited Video Link"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Unedited Video Link"]}</p>
-                                                        )}
-                                                    </div>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Supporting Quotes"
+                                                                value={currentChallengesSupportingQuotes}
+                                                                onChange={(e) => setCurrentChallengesSupportingQuotes(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter supporting quotes"
+                                                            />
+                                                        </div>
 
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Unedited Transcript Link:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="url"
-                                                            name="Challenge Report_Unedited Transcript Link"
-                                                            value={formik.values["Challenge Report_Unedited Transcript Link"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter unedited transcript link"
-                                                        />
-                                                        {formik.errors["Challenge Report_Unedited Transcript Link"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Unedited Transcript Link"]}</p>
-                                                        )}
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Summary:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="text"
-                                                            name="Challenge Report_Summary"
-                                                            value={formik.values["Challenge Report_Summary"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter summary"
-                                                        />
-                                                        {formik.errors["Challenge Report_Summary"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Summary"]}</p>
+                                                        <div className="flex justify-end">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={handleAddChallenges}
+                                                                disabled={!currentChallenges || !currentChallengesRanking || !currentChallengesJustification}
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                <PlusIcon className="h-4 w-4" />
+                                                                {challengesEditIndex !== null ? "Update Challenge" : "Add Challenge"}
+                                                            </CustomButton>
+                                                        </div>
+                                                        {challengesEntries.length > 0 && (
+                                                            <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                                <h4 className="font-medium text-sm mb-2">Added Challenges:</h4>
+                                                                {challengesEntries.map((entry, index) => (
+                                                                    <ChallengesEntry
+                                                                        key={index}
+                                                                        index={index}
+                                                                        challenge={entry.challenges}
+                                                                        ranking={entry.ranking}
+                                                                        justification={entry.justification}
+                                                                        perception={entry.perception}
+                                                                        whyItMatters={entry.whyItMatters}
+                                                                        deeperInsight={entry.deeperInsight}
+                                                                        supportingQuotes={entry.supportingQuotes}
+                                                                        onEdit={handleEditChallenges}
+                                                                        onRemove={handleRemoveChallenges}
+                                                                    />
+                                                                ))}
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
+                                                {formik.errors['Challenges'] && formik.touched['Challenges'] && (
+                                                    <p className="text-red-500 text-sm mb-2">{formik.errors['Challenges']}</p>
+                                                )}
                                             </div>
-                                        </>
+                                        ) : field.key === 'Sales Insights' ? (
+                                            <div>
+                                                <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                    Sales Insights:
+                                                </label>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        <div>
+                                                            <CustomSelect
+                                                                id="sales-insights-select"
+                                                                options={OPTIONS['Sales Insights'] || []}
+                                                                value={currentSalesInsight}
+                                                                isMulti={false}
+                                                                onChange={(value) => setCurrentSalesInsight(value)}
+                                                                placeholder="Select a sales insight..."
+                                                                className="w-full mb-2"
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="number"
+                                                                    min="1"
+                                                                    max="10"
+                                                                    label="Match Rating (1-10)"
+                                                                    value={currentSalesInsightRanking}
+                                                                    onChange={(e) => setCurrentSalesInsightRanking(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="1-10"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    label="Rating Justification"
+                                                                    value={currentSalesInsightJustification}
+                                                                    onChange={(e) => setCurrentSalesInsightJustification(e.target.value)}
+                                                                    className="w-full p-2 border rounded"
+                                                                    placeholder="Enter justification"
+                                                                />
+                                                            </div>
+                                                        </div>
 
-                                    ) : field.key === "Podcast Report_Unedited Video Link" ? (
-                                        <>
-                                            <label className="font-bold mb-2">Podcast Report:</label>
-                                            <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
-                                                <div className="space-y-4">
-                                                    {/* Podcast Report fields */}
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Unedited Video Link:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="url"
-                                                            name="Podcast Report_Unedited Video Link"
-                                                            value={formik.values["Podcast Report_Unedited Video Link"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter unedited video link"
-                                                        />
-                                                        {formik.errors["Podcast Report_Unedited Video Link"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Unedited Video Link"]}</p>
-                                                        )}
-                                                    </div>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Perception to Address"
+                                                                value={currentSalesInsightPerception}
+                                                                onChange={(e) => setCurrentSalesInsightPerception(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter perception"
+                                                            />
+                                                        </div>
 
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Unedited Transcript Link:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="url"
-                                                            name="Podcast Report_Unedited Transcript Link"
-                                                            value={formik.values["Podcast Report_Unedited Transcript Link"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter unedited transcript link"
-                                                        />
-                                                        {formik.errors["Podcast Report_Unedited Transcript Link"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Unedited Transcript Link"]}</p>
-                                                        )}
-                                                    </div>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Why It Matters"
+                                                                value={currentSalesInsightWhyItMatters}
+                                                                onChange={(e) => setCurrentSalesInsightWhyItMatters(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter why it matters"
+                                                            />
+                                                        </div>
 
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Summary:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="text"
-                                                            name="Podcast Report_Summary"
-                                                            value={formik.values["Podcast Report_Summary"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter summary"
-                                                        />
-                                                        {formik.errors["Podcast Report_Summary"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Summary"]}</p>
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Deeper Insight"
+                                                                value={currentSalesInsightDeeperInsight}
+                                                                onChange={(e) => setCurrentSalesInsightDeeperInsight(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter deeper insight"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <CustomInput
+                                                                type="text"
+                                                                label="Supporting Quotes"
+                                                                value={currentSalesInsightSupportingQuotes}
+                                                                onChange={(e) => setCurrentSalesInsightSupportingQuotes(e.target.value)}
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                placeholder="Enter supporting quotes"
+                                                            />
+                                                        </div>
+
+                                                        <div className="flex justify-end">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={handleAddSalesInsight}
+                                                                disabled={!currentSalesInsight || !currentSalesInsightRanking || !currentSalesInsightJustification}
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                <PlusIcon className="h-4 w-4" />
+                                                                {salesInsightsEditIndex !== null ? "Update Insight" : "Add Insight"}
+                                                            </CustomButton>
+                                                        </div>
+
+                                                        {salesInsightsEntries.length > 0 && (
+                                                            <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                                <h4 className="font-medium text-sm mb-2">Added Sales Insights:</h4>
+                                                                {salesInsightsEntries.map((entry, index) => (
+                                                                    <SalesInsightsEntry // You may want to create a `SalesInsightEntry` component
+                                                                        key={index}
+                                                                        index={index}
+                                                                        insight={entry.insight}
+                                                                        ranking={entry.ranking}
+                                                                        justification={entry.justification}
+                                                                        perception={entry.perception}
+                                                                        whyItMatters={entry.whyItMatters}
+                                                                        deeperInsight={entry.deeperInsight}
+                                                                        supportingQuotes={entry.supportingQuotes}
+                                                                        onEdit={handleEditSalesInsight}
+                                                                        onRemove={handleRemoveSalesInsight}
+                                                                    />
+                                                                ))}
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
+                                                {formik.errors['Sales Insights'] && formik.touched['Sales Insights'] && (
+                                                    <p className="text-red-500 text-sm mb-2">{formik.errors['Sales Insights']}</p>
+                                                )}
                                             </div>
-                                        </>
 
-                                    ) : field.key === "Post-Podcast Report_Unedited Video Link" && (
-                                        <>
-                                            <label className="font-bold mb-2">Post-Podcast Report:</label>
-                                            <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                        ) : field.key === "Challenge Report_Unedited Video Link" ? (
+                                            <>
+                                                <label className="font-bold mb-2">Challenge Report:</label>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
 
-                                                <div className="space-y-4">
-                                                    {/* Post-Podcast Report fields */}
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Unedited Video Link:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="url"
-                                                            name="Post-Podcast Report_Unedited Video Link"
-                                                            value={formik.values["Post-Podcast Report_Unedited Video Link"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter unedited video link"
-                                                        />
-                                                        {formik.errors["Post-Podcast Report_Unedited Video Link"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Unedited Video Link"]}</p>
-                                                        )}
-                                                    </div>
+                                                    <div className="space-y-4">
+                                                        {/* Challenge Report fields */}
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Unedited Video Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Challenge Report_Unedited Video Link"
+                                                                value={formik.values["Challenge Report_Unedited Video Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter unedited video link"
+                                                            />
+                                                            {formik.errors["Challenge Report_Unedited Video Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Unedited Video Link"]}</p>
+                                                            )}
+                                                        </div>
 
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Unedited Transcript Link:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="url"
-                                                            name="Post-Podcast Report_Unedited Transcript Link"
-                                                            value={formik.values["Post-Podcast Report_Unedited Transcript Link"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter unedited transcript link"
-                                                        />
-                                                        {formik.errors["Post-Podcast Report_Unedited Transcript Link"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Unedited Transcript Link"]}</p>
-                                                        )}
-                                                    </div>
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Unedited Transcript Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Challenge Report_Unedited Transcript Link"
+                                                                value={formik.values["Challenge Report_Unedited Transcript Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter unedited transcript link"
+                                                            />
+                                                            {formik.errors["Challenge Report_Unedited Transcript Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Unedited Transcript Link"]}</p>
+                                                            )}
+                                                        </div>
 
-                                                    <div>
-                                                        <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                            Summary:
-                                                        </label>
-                                                        <CustomInput
-                                                            type="text"
-                                                            name="Post-Podcast Report_Summary"
-                                                            value={formik.values["Post-Podcast Report_Summary"] || ""}
-                                                            onChange={formik.handleChange}
-                                                            onBlur={formik.handleBlur}
-                                                            className="w-full p-2 border rounded"
-                                                            placeholder="Enter summary"
-                                                        />
-                                                        {formik.errors["Post-Podcast Report_Summary"] && (
-                                                            <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Summary"]}</p>
-                                                        )}
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Summary:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Challenge Report_Summary"
+                                                                value={formik.values["Challenge Report_Summary"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter summary"
+                                                            />
+                                                            {formik.errors["Challenge Report_Summary"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Summary"]}</p>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </>
-                                    )}
+                                            </>
+
+                                        ) : field.key === "Podcast Report_Unedited Video Link" ? (
+                                            <>
+                                                <label className="font-bold mb-2">Podcast Report:</label>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                    <div className="space-y-4">
+                                                        {/* Podcast Report fields */}
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Unedited Video Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Podcast Report_Unedited Video Link"
+                                                                value={formik.values["Podcast Report_Unedited Video Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter unedited video link"
+                                                            />
+                                                            {formik.errors["Podcast Report_Unedited Video Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Unedited Video Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Unedited Transcript Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Podcast Report_Unedited Transcript Link"
+                                                                value={formik.values["Podcast Report_Unedited Transcript Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter unedited transcript link"
+                                                            />
+                                                            {formik.errors["Podcast Report_Unedited Transcript Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Unedited Transcript Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Summary:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Podcast Report_Summary"
+                                                                value={formik.values["Podcast Report_Summary"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter summary"
+                                                            />
+                                                            {formik.errors["Podcast Report_Summary"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Summary"]}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+
+                                        ) : field.key === "Post-Podcast Report_Unedited Video Link" && (
+                                            <>
+                                                <label className="font-bold mb-2">Post-Podcast Report:</label>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+
+                                                    <div className="space-y-4">
+                                                        {/* Post-Podcast Report fields */}
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Unedited Video Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Post-Podcast Report_Unedited Video Link"
+                                                                value={formik.values["Post-Podcast Report_Unedited Video Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter unedited video link"
+                                                            />
+                                                            {formik.errors["Post-Podcast Report_Unedited Video Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Unedited Video Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Unedited Transcript Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Post-Podcast Report_Unedited Transcript Link"
+                                                                value={formik.values["Post-Podcast Report_Unedited Transcript Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter unedited transcript link"
+                                                            />
+                                                            {formik.errors["Post-Podcast Report_Unedited Transcript Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Unedited Transcript Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Summary:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Post-Podcast Report_Summary"
+                                                                value={formik.values["Post-Podcast Report_Summary"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter summary"
+                                                            />
+                                                            {formik.errors["Post-Podcast Report_Summary"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Summary"]}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                 </div>
                             ))}
                         </div>
