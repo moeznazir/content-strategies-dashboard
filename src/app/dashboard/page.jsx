@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import DraggableTable from "../customComponents/DraaggableTable";
 import { createClient } from '@supabase/supabase-js';
-import { FaChevronLeft, FaChevronRight, FaUser, FaClock, FaLink, FaTimes, FaPlus } from "react-icons/fa";
+import { FaClock, FaLink, FaTimes, FaPlus } from "react-icons/fa";
 import CustomCrudForm from "../customComponents/CustomCrud";
 import Alert from "../customComponents/Alert";
 import SearchByDateModal from "../customComponents/SearchByDateModal";
@@ -58,6 +58,7 @@ const Dashboard = () => {
     { label: "Top Three Takeaways", id: "Text comments for the rating (OPTIONAL input from the user)" },
     { label: "Key Quote", id: "Quote" },
     { label: "Mentions", id: "Mentions" },
+    { label: "Mentioned Quotes", id: "Mentioned_Quotes" },
     { label: "Public vs. Private", id: "Public_vs_Private" },
     { label: "Discussion Guide", id: "Discussion Guide" },
     { label: "Transcript", id: "Transcript" },
@@ -101,7 +102,7 @@ const Dashboard = () => {
     { label: "Avatar", key: "Avatar", placeholder: "Upload Avatar", type: "image" },
     { label: "Guest Title", key: "Guest Title", placeholder: "Enter Guest Title" },
     { label: "Guest Company", key: "Guest Company", placeholder: "Enter Guest Company" },
-    { label: "Guest Industry", key: "Guest Industry", placeholder: "Select Guest Industry" },
+    { label: "Guest Industry", key: "Guest Industry", placeholder: "Enter Guest Industry" },
     // { label: "Guest Role", key: "Guest Role", placeholder: "Enter Guest Role" },
     { label: "Date Recorded", key: "Date Recorded", placeholder: "Select Date", type: "date" },
     { label: "Episode #", key: "Episode_Number", placeholder: "Enter Episode Number", type: "number" },
@@ -115,6 +116,7 @@ const Dashboard = () => {
     { label: "Top Three Takeaways", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Key Quote", key: "Quote", placeholder: "Enter Quote" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
+    { label: "Mentioned Quotes", key: "Mentioned_Quotes", placeholder: "Enter Mentioned Quotes"},
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Discussion Guide", key: "Discussion Guide", placeholder: "Enter Discussion Guide Link", type: "url" },
     { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
@@ -653,7 +655,7 @@ const Dashboard = () => {
         <div className="sticky top-0 z-10 max-w-[calc(100%-3rem)] ml-6 border rounded-full bg-white/10 py-2 px-8 mb-3">
           <div className="flex items-center w-full max-w-[calc(100vw-8rem)] mx-auto">
             <span className="text-gray-200 font-medium whitespace-nowrap mr-2 -ml-2">Applied Filters:</span>
-            <div className="flex-1 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+            <div className="flex-1 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 no-scrollbar">
               {/* Search text filter */}
               {searchText && (
                 <div className="flex-shrink-0 flex items-center gap-1 bg-[#1a1b41] rounded-full px-3 py-1">
