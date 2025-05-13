@@ -130,7 +130,7 @@ const Dashboard = () => {
     { label: "Sales Insights", key: "Sales Insights", placeholder: "Select Sales Insights", type: "multiselect" },
     { label: "Challenge Report: Unedited Video Link", key: "Challenge Report_Unedited Video Link", type: "url" },
     { label: "Challenge Report: Unedited Transcript Link", key: "Challenge Report_Unedited Transcript Link", type: "url" },
-    { label: "Challenge Report: Summary", key: "Challenge Report_Summary", type: "url" },
+    { label: "Challenge Report: Summary", key: "Challenge Report_Summary" },
     { label: "Podcast Report: Unedited Video Link", key: "Podcast Report_Unedited Video Link", type: "url" },
     { label: "Podcast Report: Unedited Transcript Link", key: "Podcast Report_Unedited Transcript Link", type: "url" },
     { label: "Podcast Report: Summary", key: "Podcast Report_Summary" },
