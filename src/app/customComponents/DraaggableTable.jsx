@@ -38,7 +38,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
 
     const shouldResizeColumn = (columnId) => {
         // Disable separator for these specific columns
-        return !['Guest Industry', 'Objections', 'Challenges', 'Sales Insights', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
+        return ![ 'Objections', 'Challenges', 'Sales Insights', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
     };
 
     return (
@@ -324,7 +324,7 @@ const DraggableTable = ({
                                             key={column.id}
                                             className={`
                                        px-6 py-1 text-sm divide-y divide-gray-600 whitespace-nowrap
-                                       ${['Guest Industry', 'Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Sales Insights', 'Video Type'].includes(column.label)
+                                       ${[ 'Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Sales Insights', 'Video Type'].includes(column.label)
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }

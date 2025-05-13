@@ -70,6 +70,8 @@ const Dashboard = () => {
     { label: "Objections", id: "Objections" },
     { label: "Challenges", id: "Challenges" },
     { label: "Sales Insights", id: "Sales Insights" },
+    { label: "YouTube Short", id: "YouTube Short - Extended Media" },
+    { label: "LinkedIn Video", id: "LinkedIn Video - Extended Media" },
     { label: "Challenge Report: Unedited Video Link", id: "Challenge Report_Unedited Video Link", type: 'url' },
     { label: "Challenge Report: Unedited Transcript Link", id: "Challenge Report_Unedited Transcript Link", type: 'url' },
     { label: "Challenge Report: Summary", id: "Challenge Report_Summary", type: 'url' },
@@ -86,7 +88,7 @@ const Dashboard = () => {
   ];
 
   const arrayFields = [
-    "Guest Industry",
+    // "Guest Industry",
     "Objections",
     // "Tags",
     "Themes",
@@ -128,6 +130,8 @@ const Dashboard = () => {
     { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
     { label: "Challenges", key: "Challenges", placeholder: "Select an ICP Challenge", type: "multiselect" },
     { label: "Sales Insights", key: "Sales Insights", placeholder: "Select Sales Insights", type: "multiselect" },
+    { label: "YouTube Short", key: "YouTube Short - Extended Media", placeholder: "Enter YouTube Short Link ", type: "url" },
+    { label: "LinkedIn Video", key: "LinkedIn Video - Extended Media", placeholder: "Enter LinkedIn Video Link ", type: "url" },
     { label: "Challenge Report: Unedited Video Link", key: "Challenge Report_Unedited Video Link", type: "url" },
     { label: "Challenge Report: Unedited Transcript Link", key: "Challenge Report_Unedited Transcript Link", type: "url" },
     { label: "Challenge Report: Summary", key: "Challenge Report_Summary" },
