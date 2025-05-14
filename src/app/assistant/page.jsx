@@ -17,15 +17,23 @@ const Assistant = () => {
     const [apiResponse, setApiResponse] = useState(null);
     const [selectedDocTitles, setSelectedDocTitles] = useState([]);
     const [selectedPromptTitle, setSelectedPromptTitle] = useState('');
-    const [isPersistentOpen, setIsPersistentOpen] = useState(true);
-    const [isCustomerVoiceOpen, setIsCustomerVoiceOpen] = useState(true);
+    const [isPersistentOpen, setIsPersistentOpen] = useState(false);
+    const [isCustomerVoiceOpen, setIsCustomerVoiceOpen] = useState(false);
     const [showLibraryDropdown, setShowLibraryDropdown] = useState(false);
     const [showAddonsDropdown, setShowAddonsDropdown] = useState(false);
-    const [isLibraryOpen, setIsLibraryOpen] = useState(true);
     const [showOptimizationDropdown, setShowOptimizationDropdown] = useState(false);
     const [optimizedQuery, setOptimizedQuery] = useState('');
     const [selectedAddOn, setSelectedAddOn] = useState(null);
     const [isPromptMode, setIsPromptMode] = useState(true);
+    const [chatHistory, setChatHistory] = useState([]);
+
+    // Load chat history from localStorage on component mount
+    useEffect(() => {
+        const savedChats = localStorage.getItem('chatHistory');
+        if (savedChats) {
+            setChatHistory(JSON.parse(savedChats));
+        }
+    }, []);
 
     const tabs = [
         { id: 'uplode', label: '+' },
@@ -110,7 +118,6 @@ const Assistant = () => {
         }
     };
 
-
     const handleDocSelect = (docId, docTitle) => {
         setSelectedDocs(prev => {
             if (prev.includes(docId)) {
@@ -134,18 +141,19 @@ const Assistant = () => {
         if (selectedPrompt) {
             setSelectedPromptId(selectedPrompt.prompt_id);
             setSelectedPromptTitle(selectedPrompt.name);
+            // setSearchQuery(selectedPrompt.name)
         } else {
             setSelectedPromptId(null);
             setSelectedPromptTitle('');
         }
     };
+
     const generateOptimizedQuery = (query) => {
         if (!query.trim()) {
             setOptimizedQuery('');
             return;
         }
 
-        // Your actual optimization logic here
         const optimized = `${query}\n\n` +
             `1. More specific target audience\n` +
             `2. Clear structure with sections\n` +
@@ -175,6 +183,18 @@ const Assistant = () => {
             );
 
             setApiResponse(response);
+
+            // Update chat history
+            const newChat = {
+                userMessage: searchQuery,
+                aiResponse: response.data.response,
+                timestamp: new Date().toISOString()
+            };
+
+            const updatedHistory = [...chatHistory, newChat];
+            setChatHistory(updatedHistory);
+            localStorage.setItem('chatHistory', JSON.stringify(updatedHistory));
+            setSearchQuery('');
         } catch (error) {
             ShowCustomToast('Something went wrong, Please try again', 'info', 2000);
             console.log('Error sending chat:', error);
@@ -193,159 +213,163 @@ const Assistant = () => {
     return (
 
         <div
-            className={`h-full w-full flex flex-col -mt-20 ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}
-            style={{ backgroundColor: appColors.primaryColor }}
+            className="w-full flex flex-col items-center"
+            style={{
+                backgroundColor: appColors.primaryColor,
+                minHeight: '90%'
+            }}
         >
-            <div className="w-full max-w-5xl flex flex-col items-center text-center space-y-6 px-4">
-                {!apiResponse && (
-                    <h1 className="text-2xl font-bold mt-20 mb-4" style={{ color: appColors.textColor }}>
-                        What can I help with?
-                    </h1>
-                )}
 
-                {apiResponse && (
-                    <div
-                        className="w-full max-w-4xl text-left text-white mb-6 -mt-8 p-6 rounded-xl bg-white/5 overflow-y-auto"
-                        style={{
-                            maxHeight: '20vh',
-                            minWidth: '100%',
-                            scrollbarWidth: 'thin',
-                            scrollbarColor: `${appColors.textColor} transparent`
-                        }}
-                    >
-                        <div className="response-content">
-                            <p className="mb-4 text-lg">{apiResponse.data.response}</p>
+            <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
 
-                            {/* {apiResponse.data.sources && apiResponse.data.sources.length > 0 && (
-                                <div className="mt-6">
-                                    <h3 className="text-lg font-medium mb-3 text-blue-300">Sources:</h3>
-                                    <ul className="space-y-3">
-                                        {apiResponse.data.sources.map((source, index) => (
-                                            <li key={index} className="text-sm text-white/80 border-b border-white/10 pb-2">
-                                                <span className="font-medium">{source.title}</span>
-                                                <span className="ml-2 text-blue-300">(Relevance: {(source.relevance_score * 100).toFixed(1)}%)</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                {/* Chat history container with scroll */}
+                <div className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar" style={{ maxHeight: '65vh' }}>
+                    {chatHistory.length > 0 ? (
+                        chatHistory.map((chat, index) => (
+                            <div key={index} className="w-full space-y-4 mb-6">
+                                {/* User message - aligned to right */}
+                                <div className="flex justify-end">
+                                    <div className="bg-white/10 text-white rounded-full  pl-3 pr-3 pt-1 pb-1 max-w-3xl">
+                                        <p className="whitespace-pre-wrap">{chat.userMessage}</p>
+                                    </div>
                                 </div>
-                            )} */}
-                        </div>
-                    </div>
-                )}
 
-                <div className="relative w-full max-w-3xl ">
-                    <div className="flex items-center w-full ">
-                        {(selectedDocTitles.length > 0 || selectedPromptTitle) && (
-                            <div className="flex gap-2 mb-2 overflow-x-auto whitespace-nowrap max-w-full pr-4 absolute -top-8 left-0 no-scrollbar">
-                                {selectedPromptTitle && (
-                                    <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full flex items-center">
-                                        {selectedPromptTitle}
-                                        <button
-                                            onClick={() => {
-                                                setSelectedPromptId(null);
-                                                setSelectedPromptTitle('');
-                                                setSearchQuery('');
-                                            }}
-                                            className="ml-1 text-blue-100 hover:text-white"
-                                        >
-                                            ×
-                                        </button>
-                                    </span>
-                                )}
-                                {selectedDocTitles.map((doc, index) => (
-                                    <span
-                                        key={index}
-                                        className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full flex items-center"
-                                    >
-                                        {doc.title}
-                                        <button
-                                            onClick={() => handleDocSelect(doc.id, doc.title)}
-                                            className="ml-1 text-blue-100 hover:text-white"
-                                        >
-                                            ×
-                                        </button>
-                                    </span>
-                                ))}
+                                {/* AI response - aligned to left */}
+                                <div className="flex justify-start">
+                                    <div className=" text-white rounded-lg p-3 max-w-3xl">
+                                        <p className="whitespace-pre-wrap">{chat.aiResponse}</p>
+                                    </div>
+                                </div>
                             </div>
-                        )}
+                        ))
+                    ) : (
+                        <div className="h-full flex items-center justify-center">
+                            <h1 className="text-2xl font-bold" style={{ color: appColors.textColor }}>
+                                What can I help with?
+                            </h1>
+                        </div>
+                    )}
+
+
+                    {/* {apiResponse && (
+                        <div className="w-full space-y-4 mb-6">
+                            <div className="flex justify-end">
+                                <div className="bg-blue-600 text-white rounded-lg p-3 max-w-3xl">
+                                    <p className="whitespace-pre-wrap">{searchQuery}</p>
+                                </div>
+                            </div>
+                            <div className="flex justify-start">
+                                <div className="bg-gray-700 text-white rounded-lg p-3 max-w-3xl">
+                                    <p className="whitespace-pre-wrap">{apiResponse.data.response}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )} */}
+                </div>
+
+
+                {/* Input area - fixed at bottom */}
+                <div className="w-full max-w-4xl sticky  bottom-4 bg-transparent pt-4">
+                    {selectedDocTitles.length > 0 || selectedPromptTitle ? (
+                        <div className="flex gap-2 mb-2 overflow-x-auto whitespace-nowrap max-w-full pr-4 no-scrollbar">
+                            {selectedPromptTitle && (
+                                <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full flex items-center">
+                                    {selectedPromptTitle}
+                                    <button
+                                        onClick={() => {
+                                            setSelectedPromptId(null);
+                                            setSelectedPromptTitle('');
+                                            setSearchQuery('');
+                                        }}
+                                        className="ml-1 text-blue-100 hover:text-white"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            )}
+                            {selectedDocTitles.map((doc, index) => (
+                                <span
+                                    key={index}
+                                    className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full flex items-center"
+                                >
+                                    {doc.title}
+                                    <button
+                                        onClick={() => handleDocSelect(doc.id, doc.title)}
+                                        className="ml-1 text-blue-100 hover:text-white"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    ) : null}
+
+                    <div className="relative w-full">
                         <input
                             type="text"
                             placeholder="Ask anything"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full p-4 pr-36 rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full pt-3 pb-3 p-4 pr-36 rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             style={{ backgroundColor: appColors.primaryColor }}
                             onKeyDown={(e) => e.key === 'Enter' && isSubmitEnabled && handleSubmit()}
                         />
-                    </div>
 
-                    {/* Prompt Template Select */}
-
-                    {/* <div className="absolute right-28 top-3.5 -mt-[1px] w-40">
-                        <select
-                            onChange={handlePromptSelect}
-                            value={selectedPromptTitle || ''}
-                            className="w-full text-xs bg-white/10 text-white rounded-full px-2 py-2 focus:outline-none"
-                        >
-                            <option value="">Prompt Template</option>
-                            {prompts.map((prompt) => (
-                                <option key={prompt.prompt_id} value={prompt.name}>
-                                    {prompt.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div> */}
-
-
-                    {/* Toggle Switch */}
-                    <div className="absolute right-14 top-4 group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
-                        <div
-                            className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${isPromptMode ? 'bg-blue-600' : 'bg-gray-500'}`}
-                        >
+                        {/* Toggle Switch */}
+                        <div className="absolute right-14 top-3.5 group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
                             <div
-                                className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${isPromptMode ? 'translate-x-4' : 'translate-x-0'}`}
-                            ></div>
-                        </div>
+                                className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${isPromptMode ? 'bg-blue-600' : 'bg-gray-500'}`}
+                            >
+                                <div
+                                    className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${isPromptMode ? 'translate-x-4' : 'translate-x-0'}`}
+                                ></div>
+                            </div>
 
-                        {/* Tooltip on hover */}
-                        <div className="absolute top-8 left-1/2 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            Randomness
+                            {/* Tooltip on hover */}
+                            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                Randomness
+                            </div>
+                        </div>
+                        <div className="relative group">
+                            {/* Tooltip */}
+                            {!searchQuery && (
+                                <div className="absolute  -top-0 -right-14 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    Please input text
+                                </div>
+                            )}
+                            {/* Submit Button */}
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isLoading || !isSubmitEnabled || !searchQuery}
+                                className="absolute right-2 -top-[43px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
+                            >
+                                {isLoading ? (
+                                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        className="w-5 h-5"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M14 5l7 7m0 0l-7 7m7-7H3"
+                                        />
+                                    </svg>
+                                )}
+                            </button>
                         </div>
                     </div>
-
-                    {/* Submit Button */}
-
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isLoading || !isSubmitEnabled}
-                        className="absolute right-2 top-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50"
-                    >
-                        {isLoading ? (
-                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        ) : (
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                className="w-5 h-5"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                                />
-                            </svg>
-                        )}
-                    </button>
-
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="flex mt-4 flex-wrap justify-center gap-2">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
@@ -375,10 +399,10 @@ const Assistant = () => {
                 {/* Context Modal */}
                 {showContextDropdown && (
                     <div
-                        className="w-full max-w-3xl !mt-2 text-left text-white overflow-y-auto rounded-xl shadow-lg backdrop-blur bg-[rgba(255,255,255,0.05)] border border-white/10"
+                        className="w-full max-w-3xl !mt-2 mb-4 text-left text-white overflow-y-auto rounded-xl shadow-lg backdrop-blur bg-[rgba(255,255,255,0.05)] border border-white/10"
                         style={{
                             maxHeight: '350px',
-                            marginLeft: '40%'
+                            marginLeft: '30%'
                         }}
                     >
                         {isLoading ? (
@@ -492,14 +516,7 @@ const Assistant = () => {
                 )}
 
                 {/* Library Modal */}
-                <div className="relative ml-[8%] -top-6 w-[220px]">
-                    {/* <div
-                        onClick={() => setShowLibraryDropdown((prev) => !prev)}
-                        className="text-xs bg-white/10 text-white rounded-full px-3 py-2 min-w-[150px] cursor-pointer hover:bg-white/20 transition"
-                    >
-                        {selectedPromptTitle}
-                    </div> */}
-
+                <div className="relative ml-[5%] mb-4  w-[220px]">
                     {showLibraryDropdown && (
                         <div className="ml-[15%] w-[220px] !mt-[8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[rgba(255,255,255,0.05)]">
                             <div className="flex flex-col divide-y divide-white/10">
@@ -522,7 +539,7 @@ const Assistant = () => {
 
                 {/* Prompt optimization */}
                 {showOptimizationDropdown && (
-                    <div className="ml-[66%] w-full max-w-[600px] !mt-[-15px] text-left text-white overflow-y-auto rounded-xl shadow-lg backdrop-blur bg-[rgba(255,255,255,0.05)] border border-white/10 p-4">
+                    <div className="ml-[50%] mb-4 w-full max-w-[600px] !mt-[-8px] text-left text-white overflow-y-auto rounded-xl shadow-lg backdrop-blur bg-[rgba(255,255,255,0.05)] border border-white/10 p-4">
                         <h2 className="text-lg font-bold mb-3">Prompt Optimization</h2>
 
                         <div className="mb-4">
@@ -566,7 +583,7 @@ const Assistant = () => {
 
                 {/* Add-Ons Modal */}
                 {showAddonsDropdown && (
-                    <div className="ml-[69%] w-[220px] !mt-[-15px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[rgba(255,255,255,0.05)]">
+                    <div className="ml-[42%] mb-4 w-[220px] !mt-[-8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[rgba(255,255,255,0.05)]">
                         <div className="flex flex-col divide-y divide-white/10">
                             {['Industry', 'Audience', 'Tone', 'Objective', `Dos & Don'ts`].map((label, idx) => (
                                 <div
@@ -584,7 +601,7 @@ const Assistant = () => {
                 )}
 
                 {selectedAddOn && (
-                    <div className="ml-[85%] p-6 w-[500px] !mt-[-15px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[#2b2b4b]  relative">
+                    <div className="ml-[60%] mb-4 p-6 w-[500px] !mt-[-8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[#2b2b4b]  relative">
                         <button
                             onClick={() => setSelectedAddOn(null)}
                             className="absolute top-2 right-4 text-white text-xl"
@@ -715,3 +732,4 @@ const Assistant = () => {
 };
 
 export default Assistant;
+
