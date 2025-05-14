@@ -163,7 +163,7 @@ const UserManagement = () => {
     try {
       if (!currentUser) return;
 
-      const result = await updateUserRoles(currentUser.id, selectedRoles); 
+      const result = await updateUserRoles(currentUser.id, selectedRoles);
 
       if (result?.error) {
         console.log("Error updating user:", result.error);
@@ -342,6 +342,25 @@ const UserManagement = () => {
           </div>
         </div>
       )}
+      {/* Bottom Left Footer */}
+      <div className="fixed bottom-0 left-0 flex items-center gap-3 py-4 px-6">
+        <img
+          src="/ai-navigator-logo.gif"
+          alt="Logo"
+          className="w-10 h-10 object-contain"
+        />
+
+        {/* Text container: stacked vertically */}
+        <div className="flex flex-col leading-tight">
+          <span className="text-sm font-semibold text-gray-400">
+            AI - Navigator
+          </span>
+          <span className="text-xs text-gray-500">
+            Powered by Content Strategies
+          </span>
+        </div>
+      </div>
+
     </div>
   );
 };

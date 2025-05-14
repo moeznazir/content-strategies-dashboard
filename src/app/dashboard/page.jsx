@@ -740,15 +740,23 @@ const Dashboard = () => {
 
           {/* Logo and Text */}
           <div className="mt-6 flex items-center gap-3 py-4 fixed bottom-0">
-            <img
-              src="/ai-navigator-logo.gif"
-              alt="Logo"
-              className="w-10 h-10 object-contain"
-            />
-            <span className="text-sm font-semibold text-gray-400">
-              Content Strategies
-            </span>
-          </div>
+  <img
+    src="/ai-navigator-logo.gif"
+    alt="Logo"
+    className="w-10 h-10 object-contain"
+  />
+  
+  {/* Text container: stacked vertically */}
+  <div className="flex flex-col leading-tight">
+    <span className="text-sm font-semibold text-gray-400">
+      AI - Navigator
+    </span>
+    <span className="text-xs text-gray-500">
+      Powered by Content Strategies
+    </span>
+  </div>
+</div>
+
         </aside>
 
 
