@@ -30,6 +30,7 @@ const SINGLESELECT_FIELDS = [
     "Mentions",
     "Client",
     "Employee",
+    "Post_Podcast_Insights",
     "Public_vs_Private",
     // "Guest Role",
     "Videos"
@@ -46,7 +47,7 @@ const OPTIONS = {
         { value: "ICP Advice", label: "ICP Advice" },
         { value: "Post-Podcast", label: "Post-Podcast" },
         { value: "Guest Introduction", label: "Guest Introduction" },
-        { value: "Sales Insights", label: "Sales Insights" },
+        { value: "Post Podcast Insights", label: "Post Podcast Insights" },
         { value: "Challenge Questions", label: "Challenge Questions" },
     ],
     // "Tags": [
@@ -68,6 +69,10 @@ const OPTIONS = {
         { value: "Yes", label: "Yes" },
         { value: "No", label: "No" },
     ],
+    "Post_Podcast_Insights": [
+        { value: "Yes", label: "Yes" },
+        { value: "No", label: "No" },
+    ],
     // "Guest Role": [
     //     { value: "Client", label: "Client" },
     //     { value: "Employee", label: "Employee" },
@@ -79,13 +84,13 @@ const OPTIONS = {
     //     { value: "Company Executive", label: "Company Executive" },
     //     { value: "Other", label: "Other" },
     // ],
-    "Videos": [
-        { value: "Highlights Video", label: "Highlights Video" },
-        { value: "Full Episode", label: "Full Episode" },
-        { value: "Summary Video", label: "Summary Video" },
-        { value: "YouTube Short", label: "YouTube Short" },
-        { value: "LinkedIn", label: "LinkedIn" },
-    ],
+    // "Videos": [
+    //     { value: "Highlights Video", label: "Highlights Video" },
+    //     { value: "Full Episode", label: "Full Episode" },
+    //     { value: "Summary Video", label: "Summary Video" },
+    //     { value: "YouTube Short", label: "YouTube Short" },
+    //     { value: "LinkedIn", label: "LinkedIn" },
+    // ],
     "Public_vs_Private": [
         { value: "Public", label: "Public" },
         { value: "Private", label: "Private" },
@@ -572,8 +577,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     displayFields.forEach(field => {
         if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges" || field.key == "Sales Insights") {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
-        } else if (field.key === "Mentioned_Quotes") {
-            initialValues[field.key] = entityData?.[field.key] || "";
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
             initialValues[field.key] = entityData?.[field.key] ||
                 (MULTISELECT_FIELDS.includes(field.key) ? [] :
@@ -583,8 +586,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 "");
         }
     });
-    console.log("Entity data from Supabase:", entityData);
-    console.log("Mentioned_Quotes value:", entityData?.Mentioned_Quotes);
+
 
     const formik = useFormik({
         initialValues,
@@ -663,7 +665,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     Validations: validationEntries.length > 0 ? validationEntries : null,
                     Challenges: challengesEntries.length > 0 ? challengesEntries : null,
                     "Sales Insights": salesInsightsEntries.length > 0 ? salesInsightsEntries : null,
-                    Mentioned_Quotes: entityData?.Mentioned_Quotes || "",
                     company_id: localStorage.getItem('company_id')
                 };
 
@@ -1128,7 +1129,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
                                     {!['Themes', 'Objections', 'Validations', 'Challenges', 'Sales Insights', 'ranking', 'Ranking Justification', 'Challenge Report_Unedited Video Link', 'Challenge Report_Unedited Transcript Link', 'Challenge Report_Summary', 'Podcast Report_Unedited Video Link', 'Podcast Report_Unedited Transcript Link', 'Podcast Report_Summary', 'Post-Podcast Report_Unedited Video Link', 'Post-Podcast Report_Unedited Transcript Link', 'Post-Podcast Report_Summary'].includes(field.key) ? (
-                                        !(field.key === "Mentioned_Quotes" && formik.values["Mentions"] !== "Yes") && (
+
+                                        !((field.key == "Mentioned_Quotes" && formik.values["Mentions"] !== "Yes" || (field.key === "Case_Study_Transcript" && !formik.values["Case_Study"]))) && (
                                             <>
                                                 <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                     {field.label}:
@@ -1811,14 +1813,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                         ) : field.key === "Challenge Report_Unedited Video Link" ? (
                                             <>
-                                                <label className="font-bold mb-2">Challenge Report:</label>
                                                 <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
 
                                                     <div className="space-y-4">
                                                         {/* Challenge Report fields */}
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Unedited Video Link:
+                                                                Challenge Video:
                                                             </label>
                                                             <CustomInput
                                                                 type="url"
@@ -1827,7 +1828,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter unedited video link"
+                                                                placeholder="Enter Challenge Video Link"
                                                             />
                                                             {formik.errors["Challenge Report_Unedited Video Link"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Unedited Video Link"]}</p>
@@ -1836,16 +1837,16 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Unedited Transcript Link:
+                                                                Challenge Transcript:
                                                             </label>
                                                             <CustomInput
-                                                                type="url"
+                                                                type="text"
                                                                 name="Challenge Report_Unedited Transcript Link"
                                                                 value={formik.values["Challenge Report_Unedited Transcript Link"] || ""}
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter unedited transcript link"
+                                                                placeholder="Enter Challenge Transcript"
                                                             />
                                                             {formik.errors["Challenge Report_Unedited Transcript Link"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Unedited Transcript Link"]}</p>
@@ -1854,7 +1855,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Summary:
+                                                                Challenge Report:
                                                             </label>
                                                             <CustomInput
                                                                 type="text"
@@ -1863,7 +1864,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter summary"
+                                                                placeholder="Enter Challenge Report"
                                                             />
                                                             {formik.errors["Challenge Report_Summary"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Challenge Report_Summary"]}</p>
@@ -1875,13 +1876,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                         ) : field.key === "Podcast Report_Unedited Video Link" ? (
                                             <>
-                                                <label className="font-bold mb-2">Podcast Report:</label>
                                                 <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
                                                     <div className="space-y-4">
                                                         {/* Podcast Report fields */}
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Unedited Video Link:
+                                                                Podcast Video (Unedited):
                                                             </label>
                                                             <CustomInput
                                                                 type="url"
@@ -1890,7 +1890,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter unedited video link"
+                                                                placeholder="Enter Podcast Video (Unedited) Link"
                                                             />
                                                             {formik.errors["Podcast Report_Unedited Video Link"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Unedited Video Link"]}</p>
@@ -1899,16 +1899,16 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Unedited Transcript Link:
+                                                                Podcast Transcript:
                                                             </label>
                                                             <CustomInput
-                                                                type="url"
+                                                                type="text"
                                                                 name="Podcast Report_Unedited Transcript Link"
                                                                 value={formik.values["Podcast Report_Unedited Transcript Link"] || ""}
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter unedited transcript link"
+                                                                placeholder="Enter Podcast Transcript"
                                                             />
                                                             {formik.errors["Podcast Report_Unedited Transcript Link"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Unedited Transcript Link"]}</p>
@@ -1917,7 +1917,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Summary:
+                                                                Podcast Summary:
                                                             </label>
                                                             <CustomInput
                                                                 type="text"
@@ -1926,7 +1926,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter summary"
+                                                                placeholder="Enter Podcast Summary"
                                                             />
                                                             {formik.errors["Podcast Report_Summary"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Podcast Report_Summary"]}</p>
@@ -1938,14 +1938,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                         ) : field.key === "Post-Podcast Report_Unedited Video Link" && (
                                             <>
-                                                <label className="font-bold mb-2">Post-Podcast Report:</label>
                                                 <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
 
                                                     <div className="space-y-4">
                                                         {/* Post-Podcast Report fields */}
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Unedited Video Link:
+                                                                Post-Podcast Video:
                                                             </label>
                                                             <CustomInput
                                                                 type="url"
@@ -1954,7 +1953,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter unedited video link"
+                                                                placeholder="Enter Post-Podcast Video Link"
                                                             />
                                                             {formik.errors["Post-Podcast Report_Unedited Video Link"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Unedited Video Link"]}</p>
@@ -1963,16 +1962,16 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Unedited Transcript Link:
+                                                                Post-Podcast Transcript:
                                                             </label>
                                                             <CustomInput
-                                                                type="url"
+                                                                type="text"
                                                                 name="Post-Podcast Report_Unedited Transcript Link"
                                                                 value={formik.values["Post-Podcast Report_Unedited Transcript Link"] || ""}
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter unedited transcript link"
+                                                                placeholder="Enter Post-Podcast Transcript"
                                                             />
                                                             {formik.errors["Post-Podcast Report_Unedited Transcript Link"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Unedited Transcript Link"]}</p>
@@ -1981,7 +1980,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                                                         <div>
                                                             <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Summary:
+                                                                Post-Podcast Report:
                                                             </label>
                                                             <CustomInput
                                                                 type="text"
@@ -1990,7 +1989,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 onChange={formik.handleChange}
                                                                 onBlur={formik.handleBlur}
                                                                 className="w-full p-2 border rounded"
-                                                                placeholder="Enter summary"
+                                                                placeholder="Enter Post-Podcast Report"
                                                             />
                                                             {formik.errors["Post-Podcast Report_Summary"] && (
                                                                 <p className="text-red-500 text-sm">{formik.errors["Post-Podcast Report_Summary"]}</p>

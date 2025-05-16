@@ -59,6 +59,8 @@ const Dashboard = () => {
     { label: "Key Quote", id: "Quote" },
     { label: "Mentions", id: "Mentions" },
     { label: "Mentioned Quotes", id: "Mentioned_Quotes" },
+    { label: "Case Study", id: "Case_Study", type: 'url' },
+    { label: "Case Study Transcript", id: "Case_Study_Transcript" },
     { label: "Public vs. Private", id: "Public_vs_Private" },
     { label: "Discussion Guide", id: "Discussion Guide" },
     { label: "Transcript", id: "Transcript" },
@@ -70,20 +72,24 @@ const Dashboard = () => {
     { label: "Objections", id: "Objections" },
     { label: "Challenges", id: "Challenges" },
     { label: "Sales Insights", id: "Sales Insights" },
-    { label: "YouTube Short", id: "YouTube Short - Extended Media" },
-    { label: "LinkedIn Video", id: "LinkedIn Video - Extended Media" },
-    { label: "Challenge Report: Unedited Video Link", id: "Challenge Report_Unedited Video Link", type: 'url' },
-    { label: "Challenge Report: Unedited Transcript Link", id: "Challenge Report_Unedited Transcript Link", type: 'url' },
-    { label: "Challenge Report: Summary", id: "Challenge Report_Summary", type: 'url' },
-    { label: "Podcast Report: Unedited Video Link", id: "Podcast Report_Unedited Video Link", type: 'url' },
-    { label: "Podcast Report: Unedited Transcript Link", id: "Podcast Report_Unedited Transcript Link", type: 'url' },
-    { label: "Podcast Report: Summary", id: "Podcast Report_Summary", type: 'url' },
-    { label: "Post-Podcast Report: Unedited Video Link", id: "Post-Podcast Report_Unedited Video Link", type: 'url' },
-    { label: "Post-Podcast Report: Unedited Transcript Link", id: "Post-Podcast Report_Unedited Transcript Link", type: 'url' },
-    { label: "Post-Podcast Report_Summary", id: "Post-Podcast Report_Summary", type: 'url' },
+    { label: "Challenge Video", id: "Challenge Report_Unedited Video Link", type: 'url' },
+    { label: "Challenge Transcript", id: "Challenge Report_Unedited Transcript Link" },
+    { label: "Challenge Report", id: "Challenge Report_Summary" },
+    { label: "Podcast Video (Unedited)", id: "Podcast Report_Unedited Video Link", type: 'url' },
+    { label: "Podcast Transcript", id: "Podcast Report_Unedited Transcript Link" },
+    { label: "Podcast Summary", id: "Podcast Report_Summary" },
+    { label: "Post-Podcast Video", id: "Post-Podcast Report_Unedited Video Link", type: 'url' },
+    { label: "Post-Podcast Transcript", id: "Post-Podcast Report_Unedited Transcript Link" },
+    { label: "Post-Podcast Report", id: "Post-Podcast Report_Summary" },
     { label: "Podbook Link", id: "Podbook Link", type: 'url' },
-    { label: "Article", id: "Article - Extended Media", type: 'url' },
+    { label: "Article", id: "Article - Extended Media" },
+    { label: "Article Transcript", id: "Article_Transcript" },
     { label: "Quote Card", id: "Quote Card - Extended Media", type: 'url' },
+    { label: "YouTube Short", id: "YouTube Short - Extended Media", type: 'url' },
+    { label: "YouTube Short Transcript", id: "YouTube_Short_Transcript" },
+    { label: "LinkedIn Video", id: "LinkedIn Video - Extended Media", type: 'url' },
+    { label: "LinkedIn Video Transcript", id: "LinkedIn_Video_Transcript" },
+    { label: "Post-Podcast Insights", id: "Post_Podcast_Insights" },
     { label: "Actions", id: "action" },
   ];
 
@@ -118,7 +124,9 @@ const Dashboard = () => {
     { label: "Top Three Takeaways", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Key Quote", key: "Quote", placeholder: "Enter Quote" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
-    { label: "Mentioned Quotes", key: "Mentioned_Quotes", placeholder: "Enter Mentioned Quotes"},
+    { label: "Mentioned Quotes", key: "Mentioned_Quotes", placeholder: "Enter Mentioned Quotes" },
+    { label: "Case Study", key: "Case_Study", placeholder: "Enter Case Study Link", type: 'url' },
+    { label: "Case Study Transcript", key: "Case_Study_Transcript", placeholder: "Enter Case Study Transcript" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Discussion Guide", key: "Discussion Guide", placeholder: "Enter Discussion Guide Link", type: "url" },
     { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
@@ -130,20 +138,24 @@ const Dashboard = () => {
     { label: "Objections", key: "Objections", placeholder: "Select Objections", type: "multiselect" },
     { label: "Challenges", key: "Challenges", placeholder: "Select an ICP Challenge", type: "multiselect" },
     { label: "Sales Insights", key: "Sales Insights", placeholder: "Select Sales Insights", type: "multiselect" },
-    { label: "YouTube Short", key: "YouTube Short - Extended Media", placeholder: "Enter YouTube Short Link ", type: "url" },
-    { label: "LinkedIn Video", key: "LinkedIn Video - Extended Media", placeholder: "Enter LinkedIn Video Link ", type: "url" },
-    { label: "Challenge Report: Unedited Video Link", key: "Challenge Report_Unedited Video Link", type: "url" },
-    { label: "Challenge Report: Unedited Transcript Link", key: "Challenge Report_Unedited Transcript Link", type: "url" },
-    { label: "Challenge Report: Summary", key: "Challenge Report_Summary" },
-    { label: "Podcast Report: Unedited Video Link", key: "Podcast Report_Unedited Video Link", type: "url" },
-    { label: "Podcast Report: Unedited Transcript Link", key: "Podcast Report_Unedited Transcript Link", type: "url" },
-    { label: "Podcast Report: Summary", key: "Podcast Report_Summary" },
-    { label: "Post-Podcast Report: Unedited Video Link", key: "Post-Podcast Report_Unedited Video Link", type: "url" },
-    { label: "Post-Podcast Report: Unedited Transcript Link", key: "Post-Podcast Report_Unedited Transcript Link", type: "url" },
-    { label: "Post-Podcast Report_Summary", key: "Post-Podcast Report_Summary" },
+    { label: "Challenge Video", key: "Challenge Report_Unedited Video Link", type: "url" },
+    { label: "Challenge Transcript", key: "Challenge Report_Unedited Transcript Link" },
+    { label: "Challenge Report", key: "Challenge Report_Summary" },
+    { label: "Podcast Video (Unedited)", key: "Podcast Report_Unedited Video Link", type: "url" },
+    { label: "Podcast Transcript", key: "Podcast Report_Unedited Transcript Link" },
+    { label: "Podcast Summary", key: "Podcast Report_Summary" },
+    { label: "Post-Podcast Video", key: "Post-Podcast Report_Unedited Video Link", type: "url" },
+    { label: "Post-Podcast Transcript", key: "Post-Podcast Report_Unedited Transcript Link" },
+    { label: "Post-Podcast Report", key: "Post-Podcast Report_Summary" },
     { label: "Podbook Link", key: "Podbook Link", placeholder: "Enter Podbook Link", type: "url" },
     { label: "Article", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
-    { label: "Quote Card", key: "Quote Card - Extended Media", placeholder: "Enter Quote Card Link" },
+    { label: "Article Transcript", key: "Article_Transcript", placeholder: "Enter Article Transcript"},
+    { label: "Quote Card", key: "Quote Card - Extended Media", placeholder: "Enter Quote Card" },
+    { label: "YouTube Short", key: "YouTube Short - Extended Media", placeholder: "Enter YouTube Short Link ", type: "url" },
+    { label: "YouTube Short Transcript", key: "YouTube_Short_Transcript", placeholder: "Enter YouTube Short Transcript " },
+    { label: "LinkedIn Video", key: "LinkedIn Video - Extended Media", placeholder: "Enter LinkedIn Video Link ", type: "url" },
+    { label: "LinkedIn Video Transcript", key: "LinkedIn_Video_Transcript", placeholder: "Enter LinkedIn Video Transcript"},
+    { label: "Post Podcast Insights", key: "Post_Podcast_Insights", placeholder: "Select Post Podcast Insights" },
   ];
 
   const [selectedFilters, setSelectedFilters] = useState({
@@ -165,7 +177,7 @@ const Dashboard = () => {
       { value: "ICP Advice", label: "ICP Advice", count: 0 },
       { value: "Post-Podcast", label: "Post-Podcast", count: 0 },
       { value: "Guest Introduction", label: "Guest Introduction", count: 0 },
-      { value: "Sales Insights", label: "Sales Insights", count: 0 },
+      { value: "Post Podcast Insights", label: "Post Podcast Insights", count: 0 },
       { value: "Challenge Questions", label: "Challenge Questions", count: 0 },
       { value: "My Liked", label: "My Liked", count: 0 },
       { value: "All Liked", label: "All Liked", count: 0 },
@@ -693,11 +705,13 @@ const Dashboard = () => {
               )}
 
               {/* Dynamic filters */}
-              {Object.entries(selectedFilters).map(([filterType, values]) => (
-                values.length > 0 && (
+              {Object.entries(selectedFilters).map(([filterType, values]) => {
+                const displayFilter = filterType === 'Video Type' ? 'Content Type' : filterType;
+
+                return values.length > 0 && (
                   <div key={filterType} className="flex-shrink-0 flex items-center gap-1 bg-[#1a1b41] rounded-full px-3 py-1">
                     <span className="text-white text-sm whitespace-nowrap capitalize">
-                      {filterType}: {values.join(", ")}
+                      {displayFilter}: {values.join(", ")}
                     </span>
                     <button
                       onClick={() => handleFilterSelect(filterType, [])}
@@ -706,8 +720,9 @@ const Dashboard = () => {
                       <FaTimes className="w-3 h-3" />
                     </button>
                   </div>
-                )
-              ))}
+                );
+              })}
+
             </div>
           </div>
         </div>
@@ -718,7 +733,7 @@ const Dashboard = () => {
       <div className="flex">
         <aside className="flex flex-col gap-2 w-full md:w-64 px-6">
           {Object.keys(filterOptionsWithCounts).map((field) => {
-            const displayField = field === 'Themes' ? 'Themes' : field;
+            const displayField = field === 'Video Type' ? 'Content Type' : field;
             return (
               <MultiSelectDropdown
                 key={field}
@@ -740,22 +755,22 @@ const Dashboard = () => {
 
           {/* Logo and Text */}
           <div className="mt-6 flex items-center gap-3 py-4 fixed bottom-0">
-  <img
-    src="/ai-navigator-logo.gif"
-    alt="Logo"
-    className="w-10 h-10 object-contain"
-  />
-  
-  {/* Text container: stacked vertically */}
-  <div className="flex flex-col leading-tight">
-    <span className="text-sm font-semibold text-gray-400">
-      AI - Navigator
-    </span>
-    <span className="text-xs text-gray-500">
-      Powered by Content Strategies
-    </span>
-  </div>
-</div>
+            <img
+              src="/ai-navigator-logo.gif"
+              alt="Logo"
+              className="w-10 h-10 object-contain"
+            />
+
+            {/* Text container: stacked vertically */}
+            <div className="flex flex-col leading-tight">
+              <span className="text-sm font-semibold text-gray-400">
+                AI - Navigator
+              </span>
+              <span className="text-xs text-gray-500">
+                Powered by Content Strategies
+              </span>
+            </div>
+          </div>
 
         </aside>
 

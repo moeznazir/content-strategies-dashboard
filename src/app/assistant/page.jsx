@@ -26,6 +26,8 @@ const Assistant = () => {
     const [selectedAddOn, setSelectedAddOn] = useState(null);
     const [isPromptMode, setIsPromptMode] = useState(true);
     const [chatHistory, setChatHistory] = useState([]);
+    const [selectedPromptDetails, setSelectedPromptDetails] = useState(null);
+    const [selectedTemplate, setSelectedTemplate] = useState('');
 
     // Load chat history from localStorage on component mount
     useEffect(() => {
@@ -516,7 +518,7 @@ const Assistant = () => {
                 )}
 
                 {/* Library Modal */}
-                <div className="relative ml-[5%] mb-4  w-[220px]">
+                <div className="relative ml-[5%] mb-4 w-[220px]">
                     {showLibraryDropdown && (
                         <div className="ml-[15%] w-[220px] !mt-[8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[rgba(255,255,255,0.05)]">
                             <div className="flex flex-col divide-y divide-white/10">
@@ -526,12 +528,129 @@ const Assistant = () => {
                                         onClick={() => {
                                             handlePromptSelect({ target: { value: prompt.name } });
                                             setShowLibraryDropdown(false);
+                                            setSelectedPromptDetails(prompt); // Add this to your state
                                         }}
                                         className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm transition-colors"
                                     >
                                         {prompt.name}
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Add this state to your component */}
+                    {selectedPromptDetails && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h2 className="text-xl font-bold">Prompt Details</h2>
+                                    <button
+                                        onClick={() => setSelectedPromptDetails(null)}
+                                        className="text-white hover:text-gray-300"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+
+                                <div className="flex gap-6">
+                                    {/* Left Side - Templates */}
+                                    <div className="w-1/2">
+                                        <h3 className="font-semibold mb-2">Selected Option: {selectedPromptDetails.name}</h3>
+
+                                        <div className="mb-4">
+                                            <h4 className="font-medium mb-2">Templates:</h4>
+                                            <div className="space-y-2">
+                                                <div
+                                                    className="p-3 bg-white/10 rounded cursor-pointer hover:bg-white/20"
+                                                    onClick={() => setSelectedTemplate('Template 1')}
+                                                >
+                                                    <h5 className="font-medium">Template 1</h5>
+                                                    <p className="text-sm text-white/80">Standard professional template</p>
+                                                </div>
+                                                <div
+                                                    className="p-3 bg-white/10 rounded cursor-pointer hover:bg-white/20"
+                                                    onClick={() => setSelectedTemplate('Template 2')}
+                                                >
+                                                    <h5 className="font-medium">Template 2</h5>
+                                                    <p className="text-sm text-white/80">Casual friendly template</p>
+                                                </div>
+                                                <div
+                                                    className="p-3 bg-white/10 rounded cursor-pointer hover:bg-white/20"
+                                                    onClick={() => setSelectedTemplate('Template 3')}
+                                                >
+                                                    <h5 className="font-medium">Template 3</h5>
+                                                    <p className="text-sm text-white/80">Technical detailed template</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white/10 p-4 rounded">
+                                            <h4 className="font-medium mb-2">Current Template:</h4>
+                                            <p className="text-sm">{selectedTemplate || "No template selected"}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Side - Form Fields */}
+                                    <div className="w-1/2">
+                                        <h3 className="font-semibold mb-4">Contact Information</h3>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Name</label>
+                                                <input
+                                                    type="text"
+                                                    className="w-full bg-white/10 border border-white/20 rounded p-2 text-sm"
+                                                    placeholder="Enter name"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Email</label>
+                                                <input
+                                                    type="email"
+                                                    className="w-full bg-white/10 border border-white/20 rounded p-2 text-sm"
+                                                    placeholder="Enter email"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Contact Number</label>
+                                                <input
+                                                    type="tel"
+                                                    className="w-full bg-white/10 border border-white/20 rounded p-2 text-sm"
+                                                    placeholder="Enter phone number"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Additional Notes</label>
+                                                <textarea
+                                                    className="w-full bg-white/10 border border-white/20 rounded p-2 text-sm h-24"
+                                                    placeholder="Enter any additional information"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <button
+                                        onClick={() => setSelectedPromptDetails(null)}
+                                        className="px-3 py-1.5 rounded-lg transition-colors text-sm bg-white/10 hover:bg-white/20"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            // Handle submit logic here
+                                            setSelectedPromptDetails(null);
+                                        }}
+                                        className="px-3 py-1.5 rounded-lg transition-colors text-sm bg-blue-600 hover:bg-blue-700"
+                                    >
+                                        Use Template
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

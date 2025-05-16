@@ -61,6 +61,9 @@ const Modal = ({ data, onClose }) => {
         "Text comments for the rating (OPTIONAL input from the user)",
         "Quote",
         "Mentions",
+        "Mentioned_Quotes",
+        "Case_Study",
+        "Case_Study_Transcript",
         "Public_vs_Private",
         "Discussion Guide",
         "Transcript",
@@ -84,10 +87,9 @@ const Modal = ({ data, onClose }) => {
         "Post-Podcast Report_Unedited Transcript Link",
         "Post-Podcast Report_Summary",
         "LinkedIn Video - Extended Media",
-        "Podbook Link",
-        "Private Link - Post-Podcast 1",
-        "Private Link - Post-Podcast 2",
-        "Quote Card - Extended Media"
+        "YouTube Short - Extended Media",
+        "Quote Card - Extended Media",
+        "Post_Podcast_Insights"
     ];
 
     const getDisplayName = (key) => {
@@ -98,7 +100,24 @@ const Modal = ({ data, onClose }) => {
             "Article - Extended Media": "Article",
             "Quote Card - Extended Media": "Quote Card",
             "Quote": "Key Quote",
-            "Public_vs_Private": "Public vs. Private"
+            "Public_vs_Private": "Public vs. Private",
+            "Challenge Report_Unedited Video Link": "Challenge Video",
+            "Challenge Report_Unedited Transcript Link": "Challenge Transcript",
+            "Challenge Report_Summary": "Challenge Report",
+            "Podcast Report_Unedited Video Link": "Podcast Video (Unedited)",
+            "Podcast Report_Unedited Transcript Link": "Podcast Transcript",
+            "Podcast Report_Summary": "Podcast Summary",
+            "Post-Podcast Report_Unedited Video Link": "Post-Podcast Video",
+            "Post-Podcast Report_Unedited Transcript Link": "Post-Podcast Transcript",
+            "Post-Podcast Report_Summary": "Post-Podcast Report",
+            "Video Type": "Content Type",
+            "Case_Study": "Case Study",
+            "Case_Study_Transcript": "Case Study Transcript",
+            "LinkedIn Video - Extended Media": "LinkedIn Video",
+            "YouTube Short - Extended Media": "YouTube Short",
+            "Post_Podcast_Insights": "Post-Podcast Insights",
+            "Mentioned_Quotes": "Mentioned Quotes",
+
         };
         return nameMap[key] || key;
     };
@@ -145,7 +164,7 @@ const Modal = ({ data, onClose }) => {
                 {entries.map((entry, index) => {
                     // Determine the type of entry (theme, validation, etc.)
                     const type = Object.keys(entry).find(k =>
-                        ['theme', 'validation', 'objection', 'challenges','insight'].includes(k)
+                        ['theme', 'validation', 'objection', 'challenges', 'insight'].includes(k)
                     );
 
                     return (
