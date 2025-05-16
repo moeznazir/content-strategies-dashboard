@@ -38,7 +38,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
 
     const shouldResizeColumn = (columnId) => {
         // Disable separator for these specific columns
-        return ![ 'Objections', 'Challenges', 'Sales Insights', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
+        return !['Objections', 'Challenges', 'Sales Insights', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
     };
 
     return (
@@ -49,17 +49,19 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
           ${column.id === 'Avatar' ? 'sticky left-0 px-6 z-30 bg-[#1a1b41] w-[75px]' : ''}
           ${column.id === 'Guest' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[200px]' : ''}
           ${column.id == 'email' ? ' px-[25px] z-20 bg-[#1a1b41] w-[200px]' : ''}
-
         `}
             style={{
+
+                overflow: 'visible',
                 cursor: isResizing ? "col-resize" : "",
                 opacity: isDragging ? 0.5 : 1,
-                overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
                 borderBottom: "2px solid #4B5563",
+                zIndex: 50,
             }}
         >
+
             <ResizableBox
                 width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action') ? 90 : 250}
                 height={20}
@@ -76,7 +78,18 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
                     />
                 }
             >
-                <div className="flex items-center h-full">{column.label}</div>
+                <div className="group relative flex items-center h-full w-full">
+                    <span className="truncate w-full">{column.label}</span>
+
+                    {/* Tooltip */}
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max max-w-xs 
+                  bg-black text-white text-xs rounded px-2 py-1 
+                  opacity-0 group-hover:opacity-100 
+                  whitespace-normal break-words shadow-lg pointer-events-none z-50">
+                        {column.label}
+                    </div>
+                </div>
+
             </ResizableBox>
         </th>
     );
@@ -276,7 +289,7 @@ const DraggableTable = ({
             <div className="overflow-x-auto  relative no-scrollbar"
                 style={{
                     height: 'calc(100vh - 18rem)',
-                    minHeight: '450px',
+                    minHeight: '490px',
                     maxHeight: '750px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -324,7 +337,7 @@ const DraggableTable = ({
                                             key={column.id}
                                             className={`
                                        px-6 py-1 text-sm divide-y divide-gray-600 whitespace-nowrap
-                                       ${[ 'Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Sales Insights', 'Video Type'].includes(column.label)
+                                       ${['Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Sales Insights', 'Video Type'].includes(column.label)
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
