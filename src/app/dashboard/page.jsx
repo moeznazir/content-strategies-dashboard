@@ -125,7 +125,6 @@ const Dashboard = () => {
     { label: "Key Quote", key: "Quote", placeholder: "Enter Quote" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
     { label: "Mentioned Quotes", key: "Mentioned_Quotes", placeholder: "Enter Mentioned Quotes" },
-    { label: "Case Study", key: "Case_Study", placeholder: "Enter Case Study Link", type: 'url' },
     { label: "Case Study Transcript", key: "Case_Study_Transcript", placeholder: "Enter Case Study Transcript" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Discussion Guide", key: "Discussion Guide", placeholder: "Enter Discussion Guide Link", type: "url" },
@@ -149,13 +148,14 @@ const Dashboard = () => {
     { label: "Post-Podcast Report", key: "Post-Podcast Report_Summary" },
     { label: "Podbook Link", key: "Podbook Link", placeholder: "Enter Podbook Link", type: "url" },
     { label: "Article", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
-    { label: "Article Transcript", key: "Article_Transcript", placeholder: "Enter Article Transcript"},
+    { label: "Article Text", key: "Article_Transcript", placeholder: "Enter Article Transcript"},
     { label: "Quote Card", key: "Quote Card - Extended Media", placeholder: "Enter Quote Card" },
     { label: "YouTube Short", key: "YouTube Short - Extended Media", placeholder: "Enter YouTube Short Link ", type: "url" },
     { label: "YouTube Short Transcript", key: "YouTube_Short_Transcript", placeholder: "Enter YouTube Short Transcript " },
     { label: "LinkedIn Video", key: "LinkedIn Video - Extended Media", placeholder: "Enter LinkedIn Video Link ", type: "url" },
     { label: "LinkedIn Video Transcript", key: "LinkedIn_Video_Transcript", placeholder: "Enter LinkedIn Video Transcript"},
     { label: "Post Podcast Insights", key: "Post_Podcast_Insights", placeholder: "Select Post Podcast Insights" },
+    { label: "Case Study", key: "Case_Study", placeholder: "Enter Case Study Link", type: 'url' },
   ];
 
   const [selectedFilters, setSelectedFilters] = useState({
