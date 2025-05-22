@@ -590,7 +590,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     const formik = useFormik({
         initialValues,
-        validationSchema,
+        // validationSchema,
         onSubmit: async (values) => {
             try {
                 let themesData = null;
@@ -751,10 +751,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     //Themes Handlers
     const handleAddTheme = () => {
-        if (!currentTheme || !currentRanking || !currentJustification) {
-            ShowCustomToast("Please fill all theme fields before adding.", "error");
-            return;
-        }
+        // if (!currentTheme || !currentRanking || !currentJustification) {
+        //     ShowCustomToast("Please fill all theme fields before adding.", "error");
+        //     return;
+        // }
 
         const newEntry = {
             theme: currentTheme,
@@ -818,10 +818,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Objection handlers
     const handleAddObjection = () => {
-        if (!currentObjection || !currentObjectionRanking || !currentObjectionJustification) {
-            ShowCustomToast("Please fill all objection fields before adding.", "error");
-            return;
-        }
+        // if (!currentObjection || !currentObjectionRanking || !currentObjectionJustification) {
+        //     ShowCustomToast("Please fill all objection fields before adding.", "error");
+        //     return;
+        // }
 
         const newEntry = {
             objection: currentObjection,
@@ -883,10 +883,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Challenges handlers
     const handleAddChallenges = () => {
-        if (!currentChallenges || !currentChallengesRanking || !currentChallengesJustification) {
-            ShowCustomToast("Please fill all challenge fields before adding.", "error");
-            return;
-        }
+        // if (!currentChallenges || !currentChallengesRanking || !currentChallengesJustification) {
+        //     ShowCustomToast("Please fill all challenge fields before adding.", "error");
+        //     return;
+        // }
 
         const newEntry = {
             challenges: currentChallenges,
@@ -948,10 +948,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Sales Insights handlers
     const handleAddSalesInsight = () => {
-        if (!currentSalesInsight || !currentSalesInsightRanking || !currentSalesInsightJustification) {
-            ShowCustomToast("Please fill all Sales Insight fields before adding.", "error");
-            return;
-        }
+        // if (!currentSalesInsight || !currentSalesInsightRanking || !currentSalesInsightJustification) {
+        //     ShowCustomToast("Please fill all Sales Insight fields before adding.", "error");
+        //     return;
+        // }
 
         const newEntry = {
             insight: currentSalesInsight,
@@ -1012,10 +1012,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Validation handlers 
     const handleAddValidation = () => {
-        if (!currentValidation || !currentValidationRanking || !currentValidationJustification) {
-            ShowCustomToast("Please fill all validation fields before adding.", "error");
-            return;
-        }
+        // if (!currentValidation || !currentValidationRanking || !currentValidationJustification) {
+        //     ShowCustomToast("Please fill all validation fields before adding.", "error");
+        //     return;
+        // }
 
         const newEntry = {
             validation: currentValidation,
@@ -1105,13 +1105,15 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setChallengesEntries(validatedChallengesEntries);
         setSalesInsightsEntries(validatedSalesInsightsEntries);
 
+        setTimeout(async () => {
+            const errors = await formik.validateForm();
+            if (Object.keys(errors).length > 0) {
+                ShowCustomToast("Please fill all required fields.", 'info', 2000);
+                return;
+            }
+            formik.handleSubmit();
+        }, 0);
 
-        const errors = await formik.validateForm();
-        if (Object.keys(errors).length > 0) {
-            ShowCustomToast("Please fill all required fields.", 'info', 2000);
-            return;
-        }
-        formik.handleSubmit();
     };
 
     console.log("Vhalllll", displayFields);

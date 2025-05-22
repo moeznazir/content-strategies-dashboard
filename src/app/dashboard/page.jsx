@@ -125,7 +125,6 @@ const Dashboard = () => {
     { label: "Key Quote", key: "Quote", placeholder: "Enter Quote" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
     { label: "Mentioned Quotes", key: "Mentioned_Quotes", placeholder: "Enter Mentioned Quotes" },
-    { label: "Case Study Transcript", key: "Case_Study_Transcript", placeholder: "Enter Case Study Transcript" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Discussion Guide", key: "Discussion Guide", placeholder: "Enter Discussion Guide Link", type: "url" },
     { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
@@ -156,6 +155,7 @@ const Dashboard = () => {
     { label: "LinkedIn Video Transcript", key: "LinkedIn_Video_Transcript", placeholder: "Enter LinkedIn Video Transcript"},
     { label: "Post Podcast Insights", key: "Post_Podcast_Insights", placeholder: "Select Post Podcast Insights" },
     { label: "Case Study", key: "Case_Study", placeholder: "Enter Case Study Link", type: 'url' },
+    { label: "Case Study Transcript", key: "Case_Study_Transcript", placeholder: "Enter Case Study Transcript" },
   ];
 
   const [selectedFilters, setSelectedFilters] = useState({
