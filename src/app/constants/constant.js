@@ -3,7 +3,9 @@ export const EXCLUED_PATHS = ['/', '/login', '/forgot-password', '/sign-up', '/r
 export const accessibleRoutes = {
     "end-user": ["/dashboard"],
     "admin": ["/dashboard", "/user-management","/assistant"],
-    "editor": ["/dashboard"]
+    "editor": ["/dashboard"],
+    "super-admin":["/dashboard", "/user-management","/assistant"],
+    "super-editor":["/dashboard", "/user-management","/assistant"],
 };
 
 export const getRandomColor = () => {
@@ -19,4 +21,36 @@ export const getRandomColor = () => {
     ];
     return colors[Math.floor(Math.random() * colors.length)];
 };
+
+export const COMPANY_CONFIG = [
+    {
+      id: "1",
+      podcastTitle: "The Contact Center Perspectives Podcast",
+      logo: "/logo_content_stratigies.png"
+    },
+    {
+      id: "2", 
+      podcastTitle: "Testing Titles",
+      logo: "/nextjs-icon-svgrepo-com.svg"
+    },
+    {
+      id: "3",
+      podcastTitle: "Testing Title",
+      logo: "/nextjs-icon-svgrepo-com (1).svg"
+    },
+    {
+      id: "4",
+      podcastTitle: "Go Beyond the Connection Podcast",
+      logo: "/nextjs-icon-svgrepo-com (1).svg"
+    },
+    {
+      id: "5",
+      podcastTitle: "Go Beyond the Connection Podcast",
+      logo: "/nextjs-icon-svgrepo-com (1).svg"
+    }
+  ];
+  
+  export const getCompanyConfig = (companyId) => {
+    return COMPANY_CONFIG.find(c => c.id === companyId) || COMPANY_CONFIG[0];
+  };
 

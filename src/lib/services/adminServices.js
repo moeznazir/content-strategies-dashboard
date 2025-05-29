@@ -1,4 +1,3 @@
-// lib/services/adminServices.js
 import { createClient } from '@supabase/supabase-js';
 
 
@@ -13,25 +12,31 @@ export const supabaseAdmin = createClient(
   }
 );
 
-
-export const getAllUsers = async () => {
+export const getCompanyUsers = async () => {
   try {
-    const { data, error } = await supabaseAdmin?.auth?.admin?.listUsers();
+    const { data, error } = await supabaseAdmin
+      .rpc('get_all_the_companies_users', {
+        input_company_id: localStorage.getItem('company_id'),
+        requesting_user_id: localStorage.getItem('current_user_id')
+      });
 
     if (error) {
-      console.log('Supabase error:', error);
+      console.log('RPC Error:', error);
       return { error: error.message };
     }
 
-    console.log("Fetched users:", data.users.length);
-    console.log("Fetched users:", data.users);
-    return { users: data.users };
+    if (data?.error) {
+      return { error: data.error };
+    }
+
+    return { users: data };
 
   } catch (error) {
     console.log('Unexpected error:', error);
     return { error: error.message };
   }
 };
+
 
 export const updateUserRoles = async (userId, newRoles) => {
   try {

@@ -10,6 +10,7 @@ import SearchByDateModal from "../customComponents/SearchByDateModal";
 import CustomInput from "../customComponents/CustomInput";
 import { debounce } from "@/lib/utils";
 import MultiSelectDropdown from "../customComponents/FiltersMultiSelect";
+import DynamicBranding from "../customComponents/DynamicLabelAndLogo";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -83,7 +84,7 @@ const Dashboard = () => {
     { label: "Post-Podcast Report", id: "Post-Podcast Report_Summary" },
     { label: "Podbook Link", id: "Podbook Link", type: 'url' },
     { label: "Article", id: "Article - Extended Media" },
-    { label: "Article Transcript", id: "Article_Transcript" },
+    { label: "Article Text", id: "Article_Transcript" },
     { label: "Quote Card", id: "Quote Card - Extended Media", type: 'url' },
     { label: "YouTube Short", id: "YouTube Short - Extended Media", type: 'url' },
     { label: "YouTube Short Transcript", id: "YouTube_Short_Transcript" },
@@ -147,12 +148,12 @@ const Dashboard = () => {
     { label: "Post-Podcast Report", key: "Post-Podcast Report_Summary" },
     { label: "Podbook Link", key: "Podbook Link", placeholder: "Enter Podbook Link", type: "url" },
     { label: "Article", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
-    { label: "Article Text", key: "Article_Transcript", placeholder: "Enter Article Transcript"},
+    { label: "Article Text", key: "Article_Transcript", placeholder: "Enter Article Transcript" },
     { label: "Quote Card", key: "Quote Card - Extended Media", placeholder: "Enter Quote Card" },
     { label: "YouTube Short", key: "YouTube Short - Extended Media", placeholder: "Enter YouTube Short Link ", type: "url" },
     { label: "YouTube Short Transcript", key: "YouTube_Short_Transcript", placeholder: "Enter YouTube Short Transcript " },
     { label: "LinkedIn Video", key: "LinkedIn Video - Extended Media", placeholder: "Enter LinkedIn Video Link ", type: "url" },
-    { label: "LinkedIn Video Transcript", key: "LinkedIn_Video_Transcript", placeholder: "Enter LinkedIn Video Transcript"},
+    { label: "LinkedIn Video Transcript", key: "LinkedIn_Video_Transcript", placeholder: "Enter LinkedIn Video Transcript" },
     { label: "Post Podcast Insights", key: "Post_Podcast_Insights", placeholder: "Select Post Podcast Insights" },
     { label: "Case Study", key: "Case_Study", placeholder: "Enter Case Study Link", type: 'url' },
     { label: "Case Study Transcript", key: "Case_Study_Transcript", placeholder: "Enter Case Study Transcript" },
@@ -597,7 +598,8 @@ const Dashboard = () => {
         <div className="p-0 w-full">
           {/* Search Bar Section */}
           <div className="mx-auto -mt-2">
-            <h1 className="text-2xl font-bold mt-4 mb-2">The Contact Center Perspectives Podcast</h1>
+            {/* <h1 className="text-2xl font-bold mt-4 mb-2">The Contact Center Perspectives Podcast</h1> */}
+            <DynamicBranding showLogo={false} showTitle={true} />
             {/* Search Bar with Clear Button */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               {/* Left-aligned search group */}

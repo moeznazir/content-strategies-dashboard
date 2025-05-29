@@ -9,7 +9,6 @@ export const getAllContext = async (user_id, company_id, limit) => {
         console.log('Context:', response.data);
         return response.data;
     } catch (error) {
-        ShowCustomToast(error.response?.data || error.message, 'error')
         return { documents: [] };
     }
 };
@@ -34,7 +33,24 @@ export const sendChats = async (
         });
         return response.data;
     } catch (error) {
-        ShowCustomToast(error.response?.data || error.message, 'error')
+        let message = 'Unknown error';
+    
+        const errorData = error.response?.data;
+    
+        if (typeof errorData === 'string') {
+            message = errorData;
+        } else if (errorData?.detail && typeof errorData.detail === 'string') {
+            message = errorData.detail;
+        } else if (Array.isArray(errorData)) {
+            message = errorData.map(err => err.msg || JSON.stringify(err)).join('\n');
+        } else if (typeof errorData === 'object') {
+            message = JSON.stringify(errorData);
+        } else if (error.message) {
+            message = error.message;
+        }
+    
+        ShowCustomToast(message, 'error');
         return null;
     }
+    
 };

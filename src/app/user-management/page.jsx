@@ -5,7 +5,7 @@ import { FaChevronLeft, FaChevronRight, FaTimes, FaEdit } from "react-icons/fa";
 import DraggableTable from "../customComponents/DraaggableTable";
 import Alert from "../customComponents/Alert";
 import { getRandomColor } from "../constants/constant";
-import { getAllUsers, updateUserRoles } from "@/lib/services/adminServices";
+import { getCompanyUsers, updateUserRoles } from "@/lib/services/adminServices";
 import CustomButton from "../customComponents/CustomButton";
 import CustomSelect from "../customComponents/CustomSelect";
 import { appColors } from "@/lib/theme";
@@ -50,23 +50,23 @@ const UserManagement = () => {
     }
 
     try {
-      const { users: fetchedUsers, total, error } = await getAllUsers();
+      const { users: fetchedUsers, total, error } = await getCompanyUsers();
 
       if (error) throw error;
 
       const formattedUsers = fetchedUsers.map((user) => {
         // Handle title_roles
-        const titleRoles = Array.isArray(user.user_metadata?.title_roles)
-          ? user.user_metadata.title_roles
-          : user.user_metadata?.title_roles
-            ? [user.user_metadata.title_roles]
+        const titleRoles = Array.isArray(user.raw_user_meta_data?.title_roles)
+          ? user.raw_user_meta_data.title_roles
+          : user.raw_user_meta_data?.title_roles
+            ? [user.raw_user_meta_data.title_roles]
             : [];
 
         // Handle system_roles
-        const systemRoles = Array.isArray(user.user_metadata?.system_roles)
-          ? user.user_metadata.system_roles
-          : user.user_metadata?.system_roles
-            ? [user.user_metadata.system_roles]
+        const systemRoles = Array.isArray(user.raw_user_meta_data?.system_roles)
+          ? user.raw_user_meta_data.system_roles
+          : user.raw_user_meta_data?.system_roles
+            ? [user.raw_user_meta_data.system_roles]
             : [];
 
         // Format dates
@@ -117,7 +117,7 @@ const UserManagement = () => {
   }, [fetchUsers]);
 
   const handleEditClick = (user) => {
-    const currentRoles = user.user_metadata?.system_roles || [];
+    const currentRoles = user.raw_user_meta_data?.system_roles || [];
     setCurrentUser(user);
     setSelectedRoles(currentRoles);
     setShowEditModal(true);
@@ -130,35 +130,7 @@ const UserManagement = () => {
       await fetchUsers(nextPage, true);
     }
   };
-  // const handleUpdateRoles = async () => {
-  //   try {
-  //     if (!currentUser) return;
 
-  //     const { error } = await supabase?.auth?.admin?.updateUserById(
-  //       currentUser.id,
-  //       {
-  //         user_metadata: {
-  //           ...currentUser.user_metadata,
-  //           system_roles: selectedRoles
-  //         }
-  //       }
-  //     );
-
-  //     if (error) throw error;
-
-  //     Alert.show('Success', 'User role updated successfully.', [
-  //       {
-  //         text: 'OK',
-  //         primary: true,
-  //       },
-  //     ]);
-  //     fetchUsers();
-  //     setShowEditModal(false);
-  //   } catch (err) {
-  //     console.log("Error updating user:", err);
-
-  //   }
-  // };
   const handleUpdateRoles = async () => {
     try {
       if (!currentUser) return;
@@ -171,7 +143,7 @@ const UserManagement = () => {
         Alert.show('Success', 'User role updated successfully.', [
           { text: 'OK', primary: true },
         ]);
-        fetchUsers(); // Refresh user list
+        fetchUsers(); 
         setShowEditModal(false);
       }
     } catch (err) {
@@ -211,7 +183,6 @@ const UserManagement = () => {
         </div>
       </div>
 
-      {/* Pagination Controls */}
       {/* Pagination Controls */}
       <div className="flex items-center justify-between mt-4 px-4 py-2 sm:px-6">
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
