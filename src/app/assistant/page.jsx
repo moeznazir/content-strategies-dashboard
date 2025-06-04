@@ -10,6 +10,7 @@ const Assistant = () => {
     const [hasSearched, setHasSearched] = useState(false);
     const [documents, setDocuments] = useState([]);
     const [prompts, setPrompts] = useState([]);
+    const [showContextDropdown, setShowContextDropdown] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedDocs, setSelectedDocs] = useState([]);
     const [selectedPromptId, setSelectedPromptId] = useState(null);
@@ -18,19 +19,15 @@ const Assistant = () => {
     const [selectedPromptTitle, setSelectedPromptTitle] = useState('');
     const [isPersistentOpen, setIsPersistentOpen] = useState(false);
     const [isCustomerVoiceOpen, setIsCustomerVoiceOpen] = useState(false);
+    const [showLibraryDropdown, setShowLibraryDropdown] = useState(false);
+    const [showAddonsDropdown, setShowAddonsDropdown] = useState(false);
+    const [showOptimizationDropdown, setShowOptimizationDropdown] = useState(false);
     const [optimizedQuery, setOptimizedQuery] = useState('');
     const [selectedAddOn, setSelectedAddOn] = useState(null);
-    const [showLibraryDropdown, setShowLibraryDropdown] = useState(false);
-    const [showLibraryModal, setShowLibraryModal] = useState(false);
-    const [showAddonsDropdown, setShowAddonsDropdown] = useState(false);
     const [isPromptMode, setIsPromptMode] = useState(true);
     const [chatHistory, setChatHistory] = useState([]);
     const [selectedPromptDetails, setSelectedPromptDetails] = useState(null);
     const [selectedTemplate, setSelectedTemplate] = useState('');
-    const [showContextModal, setShowContextModal] = useState(false);
-    const [showOptimizationModal, setShowOptimizationModal] = useState(false);
-    const [showContextDropdown, setShowContextDropdown] = useState(false);
-    const [showAddonsModal, setShowAddonsModal] = useState(false);
 
     // Load chat history from localStorage on component mount
     useEffect(() => {
@@ -80,22 +77,13 @@ const Assistant = () => {
     }, []);
 
     const handleTabClick = (tabId) => {
-        setActiveTab(tabId);
-
         if (tabId === 'context') {
-            setShowContextModal(true);
-            setHasSearched(true)
-        } else if (tabId === 'business') {
-            if (!searchQuery.trim()) {
-                ShowCustomToast('Please enter a query first', 'info', 2000);
-                return;
-            }
-            generateOptimizedQuery(searchQuery);
-            setShowOptimizationModal(true);
-            setHasSearched(true)
-        } else if (tabId === 'addons') {
-            setShowAddonsModal(true);
-            setHasSearched(true)
+            setActiveTab('context');
+            setShowContextDropdown(!showContextDropdown);
+            setShowLibraryDropdown(false);
+            setShowOptimizationDropdown(false);
+            setShowAddonsDropdown(false);
+            setSelectedAddOn(null);
         } else if (tabId === 'library') {
             setActiveTab('library');
             setShowLibraryDropdown(!showLibraryDropdown);
@@ -103,8 +91,33 @@ const Assistant = () => {
             setShowOptimizationDropdown(false);
             setShowAddonsDropdown(false);
             setSelectedAddOn(null);
+        } else if (tabId === 'business') {
+            if (!searchQuery.trim()) {
+                ShowCustomToast('Please enter a query first', 'info', 2000);
+                return;
+            }
+            setActiveTab('business');
+            setShowOptimizationDropdown(!showOptimizationDropdown);
+            setShowContextDropdown(false);
+            setShowLibraryDropdown(false);
+            setShowAddonsDropdown(false);
+            generateOptimizedQuery(searchQuery);
+            setSelectedAddOn(null);
+        } else if (tabId === 'addons') {
+            setActiveTab('addons');
+            setShowAddonsDropdown(!showAddonsDropdown);
+            setShowContextDropdown(false);
+            setShowLibraryDropdown(false);
+            setShowOptimizationDropdown(false);
+            setSelectedAddOn(null);
+        } else {
+            setActiveTab(tabId);
+            setShowContextDropdown(false);
+            setShowLibraryDropdown(false);
+            setShowOptimizationDropdown(false);
+            setShowAddonsDropdown(false);
+            setSelectedAddOn(null);
         }
-
     };
 
     const handleDocSelect = (docId, docTitle) => {
@@ -130,6 +143,7 @@ const Assistant = () => {
         if (selectedPrompt) {
             setSelectedPromptId(selectedPrompt.prompt_id);
             setSelectedPromptTitle(selectedPrompt.name);
+            // setSearchQuery(selectedPrompt.name)
         } else {
             setSelectedPromptId(null);
             setSelectedPromptTitle('');
@@ -155,6 +169,7 @@ const Assistant = () => {
         try {
             setIsLoading(true);
             setHasSearched(true);
+            setShowContextDropdown(false);
 
             const userId = localStorage.getItem('current_user_id');
             const companyId = localStorage.getItem('company_id');
@@ -198,6 +213,7 @@ const Assistant = () => {
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
     return (
+
         <div
             className="w-full flex flex-col items-center"
             style={{
@@ -205,7 +221,9 @@ const Assistant = () => {
                 minHeight: '90%'
             }}
         >
+
             <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
+
                 {/* Chat history container with scroll */}
                 <div className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar" style={{ maxHeight: '65vh' }}>
                     {chatHistory.length > 0 ? (
@@ -233,7 +251,24 @@ const Assistant = () => {
                             </h1>
                         </div>
                     )}
+
+
+                    {/* {apiResponse && (
+                        <div className="w-full space-y-4 mb-6">
+                            <div className="flex justify-end">
+                                <div className="bg-blue-600 text-white rounded-lg p-3 max-w-3xl">
+                                    <p className="whitespace-pre-wrap">{searchQuery}</p>
+                                </div>
+                            </div>
+                            <div className="flex justify-start">
+                                <div className="bg-gray-700 text-white rounded-lg p-3 max-w-3xl">
+                                    <p className="whitespace-pre-wrap">{apiResponse.data.response}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )} */}
                 </div>
+
 
                 {/* Input area - fixed at bottom */}
                 <div className="w-full max-w-4xl sticky  bottom-4 bg-transparent pt-4">
@@ -341,329 +376,144 @@ const Assistant = () => {
                         <button
                             key={tab.id}
                             onClick={() => handleTabClick(tab.id)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${activeTab === tab.id
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${(tab.id === 'context' && showContextDropdown) ||
+                                (tab.id === 'library' && showLibraryDropdown) ||
+                                (tab.id === 'business' && showOptimizationDropdown) ||
+                                (tab.id === 'addons' && (showAddonsDropdown || selectedAddOn)) ||
+                                (activeTab === tab.id && !['context', 'library', 'business', 'addons'].includes(tab.id))
                                 ? 'bg-blue-600 text-white'
                                 : 'text-white hover:bg-white/10'
                                 }`}
                         >
                             {tab.label}
+                            {(tab.id === 'context' || tab.id === 'library' || tab.id === 'business' || tab.id === 'addons') && (
+                                <span className="ml-1 text-xs">
+                                    {(tab.id === 'context' && showContextDropdown) ||
+                                        (tab.id === 'library' && showLibraryDropdown) ||
+                                        (tab.id === 'addons' && (showAddonsDropdown || selectedAddOn)) ||
+                                        (tab.id === 'business' && showOptimizationDropdown) ? '▼' : '▶'}
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
 
                 {/* Context Modal */}
-                {showContextModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold">Select Context</h2>
-                                <button
-                                    onClick={() => setShowContextModal(false)}
-                                    className="text-white hover:text-gray-300 text-2xl"
-                                >
-                                    &times;
-                                </button>
-                            </div>
+                {showContextDropdown && (
+                    <div
+                        className="w-full max-w-3xl !mt-2 mb-4 text-left text-white overflow-y-auto rounded-xl shadow-lg backdrop-blur bg-[rgba(255,255,255,0.05)] border border-white/10"
+                        style={{
+                            maxHeight: '350px',
+                            marginLeft: '30%'
+                        }}
+                    >
+                        {isLoading ? (
+                            <div className="text-center py-8 text-white/80 text-base">Loading documents...</div>
+                        ) : (
+                            <>
+                                <div className="mb-6 px-6 pt-4 ">
+                                    <div
+                                        className="flex items-center mb-3 cursor-pointer"
+                                        onClick={() => setIsPersistentOpen(!isPersistentOpen)}
+                                    >
+                                        <span className=" text-blue-700">
+                                            {isPersistentOpen ? '▼' : '▶'}
+                                        </span>
+                                        <h3 className="font-semibold ml-2 text-lg text-blue-500">Persistent Context</h3>
+                                        <span className="ml-2 text-xs bg-blue-500 text-white-700 px-2 py-1 rounded-full">
+                                            {persistentDocuments.length} documents
+                                        </span>
 
-                            {isLoading ? (
-                                <div className="text-center py-8 text-white/80 text-base">Loading documents...</div>
-                            ) : (
-                                <>
-                                    <div className="mb-6">
-                                        <div
-                                            className="flex items-center mb-3 cursor-pointer"
-                                            onClick={() => setIsPersistentOpen(!isPersistentOpen)}
-                                        >
-                                            <span className="text-blue-700">
-                                                {isPersistentOpen ? '▼' : '▶'}
-                                            </span>
-                                            <h3 className="font-semibold ml-2 text-lg text-blue-500">Persistent Context</h3>
-                                            <span className="ml-2 text-xs bg-blue-500 text-white-700 px-2 py-1 rounded-full">
-                                                {persistentDocuments.length} documents
-                                            </span>
-                                        </div>
+                                    </div>
 
-                                        {isPersistentOpen && (
-                                            <div className="grid grid-cols-1 gap-2">
-                                                {persistentDocuments.length > 0 ? (
-                                                    persistentDocuments.map((doc) => (
-                                                        <div
-                                                            key={doc?.doc_id}
-                                                            className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-all"
-                                                            onClick={() => handleDocSelect(doc.doc_id, doc.title)}
+                                    {isPersistentOpen && (
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {persistentDocuments.length > 0 ? (
+                                                persistentDocuments.map((doc) => (
+                                                    <div
+                                                        key={doc.doc_id}
+                                                        className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-all"
+                                                        onClick={() => handleDocSelect(doc.doc_id, doc.title)}
+                                                    >
+                                                        <svg
+                                                            className="flex-shrink-0"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 48 48"
+                                                            xmlns="http://www.w3.org/2000/svg"
                                                         >
-                                                            <svg
-                                                                className="flex-shrink-0"
-                                                                width="24"
-                                                                height="24"
-                                                                viewBox="0 0 48 48"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <g transform="translate(10, 10)" fill="green" fillOpacity="0.8">
-                                                                    <rect y="0" width="34" height="4" rx="1" />
-                                                                    <rect y="6" width="34" height="4" rx="1" />
-                                                                    <rect y="12" width="34" height="4" rx="1" />
-                                                                    <rect y="18" width="34" height="4" rx="1" />
-                                                                    <rect y="24" width="34" height="4" rx="1" />
-                                                                    <rect y="30" width="34" height="4" rx="1" />
-                                                                </g>
-                                                            </svg>
-                                                            <span className="text-sm text-white/90">{doc.title}</span>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="col-span-2 text-gray-400 text-sm">No documents in Persistent Context</div>
-                                                )}
-                                            </div>
-                                        )}
+                                                            <g transform="translate(10, 10)" fill="green" fillOpacity="0.8">
+                                                                <rect y="0" width="34" height="4" rx="1" />
+                                                                <rect y="6" width="34" height="4" rx="1" />
+                                                                <rect y="12" width="34" height="4" rx="1" />
+                                                                <rect y="18" width="34" height="4" rx="1" />
+                                                                <rect y="24" width="34" height="4" rx="1" />
+                                                                <rect y="30" width="34" height="4" rx="1" />
+                                                            </g>
+                                                        </svg>
+                                                        <span className="text-sm text-white/90">{doc.title}</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="col-span-2 text-gray-400 text-sm">No documents in Persistent Context</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Voice-of-the-Customer */}
+                                <div className="px-6 pb-4">
+                                    <div
+                                        className="flex items-center mb-3 cursor-pointer"
+                                        onClick={() => setIsCustomerVoiceOpen(!isCustomerVoiceOpen)}
+                                    >
+                                        <span className="text-blue-700">
+                                            {isCustomerVoiceOpen ? '▼' : '▶'}
+                                        </span>
+                                        <h3 className="font-semibold ml-2 text-lg text-blue-500">Voice-of-the-Customer</h3>
+                                        <span className="ml-2 text-xs bg-blue-500 text-white-700 px-2 py-1 rounded-full">
+                                            {customerVoiceDocuments.length} documents
+                                        </span>
+
                                     </div>
 
-                                    <div>
-                                        <div
-                                            className="flex items-center mb-3 cursor-pointer"
-                                            onClick={() => setIsCustomerVoiceOpen(!isCustomerVoiceOpen)}
-                                        >
-                                            <span className="text-blue-700">
-                                                {isCustomerVoiceOpen ? '▼' : '▶'}
-                                            </span>
-                                            <h3 className="font-semibold ml-2 text-lg text-blue-500">Voice-of-the-Customer</h3>
-                                            <span className="ml-2 text-xs bg-blue-500 text-white-700 px-2 py-1 rounded-full">
-                                                {customerVoiceDocuments.length} documents
-                                            </span>
-                                        </div>
-
-                                        {isCustomerVoiceOpen && (
-                                            <div className="grid grid-cols-1 gap-2">
-                                                {customerVoiceDocuments.length > 0 ? (
-                                                    customerVoiceDocuments.map((doc) => (
-                                                        <div
-                                                            key={doc.doc_id}
-                                                            className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-all"
-                                                            onClick={() => handleDocSelect(doc.doc_id, doc.title)}
+                                    {isCustomerVoiceOpen && (
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {customerVoiceDocuments.length > 0 ? (
+                                                customerVoiceDocuments.map((doc) => (
+                                                    <div
+                                                        key={doc.doc_id}
+                                                        className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-all"
+                                                        onClick={() => handleDocSelect(doc.doc_id, doc.title)}
+                                                    >
+                                                        <svg
+                                                            className="flex-shrink-0"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 48 48"
+                                                            xmlns="http://www.w3.org/2000/svg"
                                                         >
-                                                            <svg
-                                                                className="flex-shrink-0"
-                                                                width="24"
-                                                                height="24"
-                                                                viewBox="0 0 48 48"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <g transform="translate(10, 10)" fill="blue" fillOpacity="0.8">
-                                                                    <rect y="0" width="34" height="4" rx="1" />
-                                                                    <rect y="6" width="34" height="4" rx="1" />
-                                                                    <rect y="12" width="34" height="4" rx="1" />
-                                                                    <rect y="18" width="34" height="4" rx="1" />
-                                                                    <rect y="24" width="34" height="4" rx="1" />
-                                                                    <rect y="30" width="34" height="4" rx="1" />
-                                                                </g>
-                                                            </svg>
-                                                            <span className="text-sm text-white/90">{doc.title}</span>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="col-span-2 text-gray-400 text-sm">No documents in Voice-of-the-Customer</div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex justify-end mt-6">
-                                        <button
-                                            onClick={() => setShowContextModal(false)}
-                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                                        >
-                                            Done
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Optimization Modal */}
-                {showOptimizationModal && (
-                    <div className="fixed inset-0  flex items-center justify-center">
-                        <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold">Prompt Optimization</h2>
-                                <button
-                                    onClick={() => setShowOptimizationModal(false)}
-                                    className="text-white hover:text-gray-300 text-2xl"
-                                >
-                                    &times;
-                                </button>
-                            </div>
-
-                            <div className="mb-4">
-                                <h3 className="text-sm font-medium mb-1">Original Query:</h3>
-                                <div className="bg-white/5 p-3 rounded-lg mb-3 text-sm">
-                                    <p>{searchQuery}</p>
-                                </div>
-                            </div>
-
-                            <div className="mb-4">
-                                <h3 className="text-sm font-medium mb-1">Optimized Query:</h3>
-                                <textarea
-                                    value={optimizedQuery}
-                                    onChange={(e) => setOptimizedQuery(e.target.value)}
-                                    className="w-full bg-white/5 p-3 rounded-lg mb-3 text-sm min-h-[150px]"
-                                />
-                            </div>
-
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                                    onClick={() => {
-                                        setOptimizedQuery(searchQuery);
-                                        setShowOptimizationModal(false);
-                                    }}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                                    onClick={() => {
-                                        setSearchQuery(optimizedQuery);
-                                        setShowOptimizationModal(false);
-                                    }}
-                                >
-                                    Use Optimized Query
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Add-Ons Modal */}
-                {showAddonsModal && (
-                    <div className="fixed inset-0 flex items-center justify-center">
-                        <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold">Optional Add-Ons</h2>
-                                <button
-                                    onClick={() => setShowAddonsModal(false)}
-                                    className="text-white hover:text-gray-300 text-2xl"
-                                >
-                                    &times;
-                                </button>
-                            </div>
-
-                            <div className="space-y-6">
-                                {/* Industry */}
-                                <div>
-                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Industry:</label>
-                                    <div className="grid grid-cols-2 gap-3 mb-3">
-                                        {['Technology', 'Healthcare', 'Finance', 'Retail', 'Other'].map((item) => (
-                                            <label key={item} className="flex items-center space-x-3">
-                                                <input
-                                                    type="checkbox"
-                                                    value={item.toLowerCase()}
-                                                    className="w-5 h-5"
-                                                />
-                                                <span>{item}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Add custom industry..."
-                                        className="w-full px-4 py-2 text-white bg-[#3b3b5b] border border-white/20 rounded-md"
-                                    />
-                                </div>
-
-                                {/* Audience */}
-                                <div>
-                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience:</label>
-                                    <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto mb-3">
-                                        {[
-                                            'C-Suite', 'Sales', 'Marketing', 'IT', 'Operations',
-                                            'Finance', 'Customer Support', 'Prospect', 'Customer', 'Thought Leader'
-                                        ].map((aud) => (
-                                            <label key={aud} className="flex items-center space-x-3">
-                                                <input
-                                                    type="checkbox"
-                                                    value={aud.toLowerCase().replace(/ /g, '-')}
-                                                    className="w-5 h-5"
-                                                />
-                                                <span>{aud}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Add custom audience..."
-                                        className="w-full px-4 py-2 bg-[#3b3b5b] border border-white/20 text-white rounded-md"
-                                    />
-                                </div>
-
-                                {/* Tone */}
-                                <div>
-                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Tone:</label>
-                                    <div className="grid grid-cols-2 gap-3 mb-3">
-                                        {['Professional', 'Casual', 'Friendly', 'Formal', 'Technical'].map((tone) => (
-                                            <label key={tone} className="flex items-center space-x-3">
-                                                <input
-                                                    type="checkbox"
-                                                    value={tone.toLowerCase()}
-                                                    className="w-5 h-5"
-                                                />
-                                                <span>{tone}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Objective */}
-                                <div>
-                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Objective:</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Enter your objective..."
-                                        className="w-full px-4 py-2 bg-[#3b3b5b] border border-white/20 text-white rounded-md"
-                                    />
-                                </div>
-
-                                {/* Dos & Don'ts */}
-                                <div>
-                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Dos & Don'ts:</label>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div>
-                                            <h4 className="font-semibold mb-2">Dos</h4>
-                                            <textarea
-                                                placeholder="Enter dos..."
-                                                className="w-full px-4 py-2 bg-[#3b3b5b] text-white border border-white/20 rounded-md h-32"
-                                            />
+                                                            <g transform="translate(10, 10)" fill="blue" fillOpacity="0.8">
+                                                                <rect y="0" width="34" height="4" rx="1" />
+                                                                <rect y="6" width="34" height="4" rx="1" />
+                                                                <rect y="12" width="34" height="4" rx="1" />
+                                                                <rect y="18" width="34" height="4" rx="1" />
+                                                                <rect y="24" width="34" height="4" rx="1" />
+                                                                <rect y="30" width="34" height="4" rx="1" />
+                                                            </g>
+                                                        </svg>
+                                                        <span className="text-sm text-white/90">{doc.title}</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="col-span-2 text-gray-400 text-sm">No documents in Voice-of-the-Customer</div>
+                                            )}
                                         </div>
-                                        <div>
-                                            <h4 className="font-semibold mb-2">Don'ts</h4>
-                                            <textarea
-                                                placeholder="Enter don'ts..."
-                                                className="w-full px-4 py-2 bg-[#3b3b5b] text-white border border-white/20 rounded-md h-32"
-                                            />
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
-                            </div>
 
-                            <div className="flex justify-end gap-3 mt-6">
-                                <button
-                                    onClick={() => setShowAddonsModal(false)}
-                                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        // You can add form save logic here
-                                        setShowAddonsModal(false);
-                                    }}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                                >
-                                    Apply Add-Ons
-                                </button>
-                            </div>
-                        </div>
+                            </>
+                        )}
                     </div>
                 )}
 
@@ -691,7 +541,7 @@ const Assistant = () => {
 
                     {/* Add this state to your component */}
                     {selectedPromptDetails && (
-                        <div className="fixed inset-0 flex items-center justify-center">
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                             <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
                                 <div className="flex justify-between items-start mb-4">
                                     <h2 className="text-xl font-bold">Prompt Details</h2>
@@ -805,6 +655,51 @@ const Assistant = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Prompt optimization */}
+                {showOptimizationDropdown && (
+                    <div className="ml-[50%] mb-4 w-full max-w-[600px] !mt-[-8px] text-left text-white overflow-y-auto rounded-xl shadow-lg backdrop-blur bg-[rgba(255,255,255,0.05)] border border-white/10 p-4">
+                        <h2 className="text-lg font-bold mb-3">Prompt Optimization</h2>
+
+                        <div className="mb-4">
+                            <h3 className="text-sm font-medium mb-1">Original Query:</h3>
+                            <div className="bg-white/5 p-3 rounded-lg mb-3 text-sm">
+                                <p>{searchQuery}</p>
+                            </div>
+                        </div>
+
+                        <div className="mb-4">
+                            <h3 className="text-sm font-medium mb-1">Optimized Query:</h3>
+                            <textarea
+                                value={optimizedQuery}
+                                onChange={(e) => setOptimizedQuery(e.target.value)}
+                                className="w-full bg-white/5 p-3 rounded-lg mb-3 text-sm min-h-[100px]"
+                            />
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm"
+                                onClick={() => {
+                                    setSearchQuery(optimizedQuery);
+                                    setShowOptimizationDropdown(false);
+                                }}
+                            >
+                                Use
+                            </button>
+                            <button
+                                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm"
+                                onClick={() => {
+                                    setOptimizedQuery(searchQuery);
+                                    setShowOptimizationDropdown(false);
+                                }}
+                            >
+                                Skip
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Add-Ons Modal */}
                 {showAddonsDropdown && (
                     <div className="ml-[42%] mb-4 w-[220px] !mt-[-8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[rgba(255,255,255,0.05)]">
@@ -823,18 +718,156 @@ const Assistant = () => {
                         </div>
                     </div>
                 )}
-            </div>
 
+                {selectedAddOn && (
+                    <div className="ml-[60%] mb-4 p-6 w-[500px] !mt-[-8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[#2b2b4b]  relative">
+                        <button
+                            onClick={() => setSelectedAddOn(null)}
+                            className="absolute top-2 right-4 text-white text-xl"
+                        >
+                            &times;
+                        </button>
+
+                        <div className="flex flex-col">
+                            <h2 className="text-xl font-semibold text-center mb-2 -mt-3">Optional Add-Ons</h2>
+                            {/* Industry */}
+                            {selectedAddOn === 'Industry' && (
+                                <div>
+                                    <label className="block font-large mb-4 text-md text-left border-b">Industry:</label>
+                                    <div className="grid grid-cols-2 gap-2 mb-2">
+                                        {['Technology', 'Healthcare', 'Finance', 'Retail', 'Other'].map((item) => (
+                                            <label key={item} className="flex items-center space-x-2">
+                                                <input type="checkbox" value={item.toLowerCase()} />
+                                                <span className='text-sm'>{item}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Add custom industry..."
+                                        className="w-full px-3 py-2  text-white bg-[#2b2b4b] border border-white/20 rounded-md mt-2"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Audience */}
+                            {selectedAddOn === 'Audience' && (
+                                <div>
+                                    <label className="block font-large mb-4 text-md text-left border-b">Audience:</label>
+                                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-2">
+                                        {[
+                                            'C-Suite', 'Sales', 'Marketing', 'IT', 'Operations',
+                                            'Finance', 'Customer Support', 'Prospect', 'Customer', 'Thought Leader'
+                                        ].map((aud) => (
+                                            <label key={aud} className="flex items-center space-x-2">
+                                                <input type="checkbox" value={aud.toLowerCase().replace(/ /g, '-')} />
+                                                <span className='text-sm' >{aud}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Add custom audience..."
+                                        className="w-full px-3 py-2 bg-[#2b2b4b] border border-white/20 text-white rounded-md mt-2"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Tone */}
+                            {selectedAddOn === 'Tone' && (
+                                <div>
+                                    <label className="block font-large mb-4 text-md text-left border-b">Tone:</label>
+                                    <div className="grid grid-cols-2 gap-2 mb-2">
+                                        {['Professional', 'Casual', 'Friendly', 'Formal', 'Technical'].map((tone) => (
+                                            <label key={tone} className="flex items-center space-x-2">
+                                                <input type="checkbox" value={tone.toLowerCase()} />
+                                                <span className='text-sm'>{tone}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Objective */}
+                            {selectedAddOn === 'Objective' && (
+                                <div>
+                                    <label className="block font-large mb-4 text-md text-left border-b">Objective:</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter your objective..."
+                                        className="w-full px-3 py-2 bg-[#2b2b4b] border border-white/20 text-white border border-white/20 rounded-md"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Dos & Don'ts */}
+                            {selectedAddOn === `Dos & Don'ts` && (
+                                <div>
+                                    <label className="block font-large mb-4 text-md text-left border-b">Dos & Don'ts:</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <h4 className="font-semibold mb-1">Dos</h4>
+                                            <textarea
+                                                placeholder="Enter dos..."
+                                                className="w-full px-3 py-2 bg-[#2b2b4b] text-white border border-white/20 rounded-md h-24"
+                                            />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold mb-1">Don'ts</h4>
+                                            <textarea
+                                                placeholder="Enter don'ts..."
+                                                className="w-full px-3 py-2 bg-[#2b2b4b] text-white border border-white/20 rounded-md h-24"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Save and Cancel Buttons */}
+                            <div className="mt-6 flex justify-end space-x-3">
+                                <button
+                                    onClick={() => setSelectedAddOn(null)}
+                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        // You can add form save logic here
+                                        setSelectedAddOn(null);
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg transition-colors text-sm bg-blue-600 hover:bg-blue-700"
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+            </div>
             {/* Bottom Left Footer */}
             <div className="fixed bottom-0 left-0 flex items-center gap-3 py-4 px-6">
                 <img
-                    src="/ai-navigator-logo.png"
+                    src="/ai-navigator-logo.gif"
                     alt="Logo"
-                    className="w-30 h-6 object-contain"
+                    className="w-10 h-10 object-contain"
                 />
+
+                {/* Text container: stacked vertically */}
+                <div className="flex flex-col leading-tight">
+                    <span className="text-sm font-semibold text-gray-400">
+                        AI - Navigator
+                    </span>
+                    <span className="text-xs text-gray-500">
+                        Powered by Content Strategies
+                    </span>
+                </div>
             </div>
+
         </div>
     );
 };
 
 export default Assistant;
+
