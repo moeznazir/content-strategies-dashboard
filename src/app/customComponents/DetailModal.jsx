@@ -1,19 +1,15 @@
-import { FaTimes, FaCopy, FaExpand, FaCompress, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaTimes, FaCopy, FaExpand, FaCompress } from "react-icons/fa";
 import { appColors } from "@/lib/theme";
 import { useState } from "react";
 
 const Modal = ({ data, onClose }) => {
     const [expandedFields, setExpandedFields] = useState({});
     const [copiedField, setCopiedField] = useState(null);
-    const [collapsedSections, setCollapsedSections] = useState({
-        guestDetails: true,
-        transcript: true,
-        matchingCategories: true
-    });
 
     // Array fields that should be displayed as tags
     const arrayFields = [
         "Video Type",
+        // "Tags",
         "Mentions"
     ];
 
@@ -45,67 +41,42 @@ const Modal = ({ data, onClose }) => {
             ]
         }
     ];
-
-    // Define sections
-    const sections = [
-        {
-            id: "guestDetails",
-            title: "Guest Details",
-            fields: [
-                "Guest",
-                "Guest Title",
-                "Guest Company",
-                "Guest Industry",
-                "Guest Role"
-            ]
-        },
-        {
-            id: "transcript",
-            title: "Transcript",
-            fields: [
-                "Episode_Number",
-                "Date Recorded",
-                "Discussion Guide",
-                "Video Length",
-                "Video Description",
-                "Text comments for the rating (OPTIONAL input from the user)",
-                "Quote",
-                "Mentions",
-                "Public_vs_Private",
-                "Client",
-                "Employee"
-            ]
-        },
-        {
-            id: "matchingCategories",
-            title: "Matching Categories",
-            fields: [
-                "Themes",
-                "Challenges",
-                "Objections",
-                "Validations",
-                "Sales Insights"
-            ]
-        }
-    ];
-
     // Define the exact order of fields we want to display
     const fieldOrder = [
         "Avatar",
-        ...sections.flatMap(section => section.fields),
+        "Guest",
         "Likes",
         "Comments",
-        "Video Title",
+        "Guest Title",
+        "Guest Company",
+        "Guest Industry",
+        "Guest Role",
+        "Date Recorded",
+        "Episode_Number",
+        "Episode Title",
         "Video Type",
+        "Video Title",
+        "Video Length",
+        "Video Description",
+        "Text comments for the rating (OPTIONAL input from the user)",
+        "Quote",
+        "Mentions",
         "Mentioned_Quotes",
         "Case_Study",
         "Case_Study_Transcript",
+        "Public_vs_Private",
+        "Discussion Guide",
         "Transcript",
-        "Article_Transcript",
         "Article - Extended Media",
+        "Client",
+        "Employee",
+        // "Tags",
+        "Themes",
+        "Validations",
+        "Objections",
+        "Challenges",
+        "Sales Insights",
         "Videos",
-        "Videos Link",
-        "Episode Title",
         "Challenge Report_Unedited Video Link",
         "Challenge Report_Unedited Transcript Link",
         "Challenge Report_Summary",
@@ -118,10 +89,7 @@ const Modal = ({ data, onClose }) => {
         "LinkedIn Video - Extended Media",
         "YouTube Short - Extended Media",
         "Quote Card - Extended Media",
-        "Post_Podcast_Insights",
-        "Podbook Link",
-        "YouTube_Short_Transcript",
-        "LinkedIn_Video_Transcript"
+        "Post_Podcast_Insights"
     ];
 
     const getDisplayName = (key) => {
@@ -132,8 +100,6 @@ const Modal = ({ data, onClose }) => {
             "Article - Extended Media": "Article",
             "Quote Card - Extended Media": "Quote Card",
             "Quote": "Key Quote",
-            "Guest": "Guest Name",
-            "Article_Transcript": "Article Text",
             "Public_vs_Private": "Public vs. Private",
             "Challenge Report_Unedited Video Link": "Challenge Video",
             "Challenge Report_Unedited Transcript Link": "Challenge Transcript",
@@ -151,21 +117,19 @@ const Modal = ({ data, onClose }) => {
             "YouTube Short - Extended Media": "YouTube Short",
             "Post_Podcast_Insights": "Post-Podcast Insights",
             "Mentioned_Quotes": "Mentioned Quotes",
-            "Videos Link": "Video Link",
-            "YouTube_Short_Transcript": "YouTube Short Transcript",
-            "LinkedIn_Video_Transcript": "LinkedIn Video Transcript",
-            "Podbook Link": "Podbook Link"
+
         };
         return nameMap[key] || key;
     };
-    
 
-    const toggleSection = (sectionId) => {
-        setCollapsedSections(prev => ({
-            ...prev,
-            [sectionId]: !prev[sectionId]
+    // Filter and sort the data according to our fieldOrder
+    const filteredData = fieldOrder
+        .filter(key => data[key] !== undefined && data[key] !== null && data[key] !== "")
+        .map(key => ({
+            key,
+            value: data[key],
+            label: getDisplayName(key)
         }));
-    };
 
     const toggleExpand = (fieldName) => {
         setExpandedFields(prev => ({
@@ -190,7 +154,7 @@ const Modal = ({ data, onClose }) => {
 
     const renderSpecialField = (key, value) => {
         if (!value || (Array.isArray(value) && value.length === 0)) {
-            return <div className="text-gray-400  text-sm">No data available</div>;
+            return <div className="text-gray-400 text-sm">No data available</div>;
         }
 
         const entries = Array.isArray(value) ? value : [value];
@@ -312,87 +276,6 @@ const Modal = ({ data, onClose }) => {
         return <div className="break-words">{displayValue}</div>;
     };
 
-    const renderSection = (section) => {
-        // Check if any field in this section has data
-        const hasData = section.fields.some(field =>
-            data[field] !== undefined && data[field] !== null && data[field] !== ""
-        );
-
-        if (!hasData) return null;
-
-        return (
-            <div key={section.id} className="mb-4">
-                <div 
-                    className="flex justify-between border items-center cursor-pointer p-2 rounded-md hover:bg-white/10 mt-8"
-                    onClick={() => toggleSection(section.id)}
-                >
-                    <h3 className="text-lg font-bold">{section.title}</h3>
-                    {collapsedSections[section.id] ? <FaChevronDown /> : <FaChevronUp />}
-                </div>
-
-                {!collapsedSections[section.id] && (
-                    <div className="mt-2 space-y-4 pl-4 border rounded p-2 ">
-                        {section.fields.map(field => {
-                            if (!data[field] || data[field] === "") return null;
-
-                            const label = getDisplayName(field);
-                            const value = data[field];
-                            const isLongText = typeof value === 'string' && value.length > 100;
-                            const isExpanded = expandedFields[field];
-                            const isSpecialField = specialFields.includes(field);
-                            const isArrayField = arrayFields.includes(field) && Array.isArray(value);
-
-                            return (
-                                <div key={field} className="w-full">
-                                    {/* Field Label */}
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label className="text-md font-semibold text-gray-600" style={{ color: appColors.textColor }}>
-                                            {label}
-                                        </label>
-                                        {copiedField === label && (
-                                            <span className="text-xs text-green-500">Copied!</span>
-                                        )}
-                                    </div>
-
-                                    {/* Field Content with Actions */}
-                                    <div className="flex items-stretch gap-2 w-full">
-                                        <div
-                                            className={`flex-1 border border-gray-300 p-3 rounded-md overflow-hidden
-                                                ${isArrayField ? 'h-auto m-0 p-0 mb-2' : 'hover:bg-white/5 cursor-pointer'}
-                                                ${isExpanded ? '' : isSpecialField ? '' : 'max-h-24 overflow-y-auto'}`}
-                                            onClick={!isArrayField && !isSpecialField ? () => toggleExpand(field) : undefined}
-                                        >
-                                            {renderFieldValue(field, value)}
-                                        </div>
-
-                                        <div className="flex flex-col justify-between">
-                                            {(isLongText || isArrayField) && (
-                                                <div
-                                                    onClick={() => toggleExpand(field)}
-                                                    className="w-auto h-[0px] flex items-center justify-center text-gray-500 hover:text-gray-700 rounded-md hover:bg-white/10 mt-4 transition-colors cursor-pointer"
-                                                    title={isExpanded ? "Collapse" : "Expand"}
-                                                >
-                                                    {isExpanded ? <FaCompress size={16} /> : <FaExpand size={16} />}
-                                                </div>
-                                            )}
-
-                                            <button
-                                                onClick={() => copyToClipboard(value, label)}
-                                                className="w-auto h-10 flex items-center justify-center text-gray-500 rounded-md hover:text-gray-700  mt-2 transition-colors"
-                                            >
-                                                <FaCopy size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg w-[40%] max-w-[800px] max-h-[90vh] overflow-y-auto shadow-lg"
@@ -419,71 +302,66 @@ const Modal = ({ data, onClose }) => {
 
                 {/* Main Content */}
                 <div className="space-y-5 px-2">
-                    {/* Render collapsible sections */}
-                    {sections.map(renderSection)}
+                    {filteredData.map(({ key, value, label }) => {
+                        if (key === "Avatar") return null; // Skip avatar as it's already rendered
+                        // Check if this field is part of any report section
+                        const isReportField = reportSections.some(section =>
+                            section.fields.includes(key)
+                        );
 
-                    {/* Render remaining fields not in sections */}
-                    {fieldOrder
-                        .filter(key => 
-                            data[key] !== undefined && 
-                            data[key] !== null && 
-                            data[key] !== "" &&
-                            !sections.some(section => section.fields.includes(key)) &&
-                            key !== "Avatar"
-                        )
-                        .map((key) => {
-                            const label = getDisplayName(key);
-                            const value = data[key];
-                            const isArrayField = arrayFields.includes(key) && Array.isArray(value);
-                            const isSpecialField = specialFields.includes(key);
-                            const isLongText = !isArrayField && !isSpecialField && typeof value === 'string' && value.length > 100;
-                            const isExpanded = expandedFields[key];
+                        // If it's part of a report section, we'll handle it separately
+                        if (isReportField) return null;
 
-                            return (
-                                <div key={key} className="w-full">
-                                    {/* Field Label */}
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label className="text-md font-bold text-gray-600" style={{ color: appColors.textColor }}>
-                                            {label}
-                                        </label>
-                                        {copiedField === label && (
-                                            <span className="text-xs text-green-500">Copied!</span>
-                                        )}
+                        const isArrayField = arrayFields.includes(key) && Array.isArray(value);
+                        const isSpecialField = specialFields.includes(key);
+                        const isLongText = !isArrayField && !isSpecialField && typeof value === 'string' && value.length > 100;
+                        const isExpanded = expandedFields[key];
+
+                        return (
+                            <div key={key} className="w-full">
+                                {/* Field Label */}
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="text-md font-bold text-gray-600" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                        {label}
+                                    </label>
+                                    {copiedField === label && (
+                                        <span className="text-xs text-green-500">Copied!</span>
+                                    )}
+                                </div>
+
+                                {/* Field Content with Actions */}
+                                <div className="flex items-stretch gap-2 w-full">
+                                    <div
+                                        className={`flex-1 border border-gray-300 p-3 rounded-md overflow-hidden
+                                            ${isArrayField ? 'h-auto m-0 p-0 mb-2' : 'hover:bg-white/5 cursor-pointer'}
+                                            ${isExpanded ? '' : isSpecialField ? '' : 'max-h-24 overflow-y-auto'}`}
+                                        onClick={!isArrayField && !isSpecialField ? () => toggleExpand(key) : undefined}
+                                    >
+                                        {renderFieldValue(key, value)}
                                     </div>
 
-                                    {/* Field Content with Actions */}
-                                    <div className="flex items-stretch gap-2 w-full">
-                                        <div
-                                            className={`flex-1 border border-gray-300 p-3 rounded-md overflow-hidden
-                                                ${isArrayField ? 'h-auto m-0 p-0 mb-2' : 'hover:bg-white/5 cursor-pointer'}
-                                                ${isExpanded ? '' : isSpecialField ? '' : 'max-h-24 overflow-y-auto'}`}
-                                            onClick={!isArrayField && !isSpecialField ? () => toggleExpand(key) : undefined}
-                                        >
-                                            {renderFieldValue(key, value)}
-                                        </div>
-
-                                        <div className="flex flex-col justify-between">
-                                            {(isLongText || isArrayField) && (
-                                                <div
-                                                    onClick={() => toggleExpand(key)}
-                                                    className="w-auto h-[0px] flex items-center justify-center text-gray-500 hover:text-gray-700 rounded-md hover:bg-white/10 mt-4 transition-colors cursor-pointer"
-                                                    title={isExpanded ? "Collapse" : "Expand"}
-                                                >
-                                                    {isExpanded ? <FaCompress size={16} /> : <FaExpand size={16} />}
-                                                </div>
-                                            )}
-
-                                            <button
-                                                onClick={() => copyToClipboard(value, label)}
-                                                className="w-auto h-10 flex items-center justify-center text-gray-500 rounded-md hover:text-gray-700  mt-2 transition-colors"
+                                    <div className="flex flex-col justify-between">
+                                        {(isLongText || isArrayField) && (
+                                            <div
+                                                onClick={() => toggleExpand(key)}
+                                                className="w-auto h-[0px] flex items-center justify-center text-gray-500 hover:text-gray-700 rounded-md hover:bg-white/10 mt-4 transition-colors cursor-pointer"
+                                                title={isExpanded ? "Collapse" : "Expand"}
                                             >
-                                                <FaCopy size={16} />
-                                            </button>
-                                        </div>
+                                                {isExpanded ? <FaCompress size={16} /> : <FaExpand size={16} />}
+                                            </div>
+                                        )}
+
+                                        <button
+                                            onClick={() => copyToClipboard(value, label)}
+                                            className="w-auto h-10 flex items-center justify-center text-gray-500 rounded-md hover:text-gray-700  mt-2 transition-colors"
+                                        >
+                                            <FaCopy size={16} />
+                                        </button>
                                     </div>
                                 </div>
-                            );
-                        })}
+                            </div>
+                        );
+                    })}
 
                     {/* Render report sections */}
                     {reportSections.map((section) => {
@@ -498,6 +376,7 @@ const Modal = ({ data, onClose }) => {
                             <div key={section.title}>
                                 <label className="text-md font-bold">{section.title}</label>
                                 <div className="border rounded-lg p-4">
+
                                     <div className="space-y-4">
                                         {section.fields.map((field) => {
                                             if (!data[field] || data[field] === "") return null;
@@ -511,7 +390,7 @@ const Modal = ({ data, onClose }) => {
                                                 <div key={field} className="w-full">
                                                     {/* Field Label */}
                                                     <div className="flex justify-between items-center mb-2">
-                                                        <label className="text-sm font-semibold text-gray-600" style={{ color: appColors.textColor }}>
+                                                        <label className="text-sm font-semibold text-gray-600" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
                                                             {label}
                                                         </label>
                                                         {copiedField === label && (
@@ -557,6 +436,7 @@ const Modal = ({ data, onClose }) => {
                             </div>
                         );
                     })}
+
                 </div>
             </div>
         </div>
