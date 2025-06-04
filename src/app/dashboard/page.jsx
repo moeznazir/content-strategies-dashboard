@@ -41,6 +41,7 @@ const Dashboard = () => {
   const columns = [
     { label: "Avatar", id: "Avatar" },
     { label: "Guest", id: "Guest" },
+    { label: "Content Type", id: "Video Type" },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
     { label: "Guest Title", id: "Guest Title" },
@@ -50,7 +51,7 @@ const Dashboard = () => {
     { label: "Date Recorded", id: "Date Recorded" },
     { label: "Episode #", id: "Episode_Number" },
     { label: "Full Episode Title", id: "Episode Title" },
-    { label: "Video Type", id: "Video Type" },
+
     { label: "Video Title", id: "Video Title" },
     { label: "Video Length", id: "Video Length" },
     // { label: "Videos", id: "Videos" },
@@ -758,20 +759,20 @@ const Dashboard = () => {
           {/* Logo and Text */}
           <div className="mt-6 flex items-center gap-3 py-4 fixed bottom-0">
             <img
-              src="/ai-navigator-logo.gif"
+              src="/ai-navigator-logo.png"
               alt="Logo"
-              className="w-10 h-10 object-contain"
+              className="w-30 h-6 object-contain"
             />
 
             {/* Text container: stacked vertically */}
-            <div className="flex flex-col leading-tight">
+            {/* <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold text-gray-400">
                 AI - Navigator
               </span>
               <span className="text-xs text-gray-500">
                 Powered by Content Strategies
               </span>
-            </div>
+            </div> */}
           </div>
 
         </aside>

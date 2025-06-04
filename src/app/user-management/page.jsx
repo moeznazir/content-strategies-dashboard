@@ -316,20 +316,20 @@ const UserManagement = () => {
       {/* Bottom Left Footer */}
       <div className="fixed bottom-0 left-0 flex items-center gap-3 py-4 px-6">
         <img
-          src="/ai-navigator-logo.gif"
+          src="/ai-navigator-logo.png"
           alt="Logo"
-          className="w-10 h-10 object-contain"
+          className="w-30 h-6 object-contain"
         />
 
         {/* Text container: stacked vertically */}
-        <div className="flex flex-col leading-tight">
+        {/* <div className="flex flex-col leading-tight">
           <span className="text-sm font-semibold text-gray-400">
             AI - Navigator
           </span>
           <span className="text-xs text-gray-500">
             Powered by Content Strategies
           </span>
-        </div>
+        </div> */}
       </div>
 
     </div>

@@ -1105,14 +1105,14 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setChallengesEntries(validatedChallengesEntries);
         setSalesInsightsEntries(validatedSalesInsightsEntries);
 
-        setTimeout(async () => {
-            const errors = await formik.validateForm();
-            if (Object.keys(errors).length > 0) {
-                ShowCustomToast("Please fill all required fields.", 'info', 2000);
-                return;
-            }
-            formik.handleSubmit();
-        }, 0);
+        // setTimeout(async () => {
+        //     const errors = await formik.validateForm();
+        //     if (Object.keys(errors).length > 0) {
+        //         ShowCustomToast("Please fill all required fields.", 'info', 2000);
+        //         return;
+        //     }
+        //     formik.handleSubmit();
+        // }, 0);
 
     };
 
