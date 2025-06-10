@@ -45,10 +45,11 @@ const OPTIONS = {
         { value: "Highlights Video", label: "Highlights Video" },
         { value: "Case Study", label: "Case Study" },
         { value: "ICP Advice", label: "ICP Advice" },
-        { value: "Post-Podcast", label: "Post-Podcast" },
+        { value: "Post-Podcast Video", label: "Post-Podcast Video" },
         { value: "Guest Introduction", label: "Guest Introduction" },
         { value: "Post Podcast Insights", label: "Post Podcast Insights" },
         { value: "Challenge Questions", label: "Challenge Questions" },
+        { value: "Challenge Video", label: "Challenge Video" },
     ],
     // "Tags": [
     //     { value: "Agent Empowerment", label: "Agent Empowerment" },
@@ -273,6 +274,70 @@ const SalesInsightsEntry = ({ insight, ranking, justification, perception, whyIt
     );
 };
 
+
+const CaseStudyVideoEntry = ({
+    video_title,
+    video_link,
+    copy_and_paste_text,
+    link_to_document,
+    onEdit,
+    onRemove,
+    index,
+}) => {
+    return (
+        <div
+            className="border rounded-lg p-3 mb-3"
+            style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}
+        >
+            <div className="flex justify-between items-start">
+                <div className="flex-1 space-y-1">
+                    <p>
+                        <span className="font-medium">Video Title:</span>{' '}
+                        <span className="text-gray-400 text-sm">{video_title || 'No title provided'}</span>
+                    </p>
+                    <p>
+                        <span className="font-medium">Video Link:</span>{' '}
+                        <a
+                            href={video_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 underline text-sm"
+                        >
+                            {video_link || 'No link provided'}
+                        </a>
+                    </p>
+                    <p>
+                        <span className="font-medium">Copy & Paste Text:</span>{' '}
+                        <span className="text-gray-400 text-sm">
+                            {copy_and_paste_text || 'No text provided'}
+                        </span>
+                    </p>
+                    <p>
+                        <span className="font-medium">Link to Document:</span>{' '}
+                        <a
+                            href={link_to_document}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 underline text-sm"
+                        >
+                            {link_to_document || 'No document link'}
+                        </a>
+                    </p>
+                </div>
+                <div className="flex space-x-1">
+                    <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700 cursor-pointer">
+                        <PencilIcon className="h-5 w-5" />
+                    </div>
+                    <div onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700 cursor-pointer">
+                        <TrashIcon className="h-5 w-5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 const ValidationEntry = ({ validation, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -298,7 +363,7 @@ const ValidationEntry = ({ validation, ranking, justification, perception, whyIt
         </div>
     );
 };
-const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank }) => {
+const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank, prefilledData = null }) => {
     const [loading, setLoading] = useState(false);
 
     // Themes
@@ -356,6 +421,15 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [currentSalesInsightSupportingQuotes, setCurrentSalesInsightSupportingQuotes] = useState("");
     const [salesInsightsEntries, setSalesInsightsEntries] = useState([]);
     const [salesInsightsEditIndex, setSalesInsightsEditIndex] = useState(null);
+
+    // Case Study Other Video
+    const [currentVideoTitle, setCurrentVideoTitle] = useState("");
+    const [currentVideoLink, setCurrentVideoLink] = useState("");
+    const [currentCopyAndPasteText, setCurrentCopyAndPasteText] = useState("");
+    const [currentLinkToDocument, setCurrentLinkToDocument] = useState("");
+    const [caseStudyVideoEntries, setCaseStudyVideoEntries] = useState([]);
+    const [caseStudyVideoEditIndex, setCaseStudyVideoEditIndex] = useState(null);
+
 
     function normalizeThemes(data) {
         if (!Array.isArray(data)) return [];
@@ -435,6 +509,27 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         });
     }
 
+    function normalizeCaseStudyOtherVideo(data) {
+        if (!Array.isArray(data)) return [];
+        return data.map(entry => {
+            if (typeof entry === "string") {
+                return {
+                    video_title: "",
+                    video_link: "",
+                    copy_and_paste_text: "",
+                    link_to_document: ""
+                };
+            }
+            return {
+                video_title: entry.video_title || "",
+                video_link: entry.video_link || "",
+                copy_and_paste_text: entry.copy_and_paste_text || "",
+                link_to_document: entry.link_to_document || ""
+            };
+        });
+    }
+
+
     useEffect(() => {
         if (entityData?.id) {
             const matchedData = themesRank.find(item => item.id === entityData.id);
@@ -507,6 +602,20 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             } else {
                 setSalesInsightsEntries([]);
             }
+            // === NEW: Handle Case Study Other Video ===========================
+            const otherVideoData =
+                matchedData?.Case_Study_Other_Video ?? matchedData?.Case_Study_Other_Video;
+            if (otherVideoData) {
+                try {
+                    const parsed = Array.isArray(otherVideoData) ? otherVideoData : JSON.parse(otherVideoData);
+                    setCaseStudyVideoEntries(normalizeCaseStudyOtherVideo(parsed));
+                } catch (e) {
+                    console.log("Error parsing Case Study Other Video:", e);
+                    setCaseStudyVideoEntries([]);
+                }
+            } else {
+                setCaseStudyVideoEntries([]);
+            }
 
         } else {
             // Clear on new entry
@@ -575,10 +684,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Initialize form values properly
     const initialValues = {};
     displayFields.forEach(field => {
-        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges" || field.key == "Sales Insights") {
+        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges" || field.key == "Sales Insights" || field.key == 'Case_Study_Other_Video') {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
-            initialValues[field.key] = entityData?.[field.key] ||
+            initialValues[field.key] = (prefilledData && prefilledData[field.key]) || entityData?.[field.key] ||
                 (MULTISELECT_FIELDS.includes(field.key) ? [] :
                     SINGLESELECT_FIELDS.includes(field.key) ? "" :
                         field.type === "number" ? 0 :
@@ -665,6 +774,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     Validations: validationEntries.length > 0 ? validationEntries : null,
                     Challenges: challengesEntries.length > 0 ? challengesEntries : null,
                     "Sales Insights": salesInsightsEntries.length > 0 ? salesInsightsEntries : null,
+                    Case_Study_Other_Video: caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null,
                     company_id: localStorage.getItem('company_id')
                 };
 
@@ -1010,6 +1120,61 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
     };
 
+    // CaseStudyVideo handlers
+    const handleAddCaseStudyVideo = () => {
+        // Optional validation (uncomment if required)
+        // if (!currentVideoTitle || !currentVideoLink) {
+        //     ShowCustomToast("Please fill required fields before adding.", "error");
+        //     return;
+        // }
+
+        const newEntry = {
+            video_title: currentVideoTitle,
+            video_link: currentVideoLink,
+            copy_and_paste_text: currentCopyAndPasteText,
+            link_to_document: currentLinkToDocument
+        };
+
+        if (caseStudyVideoEditIndex !== null) {
+            const updated = [...caseStudyVideoEntries];
+            updated[caseStudyVideoEditIndex] = newEntry;
+            setCaseStudyVideoEntries(updated);
+            setCaseStudyVideoEditIndex(null);
+        } else {
+            setCaseStudyVideoEntries([...caseStudyVideoEntries, newEntry]);
+        }
+
+        // Reset fields
+        setCurrentVideoTitle("");
+        setCurrentVideoLink("");
+        setCurrentCopyAndPasteText("");
+        setCurrentLinkToDocument("");
+    };
+
+    const handleEditCaseStudyVideo = (index) => {
+        const entry = caseStudyVideoEntries[index];
+        setCurrentVideoTitle(entry.video_title);
+        setCurrentVideoLink(entry.video_link);
+        setCurrentCopyAndPasteText(entry.copy_and_paste_text);
+        setCurrentLinkToDocument(entry.link_to_document);
+        setCaseStudyVideoEditIndex(index);
+    };
+    const handleRemoveCaseStudyVideo = (index) => {
+        const updated = caseStudyVideoEntries.filter((_, i) => i !== index);
+        setCaseStudyVideoEntries(updated);
+
+        if (caseStudyVideoEditIndex === index) {
+            setCurrentVideoTitle("");
+            setCurrentVideoLink("");
+            setCurrentCopyAndPasteText("");
+            setCurrentLinkToDocument("");
+            setCaseStudyVideoEditIndex(null);
+        } else if (caseStudyVideoEditIndex > index) {
+            setCaseStudyVideoEditIndex(caseStudyVideoEditIndex - 1);
+        }
+    };
+
+
     // Validation handlers 
     const handleAddValidation = () => {
         // if (!currentValidation || !currentValidationRanking || !currentValidationJustification) {
@@ -1130,12 +1295,61 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         <div className="max-h-[60vh] overflow-y-auto pr-2">
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
-                                    {!['Themes', 'Objections', 'Validations', 'Challenges', 'Sales Insights', 'ranking', 'Ranking Justification', 'Challenge Report_Unedited Video Link', 'Challenge Report_Unedited Transcript Link', 'Challenge Report_Summary', 'Podcast Report_Unedited Video Link', 'Podcast Report_Unedited Transcript Link', 'Podcast Report_Summary', 'Post-Podcast Report_Unedited Video Link', 'Post-Podcast Report_Unedited Transcript Link', 'Post-Podcast Report_Summary'].includes(field.key) ? (
+                                    {![
+                                        'Themes',
+                                        'Objections',
+                                        'Validations',
+                                        'Challenges',
+                                        'Sales Insights',
+                                        'Case_Study_Other_Video',
+                                        'ranking',
+                                        'Ranking Justification',
+                                        'Challenge Report_Unedited Video Link',
+                                        'Challenge Report_Unedited Transcript Link',
+                                        'Challenge Report_Summary',
+                                        'Podcast Report_Unedited Video Link',
+                                        'Podcast Report_Unedited Transcript Link',
+                                        'Podcast Report_Summary',
+                                        'Post-Podcast Report_Unedited Video Link',
+                                        'Post-Podcast Report_Unedited Transcript Link',
+                                        'Post-Podcast Report_Summary',
+                                        'Full Case Study_Interactive Link',
+                                        'Full Case Study_Copy and Paste Text',
+                                        'Full Case Study_Link To Document',
+                                        'Problem Section_Video Link',
+                                        'Problem Section_Copy and Paste Text',
+                                        'Problem Section_Link To Document',
+                                        'Solution Section_Video Link',
+                                        'Solution Section_Copy and Paste Text',
+                                        'Solution Section_Link To Document',
+                                        'Results Section_Video Link',
+                                        'Results Section_Copy and Paste Text',
+                                        'Results Section_Link To Document',
+                                        'Case Study Video Short_Video Link',
+                                        'Case Study Video Short_Copy and Paste Text',
+                                        'Case Study Video Short_Link To Document',
+                                        'Case Study Other Video_Video Title',
+                                        'Case Study Other Video_Video Link',
+                                        'Case Study Other Video_Copy and Paste Text',
+                                        'Case Study Other Video_Link To Document'
+                                    ].includes(field.key) ? (
 
-                                        !((field.key == "Mentioned_Quotes" && formik.values["Mentions"] !== "Yes" || (field.key === "Case_Study_Transcript" && !formik.values["Case_Study"]))) && (
+                                        !(
+                                            (field.key == "Mentioned_Quotes" && formik.values["Mentions"] !== "Yes") ||
+                                            (field.key === "Case_Study_Transcript" && !formik.values["Case_Study"]) ||
+                                            (
+                                                field.key === "report_link" &&
+                                                !(
+                                                    Array.isArray(formik.values["Video Type"]) &&
+                                                    formik.values["Video Type"].some(type =>
+                                                        ["Challenge Video", "Post-Podcast Video"].includes(type)
+                                                    )
+                                                )
+                                            )
+                                        ) && (
                                             <>
                                                 <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                    {field.label}:
+                                                    {field.label === "Video Type" ? "Content Type" : field.label}:
                                                 </label>
 
                                                 {MULTISELECT_FIELDS.includes(field.key) ? (
@@ -1813,6 +2027,410 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                 )}
                                             </div>
 
+                                        ) : field.key == 'Case_Study_Other_Video' ? (
+                                            <>
+                                                <h3 className="text-lg font-semibold mb-2" style={{ color: appColors.textColor }}>Case Study Other Video:</h3>
+
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>Video Title</label>
+                                                            {/* Video Title */}
+                                                            <CustomInput
+                                                                type="text"
+                                                                value={currentVideoTitle}
+                                                                onChange={(e) => setCurrentVideoTitle(e.target.value)}
+                                                                placeholder="Enter Video Title…"
+                                                                className="w-full p-2 border rounded"
+
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>Video Link</label>
+
+                                                            {/* Video Link */}
+                                                            <CustomInput
+                                                                type="url"
+                                                                value={currentVideoLink}
+                                                                onChange={(e) => setCurrentVideoLink(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Video Link"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>Copy & Paste Text</label>
+
+                                                            {/* Copy-and-Paste Text */}
+                                                            <CustomInput
+                                                                as="textarea"
+                                                                rows={3}
+                                                                value={currentCopyAndPasteText}
+                                                                onChange={(e) => setCurrentCopyAndPasteText(e.target.value)}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Copy & Paste Text"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>Link to Document</label>
+                                                            {/* Link to Document */}
+                                                            <CustomInput
+                                                                type="text"
+
+                                                                value={currentLinkToDocument}
+                                                                onChange={(e) => setCurrentLinkToDocument(e.target.value)}
+                                                                className="w-full p-2 border rounded font-semibold"
+                                                                placeholder="Enter Link to Document"
+                                                            />
+                                                        </div>
+                                                        {/* Add / Update button */}
+                                                        <div className="flex justify-end">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={handleAddCaseStudyVideo}
+                                                                disabled={!currentVideoTitle || !currentVideoLink}
+                                                                className="flex items-center gap-1"
+                                                            >
+                                                                <PlusIcon className="h-4 w-4" />
+                                                                {caseStudyVideoEditIndex !== null ? 'Update Other Video' : 'Add Other Video'}
+                                                            </CustomButton>
+                                                        </div>
+
+                                                        {/* List of added videos */}
+                                                        {caseStudyVideoEntries.length > 0 && (
+                                                            <div className="mt-2 max-h-[200px] overflow-y-auto">
+                                                                <h4 className="font-medium text-sm mb-2">
+                                                                    Added Case Study Other Videos:
+                                                                </h4>
+
+                                                                {caseStudyVideoEntries.map((entry, index) => (
+                                                                    <CaseStudyVideoEntry          /* create a tiny component like SalesInsightsEntry */
+                                                                        key={index}
+                                                                        index={index}
+                                                                        video_title={entry.video_title}
+                                                                        video_link={entry.video_link}
+                                                                        copy_and_paste_text={entry.copy_and_paste_text}
+                                                                        link_to_document={entry.link_to_document}
+                                                                        onEdit={handleEditCaseStudyVideo}
+                                                                        onRemove={handleRemoveCaseStudyVideo}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {formik.errors['Case Study Other Video'] &&
+                                                    formik.touched['Case Study Other Video'] && (
+                                                        <p className="text-red-500 text-sm mb-2">
+                                                            {formik.errors['Case Study Other Video']}
+                                                        </p>
+                                                    )}
+                                            </>
+                                        ) : field.key === "Full Case Study_Interactive Link" ? (
+                                            <>
+                                                <h3 className="text-lg font-semibold mb-2" style={{ color: appColors.textColor }}>Full Case Study:</h3>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Interactive Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Full Case Study_Interactive Link"
+                                                                value={formik.values["Full Case Study_Interactive Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Interactive Link"
+                                                            />
+                                                            {formik.errors["Full Case Study_Interactive Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Full Case Study_Interactive Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Copy and Paste Text:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Full Case Study_Copy and Paste Text"
+                                                                value={formik.values["Full Case Study_Copy and Paste Text"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Copy and Paste Text"
+                                                            />
+                                                            {formik.errors["Full Case Study_Copy and Paste Text"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Full Case Study_Copy and Paste Text"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Link To Document:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Full Case Study_Link To Document"
+                                                                value={formik.values["Full Case Study_Link To Document"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Link To Document"
+                                                            />
+                                                            {formik.errors["Full Case Study_Link To Document"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Full Case Study_Link To Document"]}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : field.key === "Problem Section_Video Link" ? (
+                                            <>
+                                                <h3 className="text-lg font-semibold mb-2" style={{ color: appColors.textColor }}>Problem Section:</h3>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Video Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Problem Section_Video Link"
+                                                                value={formik.values["Problem Section_Video Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Video Link"
+                                                            />
+                                                            {formik.errors["Problem Section_Video Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Problem Section_Video Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Copy and Paste Text:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Problem Section_Copy and Paste Text"
+                                                                value={formik.values["Problem Section_Copy and Paste Text"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Copy and Paste Text"
+                                                            />
+                                                            {formik.errors["Problem Section_Copy and Paste Text"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Problem Section_Copy and Paste Text"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Link To Document:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Problem Section_Link To Document"
+                                                                value={formik.values["Problem Section_Link To Document"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Link To Document"
+                                                            />
+                                                            {formik.errors["Problem Section_Link To Document"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Problem Section_Link To Document"]}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : field.key === "Solution Section_Video Link" ? (
+                                            <>
+                                                <h3 className="text-lg font-semibold mb-2" style={{ color: appColors.textColor }}>Solution Section:</h3>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Video Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Solution Section_Video Link"
+                                                                value={formik.values["Solution Section_Video Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Video Link"
+                                                            />
+                                                            {formik.errors["Solution Section_Video Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Solution Section_Video Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Copy and Paste Text:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Solution Section_Copy and Paste Text"
+                                                                value={formik.values["Solution Section_Copy and Paste Text"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Copy and Paste Text"
+                                                            />
+                                                            {formik.errors["Solution Section_Copy and Paste Text"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Solution Section_Copy and Paste Text"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Link To Document:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Solution Section_Link To Document"
+                                                                value={formik.values["Solution Section_Link To Document"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Link To Document"
+                                                            />
+                                                            {formik.errors["Solution Section_Link To Document"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Solution Section_Link To Document"]}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : field.key === "Results Section_Video Link" ? (
+                                            <>
+                                                <h3 className="text-lg font-semibold mb-2" style={{ color: appColors.textColor }}>Results Section:</h3>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Video Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Results Section_Video Link"
+                                                                value={formik.values["Results Section_Video Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Video Link"
+                                                            />
+                                                            {formik.errors["Results Section_Video Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Results Section_Video Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Copy and Paste Text:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Results Section_Copy and Paste Text"
+                                                                value={formik.values["Results Section_Copy and Paste Text"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Copy and Paste Text"
+                                                            />
+                                                            {formik.errors["Results Section_Copy and Paste Text"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Results Section_Copy and Paste Text"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Link To Document:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Results Section_Link To Document"
+                                                                value={formik.values["Results Section_Link To Document"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Link To Document"
+                                                            />
+                                                            {formik.errors["Results Section_Link To Document"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Results Section_Link To Document"]}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : field.key === "Case Study Video Short_Video Link" ? (
+                                            <>
+                                                <h3 className="text-lg font-semibold mb-2" style={{ color: appColors.textColor }}>Case Study Video Short:</h3>
+                                                <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Video Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                name="Case Study Video Short_Video Link"
+                                                                value={formik.values["Case Study Video Short_Video Link"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Video Link"
+                                                            />
+                                                            {formik.errors["Case Study Video Short_Video Link"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Case Study Video Short_Video Link"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Copy and Paste Text:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Case Study Video Short_Copy and Paste Text"
+                                                                value={formik.values["Case Study Video Short_Copy and Paste Text"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Copy and Paste Text"
+                                                            />
+                                                            {formik.errors["Case Study Video Short_Copy and Paste Text"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Case Study Video Short_Copy and Paste Text"]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Link To Document:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="text"
+                                                                name="Case Study Video Short_Link To Document"
+                                                                value={formik.values["Case Study Video Short_Link To Document"] || ""}
+                                                                onChange={formik.handleChange}
+                                                                onBlur={formik.handleBlur}
+                                                                className="w-full p-2 border rounded"
+                                                                placeholder="Enter Link To Document"
+                                                            />
+                                                            {formik.errors["Case Study Video Short_Link To Document"] && (
+                                                                <p className="text-red-500 text-sm">{formik.errors["Case Study Video Short_Link To Document"]}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
                                         ) : field.key === "Challenge Report_Unedited Video Link" ? (
                                             <>
                                                 <div className="border rounded-lg p-4 mb-4" style={{ borderColor: appColors.borderColor }}>
