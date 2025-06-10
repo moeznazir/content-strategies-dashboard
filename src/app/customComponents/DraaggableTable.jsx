@@ -38,7 +38,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
 
     const shouldResizeColumn = (columnId) => {
         // Disable separator for these specific columns
-        return !['Objections', 'Challenges', 'Sales Insights', 'Tags', 'Themes', 'Validations', 'Video Type', 'action'].includes(columnId);
+        return !['Objections', 'Challenges', 'Sales Insights', 'Tags', 'Themes', 'Validations', 'action'].includes(columnId);
     };
 
     return (
@@ -46,8 +46,8 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
             ref={(node) => ref(drop(node))}
             className={`
           px-2 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
-          ${column.id === 'Avatar' ? 'sticky left-0 px-6 z-30 bg-[#1a1b41] w-[75px]' : ''}
-          ${column.id === 'Guest' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[200px]' : ''}
+          ${column.id === 'Avatar' ? 'sticky left-0 px-6 z-30 bg-[#1a1b41] w-[90px]' : ''}
+          ${column.id === 'Guest' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
           ${column.id == 'email' ? ' px-[25px] z-20 bg-[#1a1b41] w-[200px]' : ''}
         `}
             style={{
@@ -63,7 +63,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
         >
 
             <ResizableBox
-                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action') ? 90 : 250}
+                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action') ? 100 : 250}
                 height={20}
                 minConstraints={[50]}
                 maxConstraints={[1000]}
@@ -108,7 +108,8 @@ const DraggableTable = ({
     loadingMore,
     alignRecord,
     loadingRecord,
-    themesRank
+    themesRank,
+    handleAddFromRow
 }) => {
     const [columns, setColumns] = useState(initialColumns);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -118,6 +119,7 @@ const DraggableTable = ({
     const [selectedValidations, setSelectedValidations] = useState(null);
     const [selectedChallenges, setSelectedChallenges] = useState(null);
     const [selectedSalesInsights, setSelectedSalesInsights] = useState(null);
+    const [selectedCaseStudyVideos, setSelectedCaseStudyVideos] = useState(null);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
 
@@ -283,6 +285,32 @@ const DraggableTable = ({
 
         return [];
     };
+    const normalizeCaseStudyOtherVideo = (rowId) => {
+        const CaseStudyOtherVideo = themesRank.find(item => item.id === rowId)?.Case_Study_Other_Video;
+        if (!CaseStudyOtherVideo) return [];
+
+        if (Array.isArray(CaseStudyOtherVideo)) {
+            return CaseStudyOtherVideo.map(othervideo => {
+                if (typeof othervideo === 'object') {
+                    return {
+                        video_title: othervideo.video_title || '',
+                        video_link: othervideo.video_link || '',
+                        copy_and_paste_text: othervideo.copy_and_paste_text || '',
+                        link_to_document: othervideo.link_to_document || ''
+                    };
+                }
+                return {
+                    video_title: othervideo || '',
+                    video_link: '',
+                    copy_and_paste_text: '',
+                    link_to_document: ''
+                };
+            });
+        }
+
+        return [];
+    };
+
 
     return (
         <DndProvider backend={HTML5Backend}>
@@ -337,7 +365,7 @@ const DraggableTable = ({
                                             key={column.id}
                                             className={`
                                        px-6 py-1 text-sm divide-y divide-gray-600 whitespace-nowrap
-                                       ${['Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Sales Insights', 'Video Type'].includes(column.label)
+                                       ${['Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Sales Insights', 'Case_Study_Other_Video', 'Video Type'].includes(column.label)
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
@@ -349,6 +377,14 @@ const DraggableTable = ({
                                         >
                                             {column.id === "Avatar" ? (
                                                 <div className="flex items-center">
+                                                    {/* Add new content from this row */}
+                                                    <button
+                                                        onClick={() => handleAddFromRow(row)}
+                                                        className="text-blue-500 mr-2"
+                                                        title="Create new content from this row"
+                                                    >
+                                                        <FaPlus size={18} />
+                                                    </button>
                                                     {/* Expand Icon Before Avatar */}
                                                     <button
                                                         onClick={() => setSelectedRow(row)}
@@ -517,6 +553,31 @@ const DraggableTable = ({
                                                             </span>
                                                         ))}
                                                 </div>
+                                            ) : column.id === "Case_Study_Other_Video" ? (
+                                                <div
+                                                    className="flex gap-1 cursor-pointer"
+                                                    onClick={() => {
+                                                        const videoData = normalizeCaseStudyOtherVideo(row.id);
+                                                        if (videoData.length > 0) {
+                                                            setSelectedCaseStudyVideos(videoData); 
+                                                        }
+                                                    }}
+                                                >
+                                                    {normalizeCaseStudyOtherVideo(row.id)
+                                                        .filter(videoObj => {
+                                                            if (!videoObj) return false;
+                                                            const title = String(videoObj.video_title).toLowerCase().trim();
+                                                            return title !== 'nan' && title !== '[]' && title !== '';
+                                                        })
+                                                        .map((videoObj, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className={`inline-block px-2 py-1 text-xs font-semibold rounded-lg mr-1 ${getRandomColor()}`}
+                                                            >
+                                                                {videoObj.video_title}
+                                                            </span>
+                                                        ))}
+                                                </div>
                                             ) : column.id === "Likes" ? (
                                                 <LikeButton user_name={row?.Guest} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
                                             ) : column.id === "Comments" ? (
@@ -630,7 +691,8 @@ const DraggableTable = ({
                         Validations: normalizeValidations(selectedRow.id),
                         Objections: normalizeObjections(selectedRow.id),
                         Challenges: normalizeChallenges(selectedRow.id),
-                        "Sales Insights": normalizeSalesInsights(selectedRow.id)
+                        "Sales Insights": normalizeSalesInsights(selectedRow.id),
+                        Case_Study_Other_Video: normalizeCaseStudyOtherVideo(selectedRow.id)
                     }}
                     onClose={() => setSelectedRow(null)}
                 />
@@ -668,6 +730,12 @@ const DraggableTable = ({
                 <RankingModal
                     data={selectedSalesInsights}
                     onClose={() => setSelectedSalesInsights(null)}
+                />
+            )}
+            {selectedCaseStudyVideos && (
+                <RankingModal
+                    data={selectedCaseStudyVideos}
+                    onClose={() => setSelectedCaseStudyVideos(null)}
                 />
             )}
         </DndProvider>

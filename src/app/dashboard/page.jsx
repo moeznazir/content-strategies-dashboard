@@ -37,6 +37,24 @@ const Dashboard = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [themesRank, setThemesRank] = useState([]);
 
+  const [showCreateFromRowModal, setShowCreateFromRowModal] = useState(false);
+  const [prefilledData, setPrefilledData] = useState(null);
+
+  const handleAddFromRow = (rowData) => {
+    setPrefilledData({
+      "Video_ID": rowData["Video_ID"] || "",
+      "Guest": rowData["Guest"] || "",
+      "Avatar": rowData["Avatar"] || "",
+      "Guest Title": rowData["Guest Title"] || "",
+      "Guest Company": rowData["Guest Company"] || "",
+      "Guest Industry": rowData["Guest Industry"] || "",
+      "Date Recorded": rowData["Date Recorded"] || "",
+      "Episode_Number": rowData["Episode_Number"] || "",
+      "Episode Title": rowData["Episode Title"] || ""
+    });
+    setShowCreateFromRowModal(true);
+  };
+
 
   const columns = [
     { label: "Avatar", id: "Avatar" },
@@ -61,10 +79,11 @@ const Dashboard = () => {
     { label: "Key Quote", id: "Quote" },
     { label: "Mentions", id: "Mentions" },
     { label: "Mentioned Quotes", id: "Mentioned_Quotes" },
-    { label: "Case Study", id: "Case_Study", type: 'url' },
-    { label: "Case Study Transcript", id: "Case_Study_Transcript" },
+    // { label: "Case Study", id: "Case_Study", type: 'url' },
+    // { label: "Case Study Transcript", id: "Case_Study_Transcript" },
     { label: "Public vs. Private", id: "Public_vs_Private" },
-    { label: "Discussion Guide", id: "Discussion Guide" },
+    { label: "Discussion Guide", id: "Discussion Guide", type: 'url' },
+    { label: "Report Link", id: "report_link", type: 'url' },
     { label: "Transcript", id: "Transcript" },
     { label: "Client", id: "Client" },
     { label: "Employee", id: "Employee" },
@@ -74,6 +93,7 @@ const Dashboard = () => {
     { label: "Objections", id: "Objections" },
     { label: "Challenges", id: "Challenges" },
     { label: "Sales Insights", id: "Sales Insights" },
+    // { label: "Case Study Other Video", id: "Case_Study_Other_Video" },
     { label: "Challenge Video", id: "Challenge Report_Unedited Video Link", type: 'url' },
     { label: "Challenge Transcript", id: "Challenge Report_Unedited Transcript Link" },
     { label: "Challenge Report", id: "Challenge Report_Summary" },
@@ -83,6 +103,30 @@ const Dashboard = () => {
     { label: "Post-Podcast Video", id: "Post-Podcast Report_Unedited Video Link", type: 'url' },
     { label: "Post-Podcast Transcript", id: "Post-Podcast Report_Unedited Transcript Link" },
     { label: "Post-Podcast Report", id: "Post-Podcast Report_Summary" },
+
+    //................................
+
+    { label: "Full Case Study_Interactive Link", id: "Full Case Study_Interactive Link", type: 'url' },
+    { label: "Full Case Study_Copy and Paste Text", id: "Full Case Study_Copy and Paste Text" },
+    { label: "Full Case Study_Link To Document", id: "Full Case Study_Link To Document" },
+
+    { label: "Problem Section_Video Link", id: "Problem Section_Video Link", type: 'url' },
+    { label: "Problem Section_Copy and Paste Text", id: "Problem Section_Copy and Paste Text" },
+    { label: "Problem Section_Link To Document", id: "Problem Section_Link To Document" },
+
+    { label: "Solution Section_Video Link", id: "Solution Section_Video Link", type: 'url' },
+    { label: "Solution Section_Copy and Paste Text", id: "Solution Section_Copy and Paste Text" },
+    { label: "Solution Section_Link To Document", id: "Solution Section_Link To Document" },
+
+    { label: "Results Section_Video Link", id: "Results Section_Video Link", type: 'url' },
+    { label: "Results Section_Copy and Paste Text", id: "Results Section_Copy and Paste Text" },
+    { label: "Results Section_Link To Document", id: "Results Section_Link To Document" },
+
+    { label: "Case Study Video Short_Video Link", id: "Case Study Video Short_Video Link", type: 'url' },
+    { label: "Case Study Video Short_Copy and Paste Text", id: "Case Study Video Short_Copy and Paste Text" },
+    { label: "Case Study Video Short_Link To Document", id: "Case Study Video Short_Link To Document" },
+
+    //.........................
     { label: "Podbook Link", id: "Podbook Link", type: 'url' },
     { label: "Article", id: "Article - Extended Media" },
     { label: "Article Text", id: "Article_Transcript" },
@@ -91,7 +135,7 @@ const Dashboard = () => {
     { label: "YouTube Short Transcript", id: "YouTube_Short_Transcript" },
     { label: "LinkedIn Video", id: "LinkedIn Video - Extended Media", type: 'url' },
     { label: "LinkedIn Video Transcript", id: "LinkedIn_Video_Transcript" },
-    { label: "Post-Podcast Insights", id: "Post_Podcast_Insights" },
+    // { label: "Post-Podcast Insights", id: "Post_Podcast_Insights" },
     { label: "Actions", id: "action" },
   ];
 
@@ -103,7 +147,9 @@ const Dashboard = () => {
     "Validations",
     "Challenges",
     "Sales Insights",
-    "Video Type"
+    "Case_Study_Other_Video",
+    "Video Type",
+
   ];
 
   const dashboardCrudDetails = [
@@ -117,7 +163,8 @@ const Dashboard = () => {
     { label: "Date Recorded", key: "Date Recorded", placeholder: "Select Date", type: "date" },
     { label: "Episode #", key: "Episode_Number", placeholder: "Enter Episode Number", type: "number" },
     { label: "Full Episode Title", key: "Episode Title", placeholder: "Enter Episode Title" },
-    { label: "Video Type", key: "Video Type", placeholder: "Select Video Type", type: "multiselect" },
+    { label: "Video Type", key: "Video Type", placeholder: "Select Content Type", type: "multiselect" },
+    { label: "Report Link", key: "report_link", placeholder: "Enter Report Link", type: "url" },
     { label: "Video Title", key: "Video Title", placeholder: "Enter Video Title" },
     { label: "Video Length", key: "Video Length", placeholder: "Enter Video Length" },
     // { label: "Videos", key: "Videos", placeholder: "Select Videos" },
@@ -147,6 +194,32 @@ const Dashboard = () => {
     { label: "Post-Podcast Video", key: "Post-Podcast Report_Unedited Video Link", type: "url" },
     { label: "Post-Podcast Transcript", key: "Post-Podcast Report_Unedited Transcript Link" },
     { label: "Post-Podcast Report", key: "Post-Podcast Report_Summary" },
+
+    //................................
+
+    { label: "Full Case Study_Interactive Link", key: "Full Case Study_Interactive Link", type: 'url' },
+    { label: "Full Case Study_Copy and Paste Text", key: "Full Case Study_Copy and Paste Text" },
+    { label: "Full Case Study_Link To Document", key: "Full Case Study_Link To Document" },
+
+    { label: "Problem Section_Video Link", key: "Problem Section_Video Link", type: 'url' },
+    { label: "Problem Section_Copy and Paste Text", key: "Problem Section_Copy and Paste Text" },
+    { label: "Problem Section_Link To Document", key: "Problem Section_Link To Document" },
+
+    { label: "Solution Section_Video Link", key: "Solution Section_Video Link", type: 'url' },
+    { label: "Solution Section_Copy and Paste Text", key: "Solution Section_Copy and Paste Text" },
+    { label: "Solution Section_Link To Document", key: "Solution Section_Link To Document" },
+
+    { label: "Results Section_Video Link", key: "Results Section_Video Link", type: 'url' },
+    { label: "Results Section_Copy and Paste Text", key: "Results Section_Copy and Paste Text" },
+    { label: "Results Section_Link To Document", key: "Results Section_Link To Document" },
+
+    { label: "Case Study Video Short_Video Link", key: "Case Study Video Short_Video Link", type: 'url' },
+    { label: "Case Study Video Short_Copy and Paste Text", key: "Case Study Video Short_Copy and Paste Text" },
+    { label: "Case Study Video Short_Link To Document", key: "Case Study Video Short_Link To Document" },
+    
+    { label: "Case Study Other Video", key: "Case_Study_Other_Video", placeholder: "Select Case Study Other Video" },
+
+    //.........................
     { label: "Podbook Link", key: "Podbook Link", placeholder: "Enter Podbook Link", type: "url" },
     { label: "Article", key: "Article - Extended Media", placeholder: "Enter Article Link", type: "url" },
     { label: "Article Text", key: "Article_Transcript", placeholder: "Enter Article Transcript" },
@@ -155,9 +228,9 @@ const Dashboard = () => {
     { label: "YouTube Short Transcript", key: "YouTube_Short_Transcript", placeholder: "Enter YouTube Short Transcript " },
     { label: "LinkedIn Video", key: "LinkedIn Video - Extended Media", placeholder: "Enter LinkedIn Video Link ", type: "url" },
     { label: "LinkedIn Video Transcript", key: "LinkedIn_Video_Transcript", placeholder: "Enter LinkedIn Video Transcript" },
-    { label: "Post Podcast Insights", key: "Post_Podcast_Insights", placeholder: "Select Post Podcast Insights" },
-    { label: "Case Study", key: "Case_Study", placeholder: "Enter Case Study Link", type: 'url' },
-    { label: "Case Study Transcript", key: "Case_Study_Transcript", placeholder: "Enter Case Study Transcript" },
+    // { label: "Post Podcast Insights", key: "Post_Podcast_Insights", placeholder: "Select Post Podcast Insights" },
+    // { label: "Case Study", key: "Case_Study", placeholder: "Enter Case Study Link", type: 'url' },
+    // { label: "Case Study Transcript", key: "Case_Study_Transcript", placeholder: "Enter Case Study Transcript" },
   ];
 
   const [selectedFilters, setSelectedFilters] = useState({
@@ -177,10 +250,11 @@ const Dashboard = () => {
       { value: "Highlights Video", label: "Highlights Video", count: 0 },
       { value: "Case Study", label: "Case Study", count: 0 },
       { value: "ICP Advice", label: "ICP Advice", count: 0 },
-      { value: "Post-Podcast", label: "Post-Podcast", count: 0 },
+      { value: "Post-Podcast Video", label: "Post-Podcast Video", count: 0 },
       { value: "Guest Introduction", label: "Guest Introduction", count: 0 },
       { value: "Post Podcast Insights", label: "Post Podcast Insights", count: 0 },
       { value: "Challenge Questions", label: "Challenge Questions", count: 0 },
+      { value: "Challenge Video", label: "Challenge Video", count: 0 },
       { value: "My Liked", label: "My Liked", count: 0 },
       { value: "All Liked", label: "All Liked", count: 0 },
     ],
@@ -356,6 +430,7 @@ const Dashboard = () => {
             field !== 'Validations' &&
             field !== 'Challenges' &&
             field !== 'Sales Insights' &&
+            field !== 'Case_Study_Other_Video' &&
             formattedItem[field]
           ) {
             if (typeof formattedItem[field] === 'string') {
@@ -796,6 +871,7 @@ const Dashboard = () => {
               alignRecord={false}
               themesRank={themesRank}
               loadingRecord={true}
+              handleAddFromRow={handleAddFromRow}
             />
           </div>
 
@@ -814,7 +890,7 @@ const Dashboard = () => {
         </main>
       </div>
 
-      {/* Dashboard Crud Modal */}
+      {/* Dashboard Normal Crud Modal */}
       {(showCreateDashboardModal || showEditDashboardModal) && (
         <CustomCrudForm
           isEditMode={showEditDashboardModal}
@@ -832,6 +908,25 @@ const Dashboard = () => {
           setCurrentPage={setCurrentPage}
           fetchUsers={fetchUsers}
           themesRank={themesRank}
+        />
+      )}
+
+      {/* Create from row modal */}
+      {(showCreateFromRowModal) && (
+        <CustomCrudForm
+          isEditMode={showEditDashboardModal}
+          entityData={showEditDashboardModal ? currentEditingDashboard : {}}
+          onClose={() => setShowCreateFromRowModal(false)}
+          onSubmit={showEditDashboardModal ? handleEditDashboardSubmit : handleCreateDashboardSubmit}
+          displayFields={dashboardCrudDetails}
+          currentPage={currentPage}
+          itemsPerPage={ITEMS_PER_PAGE}
+          setUsers={setUsers}
+          setTotalRecords={setTotalRecords}
+          setCurrentPage={setCurrentPage}
+          fetchUsers={fetchUsers}
+          themesRank={themesRank}
+          prefilledData={prefilledData}
         />
       )}
 
