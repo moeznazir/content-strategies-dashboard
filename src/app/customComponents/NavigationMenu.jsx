@@ -42,7 +42,7 @@ const NavigationMenu = () => {
     const menuItems = [
         { name: "Dashboard", href: "/dashboard", allowedRoles: ["end-user", "admin", "editor", "super-admin", "super-editor"] },
         { name: "User Management", href: "/user-management", allowedRoles: ["admin", "super-admin", "super-editor"] },
-        { name: "Assistant", href: "/assistant", allowedRoles: ["admin", "super-admin", "super-editor"] }
+        { name: "Private GPT", href: "/assistant", allowedRoles: ["admin", "super-admin", "super-editor"] }
     ];
     const fetchCompanies = async () => {
         try {
