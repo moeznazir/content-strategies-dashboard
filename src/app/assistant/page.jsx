@@ -31,6 +31,7 @@ const Assistant = () => {
     const [showOptimizationModal, setShowOptimizationModal] = useState(false);
     const [showContextDropdown, setShowContextDropdown] = useState(false);
     const [showAddonsModal, setShowAddonsModal] = useState(false);
+    const [hoveredTab, setHoveredTab] = useState(null);
 
     // Load chat history from localStorage on component mount
     useEffect(() => {
@@ -47,6 +48,35 @@ const Assistant = () => {
         { id: 'business', label: 'Optimization' },
         { id: 'addons', label: '+ Add-Ons' },
     ];
+
+    // Tab hover messages
+    const tabMessages = {
+        context: [
+            "Add relevant documents to improve response quality",
+            "Context helps the AI understand your business better",
+            "Select documents that match your query topic"
+        ],
+        library: [
+            "Choose from pre-built prompts for common tasks",
+            "Templates help you get started quickly",
+            "Save time with our curated prompt library"
+        ],
+        business: [
+            "Optimize your query for better results",
+            "Get suggestions to improve your prompt",
+            "Professionalize your query with one click"
+        ],
+        addons: [
+            "Add specific parameters to refine your results",
+            "Customize the AI's output with add-ons",
+            "Fine-tune the response with additional context"
+        ],
+        uplode: [
+            "Upload new documents to expand your knowledge base",
+            "Add fresh content for the AI to reference",
+            "Keep your context up-to-date with new files"
+        ]
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -100,7 +130,7 @@ const Assistant = () => {
             setActiveTab('library');
             setShowLibraryDropdown(!showLibraryDropdown);
             setShowContextDropdown(false);
-            setShowOptimizationDropdown(false);
+            // setShowOptimizationDropdown(false);
             setShowAddonsDropdown(false);
             setSelectedAddOn(null);
         }
@@ -205,6 +235,8 @@ const Assistant = () => {
                 minHeight: '90%'
             }}
         >
+
+
             <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
                 {/* Chat history container with scroll */}
                 <div className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar" style={{ maxHeight: '65vh' }}>
@@ -336,20 +368,56 @@ const Assistant = () => {
                     </div>
                 </div>
 
+                {/* Tabs with hover tooltips */}
                 <div className="flex mt-4 flex-wrap justify-center gap-2">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => handleTabClick(tab.id)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${activeTab === tab.id
-                                ? 'bg-blue-600 text-white'
-                                : 'text-white hover:bg-white/10'
-                                }`}
+    {tabs.map((tab) => (
+        <div
+            key={tab.id}
+            className="relative"
+            onMouseEnter={() => setHoveredTab(tab.id)}
+            onMouseLeave={() => setHoveredTab(null)}
+        >
+            {/* Tab button */}
+            <button
+                onClick={() => handleTabClick(tab.id)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${
+                    activeTab === tab.id
+                        ? 'bg-blue-600 text-white'
+                        : 'text-white hover:bg-white/10'
+                }`}
+            >
+                {tab.label}
+            </button>
+
+            {/* Tooltip/modal */}
+            {hoveredTab === tab.id && tabMessages[tab.id] && (
+                <div className="absolute left-1/2 top-10 transform translate-x-1/10 mt-0.5 w-64 z-10">
+                    {/* Tooltip box with no margin gap */}
+                    <div
+                        className="bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg border border-white/20"
+                    >
+                        <p className="mb-2">
+                            {tabMessages[tab.id][Math.floor(Math.random() * tabMessages[tab.id].length)]}
+                        </p>
+                        <a
+                            href="#"
+                            className="text-blue-400 hover:text-blue-300 text-xs font-medium flex items-center justify-end"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleTabClick(tab.id);
+                            }}
                         >
-                            {tab.label}
-                        </button>
-                    ))}
+                            Learn More →
+                        </a>
+                    </div>
+                    {/* Tooltip arrow */}
+                    <div className="absolute -top-[10.5px] left-2 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
                 </div>
+            )}
+        </div>
+    ))}
+</div>
+
 
                 {/* Context Modal */}
                 {showContextModal && (
