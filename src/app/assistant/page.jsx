@@ -370,53 +370,52 @@ const Assistant = () => {
 
                 {/* Tabs with hover tooltips */}
                 <div className="flex mt-4 flex-wrap justify-center gap-2">
-    {tabs.map((tab) => (
-        <div
-            key={tab.id}
-            className="relative"
-            onMouseEnter={() => setHoveredTab(tab.id)}
-            onMouseLeave={() => setHoveredTab(null)}
-        >
-            {/* Tab button */}
-            <button
-                onClick={() => handleTabClick(tab.id)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${
-                    activeTab === tab.id
-                        ? 'bg-blue-600 text-white'
-                        : 'text-white hover:bg-white/10'
-                }`}
-            >
-                {tab.label}
-            </button>
-
-            {/* Tooltip/modal */}
-            {hoveredTab === tab.id && tabMessages[tab.id] && (
-                <div className="absolute left-1/2 top-10 transform translate-x-1/10 mt-0.5 w-64 z-10">
-                    {/* Tooltip box with no margin gap */}
-                    <div
-                        className="bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg border border-white/20"
-                    >
-                        <p className="mb-2">
-                            {tabMessages[tab.id][Math.floor(Math.random() * tabMessages[tab.id].length)]}
-                        </p>
-                        <a
-                            href="#"
-                            className="text-blue-400 hover:text-blue-300 text-xs font-medium flex items-center justify-end"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleTabClick(tab.id);
-                            }}
+                    {tabs.map((tab) => (
+                        <div
+                            key={tab.id}
+                            className="relative"
+                            onMouseEnter={() => setHoveredTab(tab.id)}
+                            onMouseLeave={() => setHoveredTab(null)}
                         >
-                            Learn More →
-                        </a>
-                    </div>
-                    {/* Tooltip arrow */}
-                    <div className="absolute -top-[10.5px] left-2 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
+                            {/* Tab button */}
+                            <button
+                                onClick={() => handleTabClick(tab.id)}
+                                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${activeTab === tab.id
+                                        ? 'bg-blue-600 text-white'
+                                        : 'text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+
+                            {/* Tooltip/modal */}
+                            {hoveredTab === tab.id && tabMessages[tab.id] && (
+                                <div className="absolute left-1/3 bottom-12 transform translate-x-1/10 mt-0.5 w-64 z-10">
+                                    {/* Tooltip box with no margin gap */}
+                                    <div
+                                        className="bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg "
+                                    >
+                                        <p className="mb-2">
+                                            {tabMessages[tab.id][Math.floor(Math.random() * tabMessages[tab.id].length)]}
+                                        </p>
+                                        <a
+                                            href="#"
+                                            className="text-blue-400 hover:text-blue-300 text-xs font-medium flex items-center justify-end"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleTabClick(tab.id);
+                                            }}
+                                        >
+                                            Learn More →
+                                        </a>
+                                    </div>
+                                    {/* Tooltip arrow */}
+                                    <div className="absolute -bottom-[10.5px] left-6 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
-            )}
-        </div>
-    ))}
-</div>
 
 
                 {/* Context Modal */}

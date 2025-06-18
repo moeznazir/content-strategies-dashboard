@@ -2075,7 +2075,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             {/* Link to Document */}
                                                             <CustomInput
                                                                 type="text"
-
                                                                 value={currentLinkToDocument}
                                                                 onChange={(e) => setCurrentLinkToDocument(e.target.value)}
                                                                 className="w-full p-2 border rounded font-semibold"
