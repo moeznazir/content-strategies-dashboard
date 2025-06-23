@@ -33,7 +33,9 @@ const SINGLESELECT_FIELDS = [
     "Post_Podcast_Insights",
     "Public_vs_Private",
     // "Guest Role",
-    "Videos"
+    "Videos",
+    "file_type",
+    "category"
 
 ];
 
@@ -165,6 +167,28 @@ const OPTIONS = {
         { value: "Cost Sensitivity in Contract Negotiations", label: "Cost Sensitivity in Contract Negotiations" },
         { value: "Resistance to Outsourcing Critical Customer Functions", label: "Resistance to Outsourcing Critical Customer Functions" },
     ],
+    "file_type": [
+        { value: "Document", label: "Document" },
+        { value: "Spreadsheet", label: "Spreadsheet" },
+        { value: "Presentation", label: "Presentation" },
+        { value: "Image", label: "Image" },
+        { value: "Video", label: "Video" },
+        { value: "Audio", label: "Audio" },
+        { value: "PDF", label: "PDF" },
+        { value: "Archive", label: "Archive" },
+        { value: "Other", label: "Other" }
+    ],
+    "category": [
+        { value: "Presentations", label: "Presentations" },
+        { value: "Sales Calls", label: "Sales Calls" },
+        { value: "Scripts", label: "Scripts" },
+        { value: "Templates", label: "Templates" },
+        { value: "Reports", label: "Reports" },
+        { value: "Training", label: "Training" },
+        { value: "Marketing", label: "Marketing" },
+        { value: "Other", label: "Other" }
+    ],
+
 
 };
 
@@ -363,7 +387,7 @@ const ValidationEntry = ({ validation, ranking, justification, perception, whyIt
         </div>
     );
 };
-const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank, prefilledData = null }) => {
+const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank, prefilledData = null, tableName, createRecord, updateRecord, isDashboardForm }) => {
     const [loading, setLoading] = useState(false);
 
     // Themes
@@ -532,7 +556,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     useEffect(() => {
         if (entityData?.id) {
-            const matchedData = themesRank.find(item => item.id === entityData.id);
+            const matchedData = themesRank?.find(item => item.id === entityData.id);
 
             // --- Handle Themes
             const themeData = matchedData?.Themes;
@@ -767,7 +791,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
 
                 // Create the payload with properly formatted values
-                const formattedValues = {
+                const formattedValuesDashboard = {
                     ...values,
                     Themes: themeEntries.length > 0 ? themeEntries : null,
                     Objections: objectionEntries.length > 0 ? objectionEntries : null,
@@ -778,44 +802,100 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     company_id: localStorage.getItem('company_id')
                 };
 
+                const formattedValues = isDashboardForm ? formattedValuesDashboard : { ...values };
+
                 console.log("forrr", formattedValues);
 
-                // Handle file uploads if any
+                // Uplod images and Files
                 for (const field of displayFields) {
-                    if (field.type === "image" && values[field.key] instanceof File) {
-                        const file = values[field.key];
-                        const fileExt = file.name.split(".").pop();
-                        const fileName = `${Date.now()}.${fileExt}`;
-                        const filePath = `${fileName}`;
+                    const fieldValue = values[field.key];
 
-                        const { error: uploadError } = await supabase
-                            .storage
-                            .from("images")
-                            .upload(filePath, file, {
-                                cacheControl: "3600",
-                                upsert: true,
-                            });
+                    console.log(`Processing field: ${field.key}`, {
+                        type: field.type,
+                        value: fieldValue,
+                        isFile: fieldValue instanceof File
+                    });
 
-                        if (uploadError) throw uploadError;
+                    // Handle file uploads (both files and images)
+                    if (field.type === "file" || field.type === "image") {
+                        try {
+                            // Case 1: Already uploaded file (has URL)
+                            if (typeof fieldValue === "object" && fieldValue?.url) {
+                                formattedValues[field.key] = fieldValue.url;
+                                continue;
+                            }
 
-                        const { data: publicUrlData } = supabase
-                            .storage
-                            .from("images")
-                            .getPublicUrl(filePath);
+                            // Case 2: New file upload
+                            if (fieldValue instanceof File) {
+                                const bucketName = field.type === "image" ? "images" : "documents";
+                                const fileExt = fieldValue.name.split(".").pop();
+                                const fileName = `${Date.now()}.${fileExt}`;
+                                const filePath = `${fileName}`;
 
-                        formattedValues[field.key] = publicUrlData.publicUrl;
+                                // Upload the file
+                                const { error: uploadError, data: uploadData } = await supabase
+                                    .storage
+                                    .from(bucketName)
+                                    .upload(filePath, fieldValue, {
+                                        cacheControl: "3600",
+                                        upsert: false // Set to true if you want to overwrite existing files
+                                    });
+
+                                if (uploadError) {
+                                    console.error(`Upload failed for ${field.key}:`, uploadError);
+                                    throw uploadError;
+                                }
+
+                                console.log(`Successfully uploaded to ${bucketName}:`, uploadData);
+
+                                // Get public URL
+                                const { data: publicUrlData } = supabase
+                                    .storage
+                                    .from(bucketName)
+                                    .getPublicUrl(filePath);
+
+                                formattedValues[field.key] = publicUrlData.publicUrl;
+                                continue;
+                            }
+
+                            // Case 3: String value (could be initial value or fakepath)
+                            if (typeof fieldValue === "string") {
+                                // If it's a URL, keep it
+                                if (fieldValue.startsWith('http')) {
+                                    formattedValues[field.key] = fieldValue;
+                                }
+                                // If it's a fakepath, ignore it (no file was selected)
+                                else if (fieldValue.includes('fakepath')) {
+                                    formattedValues[field.key] = ''; // or null, depending on your needs
+                                }
+                                continue;
+                            }
+                        } catch (error) {
+                            console.error(`File processing failed for ${field.key}:`, error);
+                            formattedValues[field.key] = null;
+                            continue;
+                        }
                     }
+
+                    // Non-file fields
+                    formattedValues[field.key] = fieldValue;
                 }
+
+                console.log("Final formatted values:", formattedValues);
+
+
+
+
 
                 let response;
                 if (isEditMode) {
                     response = await supabase
-                        .from("content_details")
+                        .from(tableName)
                         .update(formattedValues)
                         .eq("id", entityData.id);
                 } else {
                     response = await supabase
-                        .from("content_details")
+                        .from(tableName)
                         .insert([formattedValues]);
                 }
 
@@ -829,7 +909,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 }]);
                 // Refresh data
                 const { count, error: countError } = await supabase
-                    .from("content_details")
+                    .from(tableName)
                     .select("*", { count: "exact", head: true })
                     .order('id_order', { ascending: false });
 
@@ -841,7 +921,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 }
 
                 const { data, error } = await supabase
-                    .from("content_details")
+                    .from(tableName)
                     .select("*")
                     .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1)
                     .order('id_order', { ascending: false });
@@ -1288,7 +1368,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             <div className="fixed inset-0 flex items-center justify-center z-50">
                 <div className="shadow-lg p-4 border border-gray-300 rounded-lg w-[40%]" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
                     <h2 className="text-[20px] font-bold mt-[2px] p-0 w-full">
-                        {isEditMode ? "Edit Record" : "Create Record"}
+                        {isEditMode ? updateRecord : createRecord}
                         <hr className="border-t border-gray-300 mb-6 mt-[10px] -mx-4" />
                     </h2>
                     <form onSubmit={formik.handleSubmit} className="border rounded-lg p-4 -mt-[10px]">
@@ -1386,6 +1466,17 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             <img src={formik.values[field.key]} alt="Uploaded Avatar" className="mt-2 h-16 rounded" />
                                                         )}
                                                     </>
+                                                ) : field.type === "file" ? (
+                                                    <div>
+                                                        <CustomInput
+                                                            type="file"
+                                                            accept="*/*"
+                                                            onChange={(event) => {
+                                                                const file = event.currentTarget.files[0];
+                                                                formik.setFieldValue(field.key, file);
+                                                            }}
+                                                        />
+                                                    </div>
                                                 ) : (
                                                     <CustomInput
                                                         type={field.type || "text"}

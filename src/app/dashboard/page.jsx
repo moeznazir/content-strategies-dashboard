@@ -40,6 +40,8 @@ const Dashboard = () => {
   const [showCreateFromRowModal, setShowCreateFromRowModal] = useState(false);
   const [prefilledData, setPrefilledData] = useState(null);
 
+  const [isEndUser, setIsEndUser] = useState(false);
+
   const handleAddFromRow = (rowData) => {
     setPrefilledData({
       "Video_ID": rowData["Video_ID"] || "",
@@ -216,7 +218,7 @@ const Dashboard = () => {
     { label: "Case Study Video Short_Video Link", key: "Case Study Video Short_Video Link", type: 'url' },
     { label: "Case Study Video Short_Copy and Paste Text", key: "Case Study Video Short_Copy and Paste Text" },
     { label: "Case Study Video Short_Link To Document", key: "Case Study Video Short_Link To Document" },
-    
+
     { label: "Case Study Other Video", key: "Case_Study_Other_Video", placeholder: "Select Case Study Other Video" },
 
     //.........................
@@ -340,6 +342,12 @@ const Dashboard = () => {
   const [filterCounts, setFilterCounts] = useState({});
 
   const totalPages = useMemo(() => Math.ceil(totalRecords / ITEMS_PER_PAGE), [totalRecords]);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("system_roles");
+    setIsEndUser(storedRole === "end-user");
+  }, []);
+
 
   const fetchUsers = useCallback(async (page = 1, isLoadMore = false) => {
     if (isLoadMore) {
@@ -722,12 +730,18 @@ const Dashboard = () => {
                   };
                   const isAddRecord = text === "Add Record";
                   const isSearchByDate = text === "Search By Date";
+
+                  // Skip rendering the "Add Record" button if user is an end-user
+                  if (isAddRecord && isEndUser) {
+                    return null;
+                  }
+
                   return (
                     <button
                       key={i}
                       className={`px-4 py-2 text-sm ${isAddRecord ? "bg-[#3a86ff] hover:bg-[#2f6fcb]" :
                         isSearchByDate && dateSearchApplied ? "bg-white/20 hover:bg-white/20" : "bg-white/10 hover:bg-white/20"
-                        } transform -translate-y-[1px] rounded-full flex items-center gap-2 cursor-pointer `}
+                        } transform -translate-y-[1px] rounded-full flex items-center gap-2 cursor-pointer`}
                       onClick={() => {
                         if (text === "Add Record") setShowCreateDashboardModal(true);
                         else if (text === "Search By Date") setShowDateModal(true);
@@ -908,6 +922,11 @@ const Dashboard = () => {
           setCurrentPage={setCurrentPage}
           fetchUsers={fetchUsers}
           themesRank={themesRank}
+          tableName="content_details"
+          createRecord="Create Record"
+          updateRecord="Edit Record"
+          formatedValueDashboard={true}
+          formatedValueFiles={false}
         />
       )}
 
@@ -927,6 +946,8 @@ const Dashboard = () => {
           fetchUsers={fetchUsers}
           themesRank={themesRank}
           prefilledData={prefilledData}
+          isDashboardForm={true}
+          formatedValueFiles={false}
         />
       )}
 

@@ -381,8 +381,8 @@ const Assistant = () => {
                             <button
                                 onClick={() => handleTabClick(tab.id)}
                                 className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${activeTab === tab.id
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-white hover:bg-white/10'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-white hover:bg-white/10'
                                     }`}
                             >
                                 {tab.label}
@@ -410,7 +410,7 @@ const Assistant = () => {
                                         </a>
                                     </div>
                                     {/* Tooltip arrow */}
-                                    <div className="absolute -bottom-[10.5px] left-6 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
+                                    <div className="absolute -bottom-[9px] left-6 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
                                 </div>
                             )}
                         </div>
