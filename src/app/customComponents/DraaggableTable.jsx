@@ -567,7 +567,7 @@ const DraggableTable = ({
                                                     onClick={() => {
                                                         const insightsData = normalizeSalesInsights(row.id);
                                                         if (insightsData.length > 0) {
-                                                            setSelectedSalesInsights(insightsData); 
+                                                            setSelectedSalesInsights(insightsData);
                                                         }
                                                     }}
                                                 >
@@ -745,6 +745,8 @@ const DraggableTable = ({
                             <div className="flex gap-4">
                                 <a
                                     href={fileRow.file}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     download={fileRow.file_name}
                                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm flex items-center gap-1"
                                 >

@@ -168,15 +168,31 @@ const OPTIONS = {
         { value: "Resistance to Outsourcing Critical Customer Functions", label: "Resistance to Outsourcing Critical Customer Functions" },
     ],
     "file_type": [
-        { value: "Document", label: "Document" },
-        { value: "Spreadsheet", label: "Spreadsheet" },
-        { value: "Presentation", label: "Presentation" },
-        { value: "Image", label: "Image" },
-        { value: "Video", label: "Video" },
-        { value: "Audio", label: "Audio" },
-        { value: "PDF", label: "PDF" },
-        { value: "Archive", label: "Archive" },
-        { value: "Other", label: "Other" }
+      // 📝 Documents
+  { value: "Document", label: "Document (DOC, DOCX, TXT, RTF)" },
+  { value: "Spreadsheet", label: "Spreadsheet (XLS, XLSX, CSV)" },
+  { value: "Presentation", label: "Presentation (PPT, PPTX)" },
+  { value: "PDF", label: "PDF" },
+
+  // 🖼️ Images
+  { value: "Image", label: "Image (JPG, JPEG, PNG, GIF, WEBP, SVG)" },
+
+  // 🎥 Media
+  { value: "Video", label: "Video (MP4, WEBM, MOV, AVI, MKV)" },
+  { value: "Audio", label: "Audio (MP3, WAV, OGG, AAC)" },
+
+  // 📦 Compressed
+  { value: "Archive", label: "Archive (ZIP, RAR, 7Z, TAR, GZ)" },
+
+  // 🧬 Code & Source Files
+  { value: "Code", label: "Code (JS, TS, HTML, CSS, PY, JAVA, JSON, XML)" },
+
+  // 📁 System & Executables
+  { value: "Executable", label: "Executable (EXE, DMG, APK, MSI)" },
+  { value: "ISO", label: "Disk Image (ISO, IMG)" },
+
+  // 🔄 Other or Unknown
+  { value: "Other", label: "Other / Unknown" },
     ],
     "category": [
         { value: "Presentations", label: "Presentations" },
