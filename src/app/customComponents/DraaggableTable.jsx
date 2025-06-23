@@ -1,22 +1,26 @@
 import { appColors } from "@/lib/theme";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import { getRandomColor } from "../constants/constant";
 import { CustomSpinner } from "./Spinner";
-import { FaCommentDots, FaEdit, FaExpandAlt, FaPlus, FaSortDown, FaTrash } from "react-icons/fa";
+import { FaCommentDots, FaDownload, FaEdit, FaExpandAlt, FaPlus, FaSortDown, FaTimes, FaTrash } from "react-icons/fa";
 import Modal from "./DetailModal";
 import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
 import RankingModal from "./CustomRankingModal";
 import { formatUrl } from "@/lib/utils";
+import FileContentViewer from "./FilePreview";
+
 
 const ItemType = "COLUMN";
 
 const DraggableHeader = ({ column, index, moveColumn }) => {
     const [isResizing, setIsResizing] = useState(false);
+
+
     const [{ isDragging }, ref, drag] = useDrag({
         type: ItemType,
         item: { id: column.id, index },
@@ -46,7 +50,9 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
             ref={(node) => ref(drop(node))}
             className={`
           px-2 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
-          ${column.id === 'Avatar' ? 'sticky left-0 px-6 z-30 bg-[#1a1b41] w-[90px]' : ''}
+          ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+          ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+          ${column.id === 'file_name' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
           ${column.id === 'Guest' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
           ${column.id == 'email' ? ' px-[25px] z-20 bg-[#1a1b41] w-[200px]' : ''}
         `}
@@ -63,7 +69,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
         >
 
             <ResizableBox
-                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action') ? 100 : 250}
+                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action' || column.id == 'thumbnail') ? 100 : 250}
                 height={20}
                 minConstraints={[50]}
                 maxConstraints={[1000]}
@@ -113,6 +119,7 @@ const DraggableTable = ({
 }) => {
     const [columns, setColumns] = useState(initialColumns);
     const [selectedRow, setSelectedRow] = useState(null);
+    const [fileRow, setFileRow] = useState(null);
     const [commentRow, setCommentRow] = useState(null);
     const [selectedThemes, setSelectedThemes] = useState(null);
     const [selectedObjections, setSelectedObjections] = useState(null);
@@ -120,9 +127,16 @@ const DraggableTable = ({
     const [selectedChallenges, setSelectedChallenges] = useState(null);
     const [selectedSalesInsights, setSelectedSalesInsights] = useState(null);
     const [selectedCaseStudyVideos, setSelectedCaseStudyVideos] = useState(null);
+    const [isEndUser, setIsEndUser] = useState(false);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
 
+
+
+    useEffect(() => {
+        const storedRole = localStorage.getItem("system_roles");
+        setIsEndUser(storedRole === "end-user");
+    }, []);
 
     const moveColumn = (fromIndex, toIndex) => {
         const updatedColumns = [...columns];
@@ -131,7 +145,7 @@ const DraggableTable = ({
         setColumns(updatedColumns);
     };
     const normalizeThemes = (rowId) => {
-        const themeData = themesRank.find(item => item.id === rowId)?.Themes;
+        const themeData = themesRank?.find(item => item.id === rowId)?.Themes;
         if (!themeData) return [];
 
         if (Array.isArray(themeData)) {
@@ -162,7 +176,7 @@ const DraggableTable = ({
     };
 
     const normalizeObjections = (rowId) => {
-        const ObjectionData = themesRank.find(item => item.id === rowId)?.Objections;
+        const ObjectionData = themesRank?.find(item => item.id === rowId)?.Objections;
         if (!ObjectionData) return [];
 
         if (Array.isArray(ObjectionData)) {
@@ -193,7 +207,7 @@ const DraggableTable = ({
     };
 
     const normalizeValidations = (rowId) => {
-        const ValidationData = themesRank.find(item => item.id === rowId)?.Validations;
+        const ValidationData = themesRank?.find(item => item.id === rowId)?.Validations;
         if (!ValidationData) return [];
 
         if (Array.isArray(ValidationData)) {
@@ -224,7 +238,7 @@ const DraggableTable = ({
     };
 
     const normalizeChallenges = (rowId) => {
-        const ChallengesData = themesRank.find(item => item.id === rowId)?.Challenges;
+        const ChallengesData = themesRank?.find(item => item.id === rowId)?.Challenges;
         if (!ChallengesData) return [];
 
         if (Array.isArray(ChallengesData)) {
@@ -255,7 +269,7 @@ const DraggableTable = ({
     };
 
     const normalizeSalesInsights = (rowId) => {
-        const salesInsightsData = themesRank.find(item => item.id === rowId)?.['Sales Insights'];
+        const salesInsightsData = themesRank?.find(item => item.id === rowId)?.['Sales Insights'];
         if (!salesInsightsData) return [];
 
         if (Array.isArray(salesInsightsData)) {
@@ -286,7 +300,7 @@ const DraggableTable = ({
         return [];
     };
     const normalizeCaseStudyOtherVideo = (rowId) => {
-        const CaseStudyOtherVideo = themesRank.find(item => item.id === rowId)?.Case_Study_Other_Video;
+        const CaseStudyOtherVideo = themesRank?.find(item => item.id === rowId)?.Case_Study_Other_Video;
         if (!CaseStudyOtherVideo) return [];
 
         if (Array.isArray(CaseStudyOtherVideo)) {
@@ -369,7 +383,9 @@ const DraggableTable = ({
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
-                                                ${column.id === 'Avatar' ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+                                                ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+                                                ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+                                                ${column.id === 'file_name' ? 'sticky left-[130px] z-20 w-[200px] bg-[#1a1b41]' : ''}
                                                 ${column.id === 'Guest' ? 'sticky left-[125px] px-[8px] bg-[#1a1b41]' : ''}
                                                 ${column.id === 'email' ? ' px-[30px] ' : ''}
                                                 ${column.id === 'title_roles' ? ' px-[10px] ' : ''}
@@ -378,17 +394,35 @@ const DraggableTable = ({
                                             {column.id === "Avatar" ? (
                                                 <div className="flex items-center">
                                                     {/* Add new content from this row */}
-                                                    <button
-                                                        onClick={() => handleAddFromRow(row)}
-                                                        className="text-blue-500 mr-2"
-                                                        title="Create new content from this row"
-                                                    >
-                                                        <FaPlus size={18} />
-                                                    </button>
+                                                    {!isEndUser && (
+                                                        <button
+                                                            onClick={() => handleAddFromRow(row)}
+                                                            className="text-blue-500 mr-2"
+                                                            title="Create new content from this row"
+                                                        >
+                                                            <FaPlus size={18} />
+                                                        </button>
+                                                    )}
+
                                                     {/* Expand Icon Before Avatar */}
                                                     <button
                                                         onClick={() => setSelectedRow(row)}
                                                         className="text-blue-500 mr-2"
+                                                    >
+                                                        <FaExpandAlt size={18} />
+                                                    </button>
+                                                    <img
+                                                        src={row[column.id] || "/default-avatar.png"}
+                                                        alt="User Avatar"
+                                                        className="w-10 h-10 rounded-full object-cover"
+                                                    />
+                                                </div>
+                                            ) : column.id == "thumbnail" ? (
+                                                <div className="flex items-center">
+                                                    <button
+                                                        onClick={() => setFileRow(row)}
+                                                        className="text-blue-500 hover:text-blue-700 mr-2 transition-colors"
+                                                        title="Expand preview"
                                                     >
                                                         <FaExpandAlt size={18} />
                                                     </button>
@@ -533,7 +567,7 @@ const DraggableTable = ({
                                                     onClick={() => {
                                                         const insightsData = normalizeSalesInsights(row.id);
                                                         if (insightsData.length > 0) {
-                                                            setSelectedSalesInsights(insightsData); // make sure this state exists
+                                                            setSelectedSalesInsights(insightsData); 
                                                         }
                                                     }}
                                                 >
@@ -559,7 +593,7 @@ const DraggableTable = ({
                                                     onClick={() => {
                                                         const videoData = normalizeCaseStudyOtherVideo(row.id);
                                                         if (videoData.length > 0) {
-                                                            setSelectedCaseStudyVideos(videoData); 
+                                                            setSelectedCaseStudyVideos(videoData);
                                                         }
                                                     }}
                                                 >
@@ -605,7 +639,7 @@ const DraggableTable = ({
                                     ))}
                                     <td className="sticky right-0  px-0 z-10">
                                         <div className="flex gap-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            {showActions && (
+                                            {showActions && !isEndUser && (
                                                 <>
                                                     {onEdit && (
                                                         <button
@@ -697,6 +731,45 @@ const DraggableTable = ({
                     onClose={() => setSelectedRow(null)}
                 />
             )}
+            {fileRow && (
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
+                    <div className="rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col" style={{
+                        backgroundColor: appColors?.primaryColor || '#1f2937',
+                    }}>
+
+                        {/* Header */}
+                        <div className="p-4 border-b flex justify-between items-center">
+                            <h3 className="text-lg font-semibold truncate max-w-md">
+                                File Preview
+                            </h3>
+                            <div className="flex gap-4">
+                                <a
+                                    href={fileRow.file}
+                                    download={fileRow.file_name}
+                                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm flex items-center gap-1"
+                                >
+                                    <FaDownload size={14} /> Download
+                                </a>
+                                <button
+                                    onClick={() => setFileRow(null)}
+                                    className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm flex items-center gap-1"
+                                >
+                                    <FaTimes size={14} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* File Preview */}
+                        <div className="flex-1 overflow-auto p-4">
+                            <FileContentViewer
+                                fileUrl={fileRow.file}
+                                fileType={fileRow.file_type}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Comment Modal (For Comments) */}
             {commentRow && <CommentModal row={commentRow} onClose={() => setCommentRow(null)} />}
 

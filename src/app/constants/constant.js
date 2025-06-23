@@ -2,9 +2,9 @@ export const EXCLUED_PATHS = ['/', '/login', '/forgot-password', '/sign-up', '/r
 
 export const accessibleRoutes = {
     "end-user": ["/dashboard"],
-    "admin": ["/dashboard", "/user-management","/assistant"],
+    "admin": ["/dashboard", "/user-management","/assistant","/file-management"],
     "editor": ["/dashboard"],
-    "super-admin":["/dashboard", "/user-management","/assistant"],
+    "super-admin":["/dashboard", "/user-management","/assistant","/file-management"],
     "super-editor":["/dashboard", "/user-management","/assistant"],
 };
 
