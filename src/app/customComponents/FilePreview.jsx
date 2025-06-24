@@ -12,7 +12,7 @@ const FileContentViewer = ({ fileUrl, fileType }) => {
     const fileExtension = fileUrl?.split('.').pop()?.toLowerCase();
 
     useEffect(() => {
-        const type = fileType?.toLowerCase() || getTypeFromExtension(fileExtension);
+        const type = fileType.toString()?.toLowerCase() || getTypeFromExtension(fileExtension);
 
         if (type === 'image' || isImageType(fileExtension)) {
             setDimensions({
@@ -50,13 +50,26 @@ const FileContentViewer = ({ fileUrl, fileType }) => {
         if (isAudioType(ext)) return 'audio';
         if (ext === 'pdf') return 'pdf';
         if (isDocumentType(ext)) return 'document';
+        if (ext === 'csv') return 'csv';
         if (isTextType(ext)) return 'text';
         if (isArchiveType(ext)) return 'archive';
         return 'unknown';
     };
 
     const renderContent = () => {
-        const type = fileType?.toLowerCase() || getTypeFromExtension(fileExtension);
+        const type = fileType.toString()?.toLowerCase() || getTypeFromExtension(fileExtension);
+
+        if (!fileUrl || typeof fileUrl !== "string" || !fileUrl.startsWith("http")) {
+            return (
+                <div className="flex flex-col items-center justify-center p-8">
+                    <div className="text-6xl mb-4">❌</div>
+                    <h3 className="text-xl font-semibold">File Not Found</h3>
+                    <p className="mt-2 text-gray-500">
+                        The file link appears broken or private.
+                    </p>
+                </div>
+            );
+        }
 
         switch (type) {
             case 'image':
@@ -108,23 +121,37 @@ const FileContentViewer = ({ fileUrl, fileType }) => {
             case 'document':
             case 'spreadsheet':
             case 'presentation':
-                return (
-                    <iframe
-                        src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`}
-                        style={dimensions}
-                        className="border-0 w-full"
-                        title="Office Document"
-                    />
-                );
-
-            case 'text':
-                return (
-                    <div className="w-full h-full">
+                // Only use Office Online Viewer for actual Office documents
+                if (isDocumentType(fileExtension)) {
+                    return (
                         <iframe
-                            src={fileUrl}
-                            style={{ width: '100%', height: '600px', border: 'none' }}
-                            title="Text file"
+                            src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`}
+                            style={dimensions}
+                            className="border-0 w-full"
+                            title="Office Document"
                         />
+                    );
+                }
+            // Fall through to default case for non-Office files
+
+            case 'csv':
+            case 'text':
+            case 'archive':
+            default:
+                return (
+                    <div className="flex flex-col items-center justify-center p-8">
+                        <div className="text-6xl mb-4">📄</div>
+                        <h3 className="text-xl font-semibold">File Preview Not Available</h3>
+                        <p className="mt-2 text-gray-500">
+                            For best results, download and view the file directly
+                        </p>
+                        <a
+                            href={fileUrl}
+                            download
+                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            Download {fileExtension?.toUpperCase() || 'File'}
+                        </a>
                     </div>
                 );
 
@@ -139,50 +166,6 @@ const FileContentViewer = ({ fileUrl, fileType }) => {
                         >
                             <img src={fileUrl} alt="SVG preview" />
                         </object>
-                    </div>
-                );
-
-            case 'archive':
-                return (
-                    <div className="flex flex-col items-center justify-center p-8">
-                        <div className="text-6xl mb-4">🗄️</div>
-                        <h3 className="text-xl font-semibold">Compressed Archive</h3>
-                        <p className="mt-2 text-gray-500">
-                            Download the file to view its contents
-                        </p>
-                        <a
-                            href={fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download
-                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Download {fileExtension.toUpperCase()}
-                        </a>
-                    </div>
-                );
-
-            default:
-                return (
-                    <div className="flex flex-col items-center justify-center p-8">
-                        <div className="text-6xl mb-4">📄</div>
-                        <h3 className="text-xl font-semibold">File Preview Not Available</h3>
-                        <p className="mt-2 text-gray-500">
-                            For best results, download and view the file directly
-                        </p>
-                        <div className="flex gap-4 mt-4">
-
-                            <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                download
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                            >
-                                Download {fileExtension?.toUpperCase() || 'File'}
-                            </a>
-                        </div>
-
                     </div>
                 );
         }

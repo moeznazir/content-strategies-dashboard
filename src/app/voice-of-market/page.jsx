@@ -19,7 +19,7 @@ const supabase = createClient(
 );
 const ITEMS_PER_PAGE = 20;
 
-const FileManagement = () => {
+const VoiceOfMarket = () => {
     const [files, setFiles] = useState([]);
     const [showDateModal, setShowDateModal] = useState(false);
     const [fromDate, setFromDate] = useState("");
@@ -50,7 +50,7 @@ const FileManagement = () => {
         { label: "Actions", id: "action" },
     ];
 
-    const arrayFields = ["category"];
+    const arrayFields = ["category", "file_type", "tags"];
 
     const fileCrudDetails = [
         { label: "Thumbnail", key: "thumbnail", placeholder: "Upload thumbnail (optional)", type: "image" },
@@ -71,25 +71,25 @@ const FileManagement = () => {
 
     const filterOptions = {
         "file_type": [
-            { value: "Document", label: "Document" },
-            { value: "Spreadsheet", label: "Spreadsheet" },
-            { value: "Presentation", label: "Presentation" },
-            { value: "Image", label: "Image" },
-            { value: "Video", label: "Video" },
-            { value: "Audio", label: "Audio" },
-            { value: "PDF", label: "PDF" },
-            { value: "Archive", label: "Archive" },
-            { value: "Other", label: "Other" }
+            { value: "Document", label: "Document", count: 0 },
+            { value: "Spreadsheet", label: "Spreadsheet", count: 0 },
+            { value: "Presentation", label: "Presentation", count: 0 },
+            { value: "Image", label: "Image", count: 0 },
+            { value: "Video", label: "Video", count: 0 },
+            { value: "Audio", label: "Audio", count: 0 },
+            { value: "PDF", label: "PDF", count: 0 },
+            { value: "Archive", label: "Archive", count: 0 },
+            { value: "Other", label: "Other", count: 0 }
         ],
         "category": [
-            { value: "Presentations", label: "Presentations" },
-            { value: "Sales Calls", label: "Sales Calls" },
-            { value: "Scripts", label: "Scripts" },
-            { value: "Templates", label: "Templates" },
-            { value: "Reports", label: "Reports" },
-            { value: "Training", label: "Training" },
-            { value: "Marketing", label: "Marketing" },
-            { value: "Other", label: "Other" }
+            { value: "Presentations", label: "Presentations", count: 0 },
+            { value: "Sales Calls", label: "Sales Calls", count: 0 },
+            { value: "Scripts", label: "Scripts", count: 0 },
+            { value: "Templates", label: "Templates", count: 0 },
+            { value: "Reports", label: "Reports", count: 0 },
+            { value: "Training", label: "Training", count: 0 },
+            { value: "Marketing", label: "Marketing", count: 0 },
+            { value: "Other", label: "Other", count: 0 }
         ]
     };
 
@@ -114,53 +114,69 @@ const FileManagement = () => {
             const fromDateISO = fromDate ? new Date(fromDate).toISOString() : null;
             const toDateISO = toDate ? new Date(toDate).toISOString() : null;
 
-            let query = supabase
-                .from("files")
-                .select("*", { count: "exact" })
-                .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1)
-                .order("uploaded_at", { ascending: false });
-
-            // Apply search text filter
-            if (searchText) {
-                query = query.or(
-                    `file_name.ilike.%${searchText}%,description.ilike.%${searchText}%`
-                );
-            }
-
-            // Apply file type filter
-            if (selectedFilters["file_type"]?.length) {
-                query = query.in("file_type", selectedFilters["file_type"]);
-            }
-
-            // Apply category filter
-            if (selectedFilters["category"]?.length) {
-                query = query.contains("category", selectedFilters["category"]);
-            }
-
-            // Apply date filters
-            if (fromDateISO) {
-                query = query.gte("uploaded_at", fromDateISO);
-            }
-            if (toDateISO) {
-                query = query.lte("uploaded_at", toDateISO);
-            }
-
-            const { data, error, count } = await query;
+            const { data, error } = await supabase.rpc('combined_search_voice_of_market', {
+                search_term: searchText.trim() || null,
+                file_types_json: selectedFilters["file_type"]?.length ? selectedFilters["file_type"] : null,
+                categories_json: selectedFilters["category"]?.length ? selectedFilters["category"] : null,
+                from_date: fromDateISO,
+                to_date: toDateISO,
+                current_user_id: localStorage.getItem('current_user_id'),
+                current_company_id: localStorage.getItem('company_id'),
+                page_num: page,
+                page_size: ITEMS_PER_PAGE
+            });
 
             if (error) throw error;
 
+            // Helper: formats JSONB arrays or stringified arrays for display
+            const formatArrayField = (fieldValue) => {
+                if (!fieldValue) return '';
+                try {
+                    const items = typeof fieldValue === 'string'
+                        ? JSON.parse(fieldValue)
+                        : fieldValue;
+
+                    if (Array.isArray(items)) {
+                        return items.map(item => {
+                            if (typeof item === 'object' && item !== null) {
+                                return item.label || item.value || '';
+                            }
+                            return item;
+                        }).filter(Boolean).join(', ');
+                    }
+                    return '';
+                } catch (e) {
+                    console.log('Error formatting field:', e);
+                    return '';
+                }
+            };
+
+            const formattedData = data.map(item => {
+                const formattedItem = { ...item };
+
+                // Format known JSONB fields for display
+                formattedItem.file_type_display = formatArrayField(formattedItem.file_type);
+                formattedItem.category_display = formatArrayField(formattedItem.category);
+                formattedItem.tags_display = formatArrayField(formattedItem.tags);
+
+                return formattedItem;
+            });
+
             if (isLoadMore) {
-                setFiles(prev => [...prev, ...data]);
-                setFilteredFiles(prev => [...prev, ...data]);
+                setFiles(prev => [...prev, ...formattedData]);
+                setFilteredFiles(prev => [...prev, ...formattedData]);
             } else {
-                setFiles(data || []);
-                setFilteredFiles(data || []);
+                setFiles(formattedData || []);
+                setFilteredFiles(formattedData || []);
             }
 
-            setTotalRecords(count || 0);
+            setTotalRecords(data[0]?.total_count || 0);
 
         } catch (err) {
-            console.log("Fetch error:", err);
+            console.log("Fetch error:", {
+                message: err.message,
+                details: err.details,
+            });
         } finally {
             if (isLoadMore) {
                 setLoadingMore(false);
@@ -170,6 +186,7 @@ const FileManagement = () => {
             }
         }
     }, [selectedFilters, isSearchActive, fromDate, toDate, searchText]);
+
 
     useEffect(() => {
         // Reset to first page when search/filter changes
@@ -187,15 +204,14 @@ const FileManagement = () => {
 
     const fetchAllFilterCounts = useCallback(async () => {
         try {
-            // Get counts for file types
-            const { data: typeCounts } = await supabase
-                .from("files")
-                .select("file_type, count(*)")
-                .group("file_type");
+            const { data, error } = await supabase.rpc('get_filter_counts_voice_of_market', {
+                current_user_id: localStorage.getItem('current_user_id')
+            });
 
-            // Get counts for categories
-            const { data: categoryCounts } = await supabase
-                .rpc("get_category_counts");
+            if (error) {
+                console.log("Error fetching filter counts:", error);
+                return;
+            }
 
             // Initialize counts object
             const counts = {
@@ -203,14 +219,11 @@ const FileManagement = () => {
                 "category": {}
             };
 
-            // Process file type counts
-            typeCounts.forEach(({ file_type, count }) => {
-                counts["file_type"][file_type] = { count };
-            });
-
-            // Process category counts
-            categoryCounts.forEach(({ category, count }) => {
-                counts["category"][category] = { count };
+            // Process the counts data
+            data.forEach(({ category, value, count }) => {
+                if (counts[category]) {
+                    counts[category][value] = { count };
+                }
             });
 
             setFilterCounts(counts);
@@ -269,7 +282,7 @@ const FileManagement = () => {
                 onPress: async () => {
                     try {
                         const { error: deleteError } = await supabase
-                            .from("files")
+                            .from("voice_of_market")
                             .delete()
                             .eq("id", id);
 
@@ -279,7 +292,7 @@ const FileManagement = () => {
 
                         // Get updated total count
                         const { count, error: countError } = await supabase
-                            .from("files")
+                            .from("voice_of_market")
                             .select("*", { count: "exact", head: true });
 
                         if (countError) throw countError;
@@ -292,7 +305,7 @@ const FileManagement = () => {
 
                         // Fetch updated file list
                         const { data, error } = await supabase
-                            .from("files")
+                            .from("voice_of_market")
                             .select("*")
                             .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
                             .order('id', { ascending: false });
@@ -504,24 +517,30 @@ const FileManagement = () => {
             {/* Filter Section */}
             <div className="flex">
                 <aside className="flex flex-col gap-2 w-full md:w-64 px-6">
-                    {Object.keys(filterOptionsWithCounts).map((field) => (
-                        <MultiSelectDropdown
-                            key={field}
-                            field={field}
-                            label={`Filter By ${field.replace('_', ' ')}`}
-                            options={filterOptionsWithCounts[field]}
-                            selectedValues={selectedFilters[field] || []}
-                            onSelect={(values) => {
-                                handleFilterSelect(field, values);
-                            }}
-                            isOpen={openDropdown === field}
-                            onToggle={() =>
-                                setOpenDropdown(openDropdown === field ? null : field)
-                            }
-                            exclusiveSelections={selectedFilters}
-                        />
-                    ))}
-
+                    {Object.keys(filterOptionsWithCounts).map((field) => {
+                        const displayField = field === 'file_type'
+                            ? 'File Type'
+                            : field === 'category'
+                                ? 'Category'
+                                : field;
+                        return (
+                            <MultiSelectDropdown
+                                key={field}
+                                field={field}
+                                label={`Filter By ${displayField}`}
+                                options={filterOptionsWithCounts[field]}
+                                selectedValues={selectedFilters[field] || []}
+                                onSelect={(values) => {
+                                    handleFilterSelect(field, values);
+                                }}
+                                isOpen={openDropdown === field}
+                                onToggle={() =>
+                                    setOpenDropdown(openDropdown === field ? null : field)
+                                }
+                                exclusiveSelections={selectedFilters}
+                            />
+                        );
+                    })}
                     <div className="mt-6 flex items-center gap-3 py-4 fixed bottom-0">
                         <img
                             src="/ai-navigator-logo.png"
@@ -584,7 +603,7 @@ const FileManagement = () => {
                     setTotalRecords={setTotalRecords}
                     setCurrentPage={setCurrentPage}
                     fetchUsers={fetchFiles}
-                    tableName="files"
+                    tableName="voice_of_market"
                     createRecord="Upload File"
                     updateRecord="Edit File"
                     formatedValueDashboard={false}
@@ -608,4 +627,4 @@ const FileManagement = () => {
     );
 };
 
-export default FileManagement;
+export default VoiceOfMarket;

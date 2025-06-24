@@ -168,31 +168,31 @@ const OPTIONS = {
         { value: "Resistance to Outsourcing Critical Customer Functions", label: "Resistance to Outsourcing Critical Customer Functions" },
     ],
     "file_type": [
-      // 📝 Documents
-  { value: "Document", label: "Document (DOC, DOCX, TXT, RTF)" },
-  { value: "Spreadsheet", label: "Spreadsheet (XLS, XLSX, CSV)" },
-  { value: "Presentation", label: "Presentation (PPT, PPTX)" },
-  { value: "PDF", label: "PDF" },
+        // 📝 Documents
+        { value: "Document", label: "Document (DOC, DOCX, TXT, RTF)" },
+        { value: "Spreadsheet", label: "Spreadsheet (XLS, XLSX, CSV)" },
+        { value: "Presentation", label: "Presentation (PPT, PPTX)" },
+        { value: "PDF", label: "PDF" },
 
-  // 🖼️ Images
-  { value: "Image", label: "Image (JPG, JPEG, PNG, GIF, WEBP, SVG)" },
+        // 🖼️ Images
+        { value: "Image", label: "Image (JPG, JPEG, PNG, GIF, WEBP, SVG)" },
 
-  // 🎥 Media
-  { value: "Video", label: "Video (MP4, WEBM, MOV, AVI, MKV)" },
-  { value: "Audio", label: "Audio (MP3, WAV, OGG, AAC)" },
+        // 🎥 Media
+        { value: "Video", label: "Video (MP4, WEBM, MOV, AVI, MKV)" },
+        { value: "Audio", label: "Audio (MP3, WAV, OGG, AAC)" },
 
-  // 📦 Compressed
-  { value: "Archive", label: "Archive (ZIP, RAR, 7Z, TAR, GZ)" },
+        // 📦 Compressed
+        { value: "Archive", label: "Archive (ZIP, RAR, 7Z, TAR, GZ)" },
 
-  // 🧬 Code & Source Files
-  { value: "Code", label: "Code (JS, TS, HTML, CSS, PY, JAVA, JSON, XML)" },
+        // 🧬 Code & Source Files
+        { value: "Code", label: "Code (JS, TS, HTML, CSS, PY, JAVA, JSON, XML)" },
 
-  // 📁 System & Executables
-  { value: "Executable", label: "Executable (EXE, DMG, APK, MSI)" },
-  { value: "ISO", label: "Disk Image (ISO, IMG)" },
+        // 📁 System & Executables
+        { value: "Executable", label: "Executable (EXE, DMG, APK, MSI)" },
+        { value: "ISO", label: "Disk Image (ISO, IMG)" },
 
-  // 🔄 Other or Unknown
-  { value: "Other", label: "Other / Unknown" },
+        // 🔄 Other or Unknown
+        { value: "Other", label: "Other / Unknown" },
     ],
     "category": [
         { value: "Presentations", label: "Presentations" },
@@ -818,9 +818,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     company_id: localStorage.getItem('company_id')
                 };
 
-                const formattedValues = isDashboardForm ? formattedValuesDashboard : { ...values };
+                const formattedValues = isDashboardForm ? formattedValuesDashboard : { company_id: localStorage.getItem('company_id'), ...values };
 
                 console.log("forrr", formattedValues);
+
 
                 // Uplod images and Files
                 for (const field of displayFields) {
@@ -904,6 +905,23 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
 
                 let response;
+                // ✅ Force file_type, category, and tags into valid arrays for jsonb
+                ['file_type', 'category', 'tags'].forEach((key) => {
+                    const val = formattedValues[key];
+
+                    if (Array.isArray(val)) {
+                        formattedValues[key] = val
+                            .map((v) => typeof v === 'string' ? v.trim() : v)
+                            .filter(Boolean);
+                    } else if (val && typeof val === 'object' && val.value) {
+                        formattedValues[key] = [val.value];
+                    } else if (typeof val === 'string') {
+                        formattedValues[key] = val.trim() ? [val.trim()] : null;
+                    } else {
+                        formattedValues[key] = null;
+                    }
+                });
+
                 if (isEditMode) {
                     response = await supabase
                         .from(tableName)

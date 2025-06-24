@@ -55,7 +55,7 @@ const SignInPage = () => {
             } else {
                 setSuccessMessage("Login successful! Redirecting...");
                 setTimeout(() => {
-                    router.push("/dashboard");
+                    router.push("/voice-of-customer");
                 }, 2000);
             }
         } catch (err) {
