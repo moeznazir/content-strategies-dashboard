@@ -830,7 +830,7 @@ const Dashboard = () => {
               <MultiSelectDropdown
                 key={field}
                 field={field}
-                label={`Search By ${displayField}`}
+                label={`Filter By ${displayField}`}
                 options={filterOptionsWithCounts[field]}
                 selectedValues={selectedFilters[field] || []}
                 onSelect={(values) => {

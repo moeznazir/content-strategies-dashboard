@@ -385,7 +385,7 @@ const DraggableTable = ({
                                                 }
                                                 ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
                                                 ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
-                                                ${column.id === 'file_name' ? 'sticky left-[130px] z-20 w-[200px] bg-[#1a1b41]' : ''}
+                                                ${column.id === 'file_name' ? 'sticky left-[130px] w-[200px] bg-[#1a1b41]' : ''}
                                                 ${column.id === 'Guest' ? 'sticky left-[125px] px-[8px] bg-[#1a1b41]' : ''}
                                                 ${column.id === 'email' ? ' px-[30px] ' : ''}
                                                 ${column.id === 'title_roles' ? ' px-[10px] ' : ''}
@@ -432,7 +432,7 @@ const DraggableTable = ({
                                                         className="w-10 h-10 rounded-full object-cover"
                                                     />
                                                 </div>
-                                            ) : column.id === "title_roles" || column.id === "system_roles" ? (
+                                            ) : column.id === "title_roles" || column.id === "system_roles" || column.id === 'file_type' || column.id === 'category' || column.id === 'tags' ? (
                                                 <div className="flex flex-wrap gap-1">
                                                     {(Array.isArray(row[column.id])
                                                         ? row[column.id]
@@ -567,7 +567,7 @@ const DraggableTable = ({
                                                     onClick={() => {
                                                         const insightsData = normalizeSalesInsights(row.id);
                                                         if (insightsData.length > 0) {
-                                                            setSelectedSalesInsights(insightsData); 
+                                                            setSelectedSalesInsights(insightsData);
                                                         }
                                                     }}
                                                 >
@@ -745,6 +745,8 @@ const DraggableTable = ({
                             <div className="flex gap-4">
                                 <a
                                     href={fileRow.file}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     download={fileRow.file_name}
                                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm flex items-center gap-1"
                                 >
@@ -763,7 +765,7 @@ const DraggableTable = ({
                         <div className="flex-1 overflow-auto p-4">
                             <FileContentViewer
                                 fileUrl={fileRow.file}
-                                fileType={fileRow.file_type}
+                                fileType={fileRow?.file_type}
                             />
                         </div>
                     </div>

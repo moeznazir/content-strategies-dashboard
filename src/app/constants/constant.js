@@ -1,11 +1,11 @@
 export const EXCLUED_PATHS = ['/', '/login', '/forgot-password', '/sign-up', '/reset-password'];
 
 export const accessibleRoutes = {
-    "end-user": ["/dashboard"],
-    "admin": ["/dashboard", "/user-management","/assistant","/file-management"],
-    "editor": ["/dashboard"],
-    "super-admin":["/dashboard", "/user-management","/assistant","/file-management"],
-    "super-editor":["/dashboard", "/user-management","/assistant"],
+    "end-user": ["/voice-of-customer"],
+    "admin": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market'],
+    "editor": ["/voice-of-customer"],
+    "super-admin":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market'],
+    "super-editor":["/voice-of-customer", "/user-management","/assistant"],
 };
 
 export const getRandomColor = () => {
