@@ -2,9 +2,9 @@ export const EXCLUED_PATHS = ['/', '/login', '/forgot-password', '/sign-up', '/r
 
 export const accessibleRoutes = {
     "end-user": ["/voice-of-customer"],
-    "admin": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market'],
+    "admin": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market', '/category'],
     "editor": ["/voice-of-customer"],
-    "super-admin":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market'],
+    "super-admin":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category'],
     "super-editor":["/voice-of-customer", "/user-management","/assistant"],
 };
 

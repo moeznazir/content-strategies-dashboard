@@ -8,7 +8,7 @@ import CustomButton from "./CustomButton";
 import { appColors } from "@/lib/theme";
 import Alert from "./Alert";
 import { ShowCustomToast } from "./CustomToastify";
-import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { FileInput, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_API_URL,
@@ -403,7 +403,7 @@ const ValidationEntry = ({ validation, ranking, justification, perception, whyIt
         </div>
     );
 };
-const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank, prefilledData = null, tableName, createRecord, updateRecord, isDashboardForm }) => {
+const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank, prefilledData = null, tableName, createRecord, updateRecord, isDashboardForm, isFilesData }) => {
     const [loading, setLoading] = useState(false);
 
     // Themes
@@ -720,22 +720,65 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             return schema;
         }, {})
     );
+    const normalizeSelectOptions = (value, options = []) => {
+        if (!value) return [];
 
+        // Handle both array and single value cases
+        const valuesArray = Array.isArray(value) ? value : [value];
+
+        return valuesArray.map(item => {
+            // If already in correct format
+            if (typeof item === 'object' && item.label && item.value) {
+                return item;
+            }
+
+            // Find matching option
+            const stringValue = String(item);
+            const matchedOption = options.find(opt =>
+                opt.value === stringValue || opt.label === stringValue
+            );
+
+            return matchedOption || {
+                label: stringValue,
+                value: stringValue
+            };
+        });
+    };
     // Initialize form values properly
     const initialValues = {};
     displayFields.forEach(field => {
         if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges" || field.key == "Sales Insights" || field.key == 'Case_Study_Other_Video') {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
-            initialValues[field.key] = (prefilledData && prefilledData[field.key]) || entityData?.[field.key] ||
-                (MULTISELECT_FIELDS.includes(field.key) ? [] :
-                    SINGLESELECT_FIELDS.includes(field.key) ? "" :
-                        field.type === "number" ? 0 :
-                            field.type === "image" ? "" :
-                                "");
+            // Handle file_type and category as arrays
+            if (field.key === 'file_type' || field.key === 'category') {
+                initialValues[field.key] = normalizeSelectOptions(
+                    entityData?.[field.key],
+                    OPTIONS[field.key] || []
+                );
+            }
+            // Handle file field
+            else if (field.key === 'file') {
+                initialValues[field.key] = entityData?.[field.key] || null;
+            }
+            else {
+                initialValues[field.key] = (prefilledData && prefilledData[field.key]) || entityData?.[field.key] ||
+                    (MULTISELECT_FIELDS.includes(field.key) ? [] :
+                        SINGLESELECT_FIELDS.includes(field.key) ? "" :
+                            field.type === "number" ? 0 :
+                                field.type === "image" ? "" :
+                                    "");
+            }
         }
     });
-
+    useEffect(() => {
+        console.log("Entity data on edit:", entityData);
+        console.log("Initial values:", initialValues);
+    }, [entityData]);
+    console.log("Initial values after transformation:", {
+        category: initialValues.category,
+        file_type: initialValues.file_type
+    });
 
     const formik = useFormik({
         initialValues,
@@ -900,27 +943,32 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
                 console.log("Final formatted values:", formattedValues);
 
-
-
-
-
                 let response;
                 // ✅ Force file_type, category, and tags into valid arrays for jsonb
-                ['file_type', 'category', 'tags'].forEach((key) => {
-                    const val = formattedValues[key];
+                if (isFilesData) {
+                    ['file_type', 'category', 'tags'].forEach((key) => {
+                        if (!(key in formattedValues)) return;
+                        const val = formattedValues[key];
 
-                    if (Array.isArray(val)) {
-                        formattedValues[key] = val
-                            .map((v) => typeof v === 'string' ? v.trim() : v)
-                            .filter(Boolean);
-                    } else if (val && typeof val === 'object' && val.value) {
-                        formattedValues[key] = [val.value];
-                    } else if (typeof val === 'string') {
-                        formattedValues[key] = val.trim() ? [val.trim()] : null;
-                    } else {
-                        formattedValues[key] = null;
-                    }
-                });
+                        if (Array.isArray(val)) {
+                            formattedValues[key] = val
+                                .map((v) => {
+                                    if (typeof v === 'string') return v.trim();
+                                    if (v && typeof v === 'object' && v.value) return v.value;
+                                    return null;
+                                })
+                                .filter(Boolean);
+                        } else if (val && typeof val === 'object' && val.value) {
+                            formattedValues[key] = [val.value];
+                        } else if (typeof val === 'string') {
+                            formattedValues[key] = val.trim() ? [val.trim()] : null;
+                        } else {
+                            formattedValues[key] = null;
+                        }
+                    });
+
+                }
+
 
                 if (isEditMode) {
                     response = await supabase
@@ -1445,7 +1493,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                         'Case Study Other Video_Video Title',
                                         'Case Study Other Video_Video Link',
                                         'Case Study Other Video_Copy and Paste Text',
-                                        'Case Study Other Video_Link To Document'
+                                        'Case Study Other Video_Link To Document',
+                                        "file_link"
                                     ].includes(field.key) ? (
 
                                         !(
@@ -1466,7 +1515,31 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                     {field.label === "Video Type" ? "Content Type" : field.label}:
                                                 </label>
 
-                                                {MULTISELECT_FIELDS.includes(field.key) ? (
+                                                {(field.key === 'file_type' || field.key === 'category') ? (
+                                                    MULTISELECT_FIELDS.includes(field.key) ? (
+                                                        <CustomSelect
+                                                            key={`${field.key}-${JSON.stringify(formik.values[field.key])}`} // Force re-render
+                                                            id={field.key}
+                                                            options={OPTIONS[field.key] || []}
+                                                            value={normalizeSelectOptions(formik.values[field.key], OPTIONS[field.key])}
+                                                            isMulti={true}
+                                                            onChange={(value) => formik.setFieldValue(field.key, value)}
+                                                            placeholder={field.placeholder || `Select ${field.label}...`}
+                                                            className="w-full mb-2"
+                                                        />
+                                                    ) : SINGLESELECT_FIELDS.includes(field.key) ? (
+                                                        <CustomSelect
+                                                            key={`${field.key}-${JSON.stringify(formik.values[field.key])}`}
+                                                            id={field.key}
+                                                            options={field.options || OPTIONS[field.key] || []}
+                                                            value={normalizeSelectOptions(formik.values[field.key], OPTIONS[field.key])[0] || null}
+                                                            isMulti={false}
+                                                            onChange={(value) => formik.setFieldValue(field.key, value ? [value] : [])}
+                                                            placeholder={field.placeholder || `Select ${field.label}...`}
+                                                            className="w-full mb-2"
+                                                        />
+                                                    ) : null
+                                                ) : MULTISELECT_FIELDS.includes(field.key) ? (
                                                     <CustomSelect
                                                         id={field.key}
                                                         options={OPTIONS[field.key] || []}
@@ -1482,7 +1555,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         options={OPTIONS[field.key] || []}
                                                         value={formik.values[field.key] || ""}
                                                         isMulti={false}
-                                                        onChange={(value) => formik?.setFieldValue(field.key, value)}
+                                                        onChange={(value) => formik.setFieldValue(field.key, value)}
                                                         placeholder={field.placeholder || `Select ${field.label}...`}
                                                         className="w-full mb-2"
                                                     />
@@ -1501,15 +1574,38 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         )}
                                                     </>
                                                 ) : field.type === "file" ? (
-                                                    <div>
-                                                        <CustomInput
-                                                            type="file"
-                                                            accept="*/*"
-                                                            onChange={(event) => {
-                                                                const file = event.currentTarget.files[0];
-                                                                formik.setFieldValue(field.key, file);
-                                                            }}
-                                                        />
+                                                    <div className="space-y-2">
+                                                        {/* Upload file */}
+                                                        <div>
+                                                            {/* <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Upload File:
+                                                            </label> */}
+                                                            <CustomInput
+                                                                type="file"
+                                                                accept="*/*"
+                                                                onChange={(event) => {
+                                                                    const file = event.currentTarget.files[0];
+                                                                    formik.setFieldValue(field.key, file);
+                                                                    formik.setFieldValue(`${field.key}_link`, ""); // clear link if file selected
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        {/* OR enter link */}
+                                                        <div>
+                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Or Provide Google Doc / Link:
+                                                            </label>
+                                                            <CustomInput
+                                                                type="url"
+                                                                placeholder="https://docs.google.com/..."
+                                                                value={formik.values[`${field.key}_link`] || ""}
+                                                                onChange={(e) => {
+                                                                    formik.setFieldValue(`${field.key}_link`, e.target.value);
+                                                                    formik.setFieldValue(field.key, null); // clear file if link entered
+                                                                }}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     <CustomInput

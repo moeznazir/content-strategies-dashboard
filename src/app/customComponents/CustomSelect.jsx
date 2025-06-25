@@ -32,8 +32,12 @@ export default function CustomSelect({
 
             <Select
                 id={id}
-                value={options.filter((option) => value.includes(option.value))} // Keep selected values
-                onChange={(selectedOptions) =>
+                value={
+                    isMulti
+                      ? options.filter((option) => Array.isArray(value) && value.includes(option.value))
+                      : options.find((option) => option.value === value?.value) || null
+                  }
+                                  onChange={(selectedOptions) =>
                     onChange(isMulti ? selectedOptions.map((opt) => opt.value) : selectedOptions.value)
                 }
                 options={options}

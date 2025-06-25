@@ -11,6 +11,7 @@ import CustomInput from "../customComponents/CustomInput";
 import { debounce } from "@/lib/utils";
 import MultiSelectDropdown from "../customComponents/FiltersMultiSelect";
 import DynamicBranding from "../customComponents/DynamicLabelAndLogo";
+import { fetchCategoryLabels } from "@/lib/services/categoryServices";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -51,13 +52,27 @@ const VoiceOfMarket = () => {
     ];
 
     const arrayFields = ["category", "file_type", "tags"];
-
+    const [filterOptions, setFilterOptions] = useState({
+        file_type: [
+            { value: "Document", label: "Document", count: 0 },
+            { value: "Spreadsheet", label: "Spreadsheet", count: 0 },
+            { value: "Presentation", label: "Presentation", count: 0 },
+            { value: "Image", label: "Image", count: 0 },
+            { value: "Video", label: "Video", count: 0 },
+            { value: "Audio", label: "Audio", count: 0 },
+            { value: "PDF", label: "PDF", count: 0 },
+            { value: "Archive", label: "Archive", count: 0 },
+            { value: "Other", label: "Other", count: 0 }
+        ],
+        category: []
+    });
     const fileCrudDetails = [
         { label: "Thumbnail", key: "thumbnail", placeholder: "Upload thumbnail (optional)", type: "image" },
         { label: "File Name", key: "file_name", placeholder: "Enter file name", type: "text", required: true },
         { label: "File", key: "file", placeholder: "Select file to upload", type: "file", required: true },
+        { label: "File Link", key: "file_link", placeholder: "Enter file link to upload", type: "file", required: true },
         { label: "File Type", key: "file_type", placeholder: "Select file type", type: "select", required: true },
-        { label: "Category", key: "category", placeholder: "Select category", type: "select", required: true },
+        { label: "Category", key: "category", placeholder: "Select category", type: "select", required: true, options: filterOptions.category },
         { label: "Date Recorded", key: "uploaded_at", placeholder: "Select date", type: "date", required: true },
         { label: "Description", key: "description", placeholder: "Enter file description", type: "textarea", required: true },
         { label: "Tags", key: "tags", placeholder: "Enter tags (comma separated)", type: "text" }
@@ -69,38 +84,29 @@ const VoiceOfMarket = () => {
         "category": []
     });
 
-    const filterOptions = {
-        "file_type": [
-            { value: "Document", label: "Document", count: 0 },
-            { value: "Spreadsheet", label: "Spreadsheet", count: 0 },
-            { value: "Presentation", label: "Presentation", count: 0 },
-            { value: "Image", label: "Image", count: 0 },
-            { value: "Video", label: "Video", count: 0 },
-            { value: "Audio", label: "Audio", count: 0 },
-            { value: "PDF", label: "PDF", count: 0 },
-            { value: "Archive", label: "Archive", count: 0 },
-            { value: "Other", label: "Other", count: 0 }
-        ],
-        "category": [
-            { value: "Presentations", label: "Presentations", count: 0 },
-            { value: "Sales Calls", label: "Sales Calls", count: 0 },
-            { value: "Scripts", label: "Scripts", count: 0 },
-            { value: "Templates", label: "Templates", count: 0 },
-            { value: "Reports", label: "Reports", count: 0 },
-            { value: "Training", label: "Training", count: 0 },
-            { value: "Marketing", label: "Marketing", count: 0 },
-            { value: "Other", label: "Other", count: 0 }
-        ]
-    };
 
     const [filterOptionsWithCounts, setFilterOptionsWithCounts] = useState(filterOptions);
+
     const [filterCounts, setFilterCounts] = useState({});
     const [isEndUser, setIsEndUser] = useState(false);
 
     const totalPages = useMemo(() => Math.ceil(totalRecords / ITEMS_PER_PAGE), [totalRecords]);
+
     useEffect(() => {
         const storedRole = localStorage.getItem("system_roles");
         setIsEndUser(storedRole === "end-user");
+    }, []);
+
+    useEffect(() => {
+        const loadCategoryOptions = async () => {
+            const categories = await fetchCategoryLabels();
+            setFilterOptions(prev => ({
+                ...prev,
+                category: categories
+            }));
+        };
+
+        loadCategoryOptions();
     }, []);
 
     const fetchFiles = useCallback(async (page = 1, isLoadMore = false) => {
@@ -189,7 +195,6 @@ const VoiceOfMarket = () => {
 
 
     useEffect(() => {
-        // Reset to first page when search/filter changes
         setCurrentPage(1);
         fetchFiles(1, false);
     }, [selectedFilters, searchText, fromDate, toDate]);
@@ -244,7 +249,7 @@ const VoiceOfMarket = () => {
         } catch (err) {
             console.log("Error calculating filter counts:", err);
         }
-    }, []);
+    }, [filterOptions]);
 
     useEffect(() => {
         fetchAllFilterCounts();
@@ -371,6 +376,9 @@ const VoiceOfMarket = () => {
         setLoadingMore(false);
     };
 
+
+      console.log("FilteredFiles",filteredFiles);
+      console.log("files",files);
     return (
         <div className="overflow-x-hidden py-0 p-4 relative">
             {/* Search & divs Section */}
@@ -596,7 +604,16 @@ const VoiceOfMarket = () => {
                         setShowEditFileModal(false);
                     }}
                     onSubmit={showEditFileModal ? handleEditFileSubmit : handleUploadFileSubmit}
-                    displayFields={fileCrudDetails}
+                    displayFields={fileCrudDetails.map(field => {
+                        // Update category options dynamically
+                        if (field.key === "category") {
+                            return {
+                                ...field,
+                                options: filterOptions.category
+                            };
+                        }
+                        return field;
+                    })}
                     currentPage={currentPage}
                     itemsPerPage={ITEMS_PER_PAGE}
                     setUsers={setFiles}
@@ -608,6 +625,7 @@ const VoiceOfMarket = () => {
                     updateRecord="Edit File"
                     formatedValueDashboard={false}
                     formatedValueFiles={true}
+                    isFilesData={true}
                 />
             )}
 
