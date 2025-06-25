@@ -40,11 +40,14 @@ const NavigationMenu = () => {
         pathname.endsWith("/sign-up");
 
     const menuItems = [
-        { name: "Voice of Customer", href: "/voice-of-customer", allowedRoles: ["end-user", "admin", "editor", "super-admin", "super-editor"] },
-        { name: "Voice of Business", href: "/voice-of-business", allowedRoles: ["admin", "super-admin"] },
-        { name: "Voice of Market", href: "/voice-of-market", allowedRoles: ["admin", "super-admin"] },
+        { name: "PrivateGPT", href: "/assistant", allowedRoles: ["admin", "super-admin", "super-editor"] },
+        { name: "VoC", href: "/voice-of-customer", allowedRoles: ["end-user", "admin", "editor", "super-admin", "super-editor"] },
+        { name: "VoB", href: "/voice-of-business", allowedRoles: ["admin", "super-admin"] },
+        { name: "VoM", href: "/voice-of-market", allowedRoles: ["admin", "super-admin"] },
         { name: "User Management", href: "/user-management", allowedRoles: ["admin", "super-admin", "super-editor"] },
-        { name: "Private GPT", href: "/assistant", allowedRoles: ["admin", "super-admin", "super-editor"] },
+        { name: "Category Management", href: "/category", allowedRoles: ["admin", "super-admin"] },
+
+
 
     ];
     const fetchCompanies = async () => {

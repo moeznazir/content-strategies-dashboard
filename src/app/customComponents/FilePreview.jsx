@@ -1,177 +1,169 @@
 'use client';
-
 import { useEffect, useState } from 'react';
+import { FaDownload, FaExternalLinkAlt } from 'react-icons/fa';
 
-const FileContentViewer = ({ fileUrl, fileType }) => {
+const FileContentViewer = ({ fileUrl, fileType, isLink = false }) => {
     const [dimensions, setDimensions] = useState({
         width: '100%',
-        height: '600px',
+        height: '600px'
     });
 
-    // Get file extension from URL
-    const fileExtension = fileUrl?.split('.').pop()?.toLowerCase();
+    // Safely get file type as string
+    const safeFileType = String(fileType || '').toLowerCase();
+    const fileExtension = isLink ? null : fileUrl?.split('.').pop()?.toLowerCase();
 
     useEffect(() => {
-        const type = fileType.toString()?.toLowerCase() || getTypeFromExtension(fileExtension);
+        if (!fileUrl) return;
 
-        if (type === 'image' || isImageType(fileExtension)) {
-            setDimensions({
-                width: 'auto',
-                height: 'auto',
-                maxWidth: '100%',
-                maxHeight: '70vh',
-            });
-        } else if (type === 'video' || isVideoType(fileExtension)) {
-            setDimensions({
-                width: '800px',
-                height: '450px',
-                maxWidth: '100%',
-            });
-        } else if (type === 'audio' || isAudioType(fileExtension)) {
+        if (isLink) {
+            // Handle document links
             setDimensions({
                 width: '100%',
-                height: 'auto',
-                maxWidth: '800px',
+                height: '70vh',
+                maxWidth: '100%'
             });
+        } else {
+            // Handle uploaded files
+            const type = safeFileType || getFileType(fileExtension);
+            
+            if (type === 'image') {
+                setDimensions({
+                    width: 'auto',
+                    height: 'auto',
+                    maxWidth: '100%',
+                    maxHeight: '70vh'
+                });
+            } else if (type === 'pdf') {
+                setDimensions({
+                    width: '100%',
+                    height: '70vh'
+                });
+            } else if (type === 'video') {
+                setDimensions({
+                    width: '800px',
+                    height: '450px',
+                    maxWidth: '100%'
+                });
+            }else if (type === 'audio') {
+                setDimensions({
+                    width: '100%',
+                    height: 'auto',
+                    maxWidth: '800px',
+                });
+            }
+            // Add other types as needed
         }
-    }, [fileType, fileExtension]);
+    }, [fileUrl, safeFileType, fileExtension, isLink]);
 
-    // Helper functions to determine file types
-    const isImageType = (ext) => ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp'].includes(ext);
-    const isVideoType = (ext) => ['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(ext);
-    const isAudioType = (ext) => ['mp3', 'wav', 'ogg', 'm4a'].includes(ext);
-    const isDocumentType = (ext) => ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext);
-    const isTextType = (ext) => ['txt', 'csv', 'json', 'xml'].includes(ext);
-    const isArchiveType = (ext) => ['zip', 'rar', '7z', 'tar', 'gz'].includes(ext);
-
-    const getTypeFromExtension = (ext) => {
-        if (isImageType(ext)) return 'image';
-        if (isVideoType(ext)) return 'video';
-        if (isAudioType(ext)) return 'audio';
+    const getFileType = (ext) => {
+        if (!ext) return 'unknown';
+        
+        const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+        const docTypes = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+        
+        if (imageTypes.includes(ext)) return 'image';
         if (ext === 'pdf') return 'pdf';
-        if (isDocumentType(ext)) return 'document';
-        if (ext === 'csv') return 'csv';
-        if (isTextType(ext)) return 'text';
-        if (isArchiveType(ext)) return 'archive';
+        if (docTypes.includes(ext)) return 'document';
         return 'unknown';
     };
 
-    const renderContent = () => {
-        const type = fileType.toString()?.toLowerCase() || getTypeFromExtension(fileExtension);
+    if (!fileUrl) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8">
+                <div className="text-6xl mb-4">📄</div>
+                <p className="text-lg">No file available for preview</p>
+            </div>
+        );
+    }
 
-        if (!fileUrl || typeof fileUrl !== "string" || !fileUrl.startsWith("http")) {
+    if (isLink) {
+        // Handle Google Docs links
+        if (fileUrl.includes('docs.google.com') || fileUrl.includes('drive.google.com')) {
+            let embedUrl = fileUrl;
+            if (fileUrl.includes('/edit')) {
+                embedUrl = fileUrl.replace('/edit', '/preview');
+            }
+            return (
+                <iframe
+                    src={embedUrl}
+                    style={dimensions}
+                    className="border-0 w-full"
+                    title="Document Preview"
+                />
+            );
+        }
+        
+        // Generic link handling
+        return (
+            <div className="flex flex-col items-center justify-center p-8">
+                <div className="text-6xl mb-4">🔗</div>
+                <a 
+                    href={fileUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-blue-500 hover:text-blue-700"
+                >
+                    Open document link <FaExternalLinkAlt />
+                </a>
+            </div>
+        );
+    }
+
+    // Determine file type for uploaded files
+    const type = safeFileType || getFileType(fileExtension);
+
+    switch (type) {
+        case 'image':
+            return (
+                <div className="flex justify-center">
+                    <img
+                        src={fileUrl}
+                        alt="Preview"
+                        style={dimensions}
+                        className="object-contain"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/file-placeholder.png';
+                        }}
+                    />
+                </div>
+            );
+        
+        case 'pdf':
+            return (
+                <iframe
+                    src={`${fileUrl}#view=FitH`}
+                    style={dimensions}
+                    className="border-0 w-full"
+                    title="PDF Preview"
+                />
+            );
+            
+        case 'document':
+            return (
+                <iframe
+                    src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`}
+                    style={dimensions}
+                    className="border-0 w-full"
+                    title="Document Preview"
+                />
+            );
+            
+        default:
             return (
                 <div className="flex flex-col items-center justify-center p-8">
-                    <div className="text-6xl mb-4">❌</div>
-                    <h3 className="text-xl font-semibold">File Not Found</h3>
-                    <p className="mt-2 text-gray-500">
-                        The file link appears broken or private.
+                    <div className="text-6xl mb-4">📄</div>
+                    <div
+     
+                        className="flex items-center gap-2 px-4 py-2 text-white rounded"
+                    > Please Download File to view
+                    </div>
+                    <p className="mt-2 text-sm text-gray-400">
+                        {type === 'unknown' ? 'Unsupported file type' : `File type: ${type}`}
                     </p>
                 </div>
             );
-        }
-
-        switch (type) {
-            case 'image':
-                return (
-                    <div className="flex justify-center">
-                        <img
-                            src={fileUrl}
-                            alt="Preview"
-                            style={dimensions}
-                            className="object-contain"
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = '/file-placeholder.png';
-                            }}
-                        />
-                    </div>
-                );
-
-            case 'pdf':
-                return (
-                    <iframe
-                        src={`${fileUrl}#view=FitH`}
-                        style={dimensions}
-                        className="border-0 w-full"
-                        title="PDF document"
-                    />
-                );
-
-            case 'video':
-                return (
-                    <div className="flex justify-center">
-                        <video controls autoPlay style={dimensions} className="bg-black">
-                            <source src={fileUrl} type={`video/${fileExtension}`} />
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                );
-
-            case 'audio':
-                return (
-                    <div className="flex justify-center">
-                        <audio controls autoPlay className="w-full max-w-md">
-                            <source src={fileUrl} type={`audio/${fileExtension}`} />
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                );
-
-            case 'document':
-            case 'spreadsheet':
-            case 'presentation':
-                // Only use Office Online Viewer for actual Office documents
-                if (isDocumentType(fileExtension)) {
-                    return (
-                        <iframe
-                            src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`}
-                            style={dimensions}
-                            className="border-0 w-full"
-                            title="Office Document"
-                        />
-                    );
-                }
-            // Fall through to default case for non-Office files
-
-            case 'csv':
-            case 'text':
-            case 'archive':
-            default:
-                return (
-                    <div className="flex flex-col items-center justify-center p-8">
-                        <div className="text-6xl mb-4">📄</div>
-                        <h3 className="text-xl font-semibold">File Preview Not Available</h3>
-                        <p className="mt-2 text-gray-500">
-                            For best results, download and view the file directly
-                        </p>
-                        <a
-                            href={fileUrl}
-                            download
-                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Download {fileExtension?.toUpperCase() || 'File'}
-                        </a>
-                    </div>
-                );
-
-            case 'svg':
-                return (
-                    <div className="flex justify-center">
-                        <object
-                            data={fileUrl}
-                            type="image/svg+xml"
-                            style={dimensions}
-                            className="object-contain"
-                        >
-                            <img src={fileUrl} alt="SVG preview" />
-                        </object>
-                    </div>
-                );
-        }
-    };
-
-    return renderContent();
+    }
 };
 
 export default FileContentViewer;

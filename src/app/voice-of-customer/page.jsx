@@ -927,6 +927,7 @@ const Dashboard = () => {
           updateRecord="Edit Record"
           formatedValueDashboard={true}
           formatedValueFiles={false}
+          isFilesData={false}
         />
       )}
 
@@ -948,6 +949,7 @@ const Dashboard = () => {
           prefilledData={prefilledData}
           isDashboardForm={true}
           formatedValueFiles={false}
+          isFilesData={false}
         />
       )}
 

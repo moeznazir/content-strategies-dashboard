@@ -6,7 +6,7 @@ import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import { getRandomColor } from "../constants/constant";
 import { CustomSpinner } from "./Spinner";
-import { FaCommentDots, FaDownload, FaEdit, FaExpandAlt, FaPlus, FaSortDown, FaTimes, FaTrash } from "react-icons/fa";
+import { FaCommentDots, FaDownload, FaEdit, FaExpandAlt, FaExternalLinkAlt, FaPlus, FaSortDown, FaTimes, FaTrash } from "react-icons/fa";
 import Modal from "./DetailModal";
 import CommentModal from "./CommentsModal"
 import LikeButton from "./LikeUnlikeButton";
@@ -51,6 +51,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
             className={`
           px-2 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
           ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+          ${(column.id === 'company_specific') ? 'left-0 px-6 z-25' : ''}
           ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
           ${column.id === 'file_name' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
           ${column.id === 'Guest' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
@@ -325,7 +326,7 @@ const DraggableTable = ({
         return [];
     };
 
-
+    console.log("fikeRRoooooow", fileRow)
     return (
         <DndProvider backend={HTML5Backend}>
             <div className="overflow-x-auto  relative no-scrollbar"
@@ -384,6 +385,7 @@ const DraggableTable = ({
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
                                                 ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+                                                ${(column.id === 'company_specific') ? 'left-0 px-6 z-25' : ''}
                                                 ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
                                                 ${column.id === 'file_name' ? 'sticky left-[130px] w-[200px] bg-[#1a1b41]' : ''}
                                                 ${column.id === 'Guest' ? 'sticky left-[125px] px-[8px] bg-[#1a1b41]' : ''}
@@ -450,7 +452,7 @@ const DraggableTable = ({
                                                             </span>
                                                         ))}
                                                 </div>
-                                            ) : arrayFields.includes(column.label) && Array.isArray(row[column.id]) ? (
+                                            ) : arrayFields?.includes(column.label) && Array.isArray(row[column.id]) ? (
                                                 row[column.id]
                                                     .filter((item) => item && item !== "nan" && item !== "[]")
                                                     .map((item, index) => (
@@ -731,32 +733,38 @@ const DraggableTable = ({
                     onClose={() => setSelectedRow(null)}
                 />
             )}
+
             {fileRow && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
-                    <div className="rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col" style={{
-                        backgroundColor: appColors?.primaryColor || '#1f2937',
-                    }}>
-
+                    <div className="rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-[#1a1b41]">
                         {/* Header */}
-                        <div className="p-4 border-b flex justify-between items-center">
+                        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
                             <h3 className="text-lg font-semibold truncate max-w-md">
                                 File Preview
                             </h3>
                             <div className="flex gap-4">
                                 <a
-                                    href={fileRow.file}
+                                    href={fileRow.file_link || fileRow.file}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    download={fileRow.file_name}
+                                    download={!fileRow.file_link} // Only download for actual files
                                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm flex items-center gap-1"
                                 >
-                                    <FaDownload size={14} /> Download
+                                    {fileRow.file_link ? (
+                                        <>
+                                            <FaExternalLinkAlt size={14} /> Open Link
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaDownload size={14} /> Download
+                                        </>
+                                    )}
                                 </a>
                                 <button
                                     onClick={() => setFileRow(null)}
                                     className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm flex items-center gap-1"
                                 >
-                                    <FaTimes size={14} />
+                                    <FaTimes size={14} /> Close
                                 </button>
                             </div>
                         </div>
@@ -764,8 +772,9 @@ const DraggableTable = ({
                         {/* File Preview */}
                         <div className="flex-1 overflow-auto p-4">
                             <FileContentViewer
-                                fileUrl={fileRow.file}
-                                fileType={fileRow?.file_type}
+                                fileUrl={fileRow.file_link || fileRow.file}
+                                fileType={fileRow.file_type}
+                                isLink={!!fileRow.file_link}  // Pass whether this is a link
                             />
                         </div>
                     </div>
