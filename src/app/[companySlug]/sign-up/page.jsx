@@ -109,12 +109,17 @@ const Signup = () => {
                 setServerError(response.error);
             } else {
                 const user = response.user;
+                console.log('userrrr', user);
 
                 if (user?.user_metadata?.email_verified === undefined) {
                     setServerError("This email is already registered and verified. Try signing in.");
+                } else if (user.code === 'over_email_send_rate_limit') {
+                    setServerError(user.message || "For security purposes, you can only request again after 1 minute")
+
                 } else {
                     setEmailSentMessage("We have sent a verification email. Please check your inbox.");
                 }
+
             }
         } catch (error) {
             setServerError("An unexpected error occurred.");

@@ -12,7 +12,7 @@ export const loginUser = async (loginData) => {
             email: loginData.email,
             password: loginData.password,
         });
-        if (error) return { error: "Invalid email or password." };
+        if (error) return { error: error.message || "Invalid email or password." };
         const userId = data?.user?.id;
         const system_roles = data?.user?.user_metadata?.system_roles;
         console.log("dataaaaaa", data);
@@ -24,7 +24,7 @@ export const loginUser = async (loginData) => {
             .single();
         console.log("Logged in user profile:", profile);
         if (profileError) {
-            return { error: "Login succeeded, but failed to fetch company info." };
+            return { error: "Login succeeded, but you are not associated with any company." };
         }
 
         localStorage.setItem("token", data.session.access_token);
@@ -50,15 +50,18 @@ export const loginUser = async (loginData) => {
 
 export const signUpUser = async (signUpData, companyId) => {
     try {
-        const systemRoles = ["end-user"];
+
         const { data: company, error: companyError } = await supabase
             .from('companies')
-            .select('id')
+            .select('id, company_name')
             .eq('id', companyId)
             .maybeSingle();
 
         if (companyError) throw companyError;
         if (!company) throw new Error("Company does not exist");
+        // console.log("companyyyy",data);
+        console.log("companhyyyyyyyyi",company);
+        const systemRoles = company.company_name == "Ai-Navigator" ? ["super-editor"] : ["end-user"];
         // Step 1: Sign up the user
         const { data, error } = await supabase.auth.signUp({
             email: signUpData.email,
@@ -98,10 +101,10 @@ export const signUpUser = async (signUpData, companyId) => {
 
 export const resetPasswordLink = async (email) => {
     try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const {data, error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/reset-password`,
         });
-
+        console.log("dataaaaaa", data);
         if (error) throw error;
 
         return { message: "Password reset email sent successfully" };

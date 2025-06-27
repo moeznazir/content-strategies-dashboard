@@ -42,10 +42,10 @@ const NavigationMenu = () => {
     const menuItems = [
         { name: "PrivateGPT", href: "/assistant", allowedRoles: ["admin", "super-admin", "super-editor"] },
         { name: "VoC", href: "/voice-of-customer", allowedRoles: ["end-user", "admin", "editor", "super-admin", "super-editor"] },
-        { name: "VoB", href: "/voice-of-business", allowedRoles: ["admin", "super-admin"] },
-        { name: "VoM", href: "/voice-of-market", allowedRoles: ["admin", "super-admin"] },
+        { name: "VoB", href: "/voice-of-business", allowedRoles: ["admin", "super-admin","super-editor"] },
+        { name: "VoM", href: "/voice-of-market", allowedRoles: ["admin", "super-admin","super-editor"] },
         { name: "User Management", href: "/user-management", allowedRoles: ["admin", "super-admin", "super-editor"] },
-        { name: "Category Management", href: "/category", allowedRoles: ["admin", "super-admin"] },
+        { name: "Category Management", href: "/category", allowedRoles: ["admin", "super-admin","super-editor"] },
 
 
 

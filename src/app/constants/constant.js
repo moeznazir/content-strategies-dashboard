@@ -5,7 +5,7 @@ export const accessibleRoutes = {
     "admin": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market', '/category'],
     "editor": ["/voice-of-customer"],
     "super-admin":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category'],
-    "super-editor":["/voice-of-customer", "/user-management","/assistant"],
+    "super-editor":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category']
 };
 
 export const getRandomColor = () => {
