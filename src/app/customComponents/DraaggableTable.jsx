@@ -129,6 +129,7 @@ const DraggableTable = ({
     const [selectedSalesInsights, setSelectedSalesInsights] = useState(null);
     const [selectedCaseStudyVideos, setSelectedCaseStudyVideos] = useState(null);
     const [isEndUser, setIsEndUser] = useState(false);
+    const [isSuperEditor, setIsSuperEditor] = useState(false);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
 
@@ -137,6 +138,7 @@ const DraggableTable = ({
     useEffect(() => {
         const storedRole = localStorage.getItem("system_roles");
         setIsEndUser(storedRole === "end-user");
+        setIsSuperEditor(storedRole === "super-editor");
     }, []);
 
     const moveColumn = (fromIndex, toIndex) => {
@@ -371,7 +373,7 @@ const DraggableTable = ({
                             !loading && data?.length > 0 && data?.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
-                                    className={`bg-white/10 group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10 relative
+                                    className={`h-12 bg-white/10 group cursor-pointer px-6 py-4 divide-y divide-gray-600 text-sm hover:bg-white/10 relative
                                 
                                     `}
                                 >
@@ -641,7 +643,7 @@ const DraggableTable = ({
                                     ))}
                                     <td className="sticky right-0  px-0 z-10">
                                         <div className="flex gap-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            {showActions && !isEndUser && (
+                                            {showActions && !isEndUser && !isSuperEditor && (
                                                 <>
                                                     {onEdit && (
                                                         <button
