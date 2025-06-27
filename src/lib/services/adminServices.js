@@ -37,6 +37,55 @@ export const getCompanyUsers = async () => {
   }
 };
 
+export const getCompanyUsersForSuperAmin = async () => {
+  try {
+    const { data, error } = await supabaseAdmin.rpc("get_all_the_ai_navigator_users", {
+      requesting_user_id: localStorage.getItem("current_user_id"),
+    });
+    
+
+    if (error) {
+      console.log('RPC Error:', error);
+      return { error: error.message };
+    }
+
+    if (data?.error) {
+      return { error: data.error };
+    }
+
+    return { users: data };
+
+  } catch (error) {
+    console.log('Unexpected error:', error);
+    return { error: error.message };
+  }
+};
+
+export const getAiNavigatorUsers = async () => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .rpc('get_all_the_companies_users', {
+        input_company_id: 6,
+        requesting_user_id: localStorage.getItem('current_user_id')
+      });
+
+    if (error) {
+      console.log('RPC Error:', error);
+      return { error: error.message };
+    }
+
+    if (data?.error) {
+      return { error: data.error };
+    }
+
+    return { users: data };
+
+  } catch (error) {
+    console.log('Unexpected error:', error);
+    return { error: error.message };
+  }
+};
+
 
 export const updateUserRoles = async (userId, newRoles) => {
   try {

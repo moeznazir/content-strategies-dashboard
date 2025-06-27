@@ -46,11 +46,12 @@ const NavigationMenu = () => {
         { name: "VoM", href: "/voice-of-market", allowedRoles: ["admin", "super-admin","super-editor"] },
         { name: "User Management", href: "/user-management", allowedRoles: ["admin", "super-admin", "super-editor"] },
         { name: "Category Management", href: "/category", allowedRoles: ["admin", "super-admin","super-editor"] },
+        { name: "AI-Navigator Users", href: "/ai-navigator-users", allowedRoles: ["super-admin"] },
 
 
 
     ];
-    const fetchCompanies = async () => {
+    const fetchCompanies = async () => { 
         try {
             const { data, error } = await supabase
                 .from('companies')
@@ -169,7 +170,7 @@ const NavigationMenu = () => {
         setSelectedCompany(null);
 
         router.push('/login');
-        ShowCustomToast("Logout successfully", 'success', 2000);
+        ShowCustomToast("Logout successfully", 'success','success', 2000);
     };
 
     return (

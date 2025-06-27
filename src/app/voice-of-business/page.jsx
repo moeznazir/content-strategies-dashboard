@@ -12,6 +12,8 @@ import { debounce } from "@/lib/utils";
 import MultiSelectDropdown from "../customComponents/FiltersMultiSelect";
 import DynamicBranding from "../customComponents/DynamicLabelAndLogo";
 import { fetchCategoryLabels } from "@/lib/services/categoryServices";
+import { fetchUserCompanySlug } from "@/lib/services/companySlugServices";
+import { ShowCustomToast } from "../customComponents/CustomToastify";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -362,6 +364,18 @@ const FileManagement = () => {
         []
     );
 
+    const handleShareSignupLink = async () => {
+        try {
+          const slug = await fetchUserCompanySlug();
+          const url = `${window.location.origin}/${slug}/signup`;
+    
+          await navigator.clipboard.writeText(url);
+          ShowCustomToast("Signup Url copied to clipboard!", 'success', 2000); 
+        } catch (error) {
+          ShowCustomToast("Failed to generate signup Url.",'error',2000);
+        }
+      };
+
     const clearSearch = async () => {
         setSearchText("");
         setSelectedFilters({
@@ -421,11 +435,13 @@ const FileManagement = () => {
 
                             {/* Right-aligned action buttons */}
                             <div className="flex gap-2">
-                                {["Search By Date", "Upload File"].map((text, i) => {
+                                {["Search By Date",'Share Signup Url',"Upload File"].map((text, i) => {
                                     const getIcon = (label) => {
                                         switch (label) {
                                             case "Search By Date": return <FaClock className="w-4 h-4" />;
+                                      
                                             case "Upload File": return <FaUpload className="w-3 h-3" />;
+                                                  case "Share Signup Url": return <FaLink className="w-3 h-3" />;
                                             default: return null;
                                         }
                                     };
@@ -446,6 +462,7 @@ const FileManagement = () => {
                                             onClick={() => {
                                                 if (text === "Upload File") setShowUploadFileModal(true);
                                                 else if (text === "Search By Date") setShowDateModal(true);
+                                                else if (text === "Share Signup Url") handleShareSignupLink();
                                             }}
                                         >
                                             {getIcon(text)}

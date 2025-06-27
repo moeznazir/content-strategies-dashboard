@@ -5,14 +5,14 @@ import { FaChevronLeft, FaChevronRight, FaTimes, FaEdit } from "react-icons/fa";
 import DraggableTable from "../customComponents/DraaggableTable";
 import Alert from "../customComponents/Alert";
 import { getRandomColor } from "../constants/constant";
-import { getCompanyUsers, getCompanyUsersForSuperAmin, updateUserRoles } from "@/lib/services/adminServices";
+import { getAiNavigatorUsers, updateUserRoles } from "@/lib/services/adminServices";
 import CustomButton from "../customComponents/CustomButton";
 import CustomSelect from "../customComponents/CustomSelect";
 import { appColors } from "@/lib/theme";
 
 const ITEMS_PER_PAGE = 100;
 
-const UserManagement = () => {
+const AiNavigatorUserManagement = () => {
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -48,56 +48,59 @@ const UserManagement = () => {
     } else {
       setLoading(true);
     }
-  
+
     try {
-      const companyIdAiNavigator = localStorage.getItem("company_id");
-      const isAiNavigator = companyIdAiNavigator === "6";
-    
-      const { users: fetchedUsers, total, error } = isAiNavigator
-        ? await getCompanyUsersForSuperAmin()
-        : await getCompanyUsers();
-      
-  
+      const { users: fetchedUsers, total, error } = await getAiNavigatorUsers();
+
       if (error) throw error;
-  
-      const formattedUsers = (fetchedUsers || []).map((user) => {
+
+      const formattedUsers = fetchedUsers.map((user) => {
+        // Handle title_roles
         const titleRoles = Array.isArray(user.raw_user_meta_data?.title_roles)
           ? user.raw_user_meta_data.title_roles
           : user.raw_user_meta_data?.title_roles
             ? [user.raw_user_meta_data.title_roles]
             : [];
-  
+
+        // Handle system_roles
         const systemRoles = Array.isArray(user.raw_user_meta_data?.system_roles)
           ? user.raw_user_meta_data.system_roles
           : user.raw_user_meta_data?.system_roles
             ? [user.raw_user_meta_data.system_roles]
             : [];
-  
+
+        // Format dates
+        const lastSignIn = user.last_sign_in_at
+          ? new Date(user.last_sign_in_at).toLocaleDateString()
+          : 'Never';
+
+        const createdAt = user.created_at
+          ? new Date(user.created_at).toLocaleDateString()
+          : '';
+
+        const updatedAt = user.updated_at
+          ? new Date(user.updated_at).toLocaleDateString()
+          : '';
+
         return {
           ...user,
           id: user.id,
-          email: user.email || "",
-          title_roles: titleRoles.join(", "),
-          system_roles: systemRoles.join(", "),
-          last_sign_in_at: user.last_sign_in_at
-            ? new Date(user.last_sign_in_at).toLocaleDateString()
-            : "Never",
-          created_at: user.created_at
-            ? new Date(user.created_at).toLocaleDateString()
-            : "",
-          updated_at: user.updated_at
-            ? new Date(user.updated_at).toLocaleDateString()
-            : "",
+          email: user.email || '',
+          title_roles: titleRoles.join(', '),
+          system_roles: systemRoles.join(', '),
+          last_sign_in_at: lastSignIn,
+          created_at: createdAt,
+          updated_at: updatedAt,
         };
       });
-  
+
       if (isLoadMore) {
-        setUsers((prev) => [...prev, ...formattedUsers]);
+        setUsers(prev => [...prev, ...formattedUsers]);
       } else {
-        setUsers(formattedUsers);
+        setUsers(formattedUsers || []);
         setTotalRecords(fetchedUsers.length);
       }
-  
+
     } catch (error) {
       console.log("Error fetching users:", error);
     } finally {
@@ -160,7 +163,7 @@ const UserManagement = () => {
   return (
     <div className="w-[90%] mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">User Management</h1>
+        <h1 className="text-2xl font-bold">AI-Navigator Users</h1>
       </div>
 
       <div className="max-w-full mx-auto">
@@ -333,4 +336,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default AiNavigatorUserManagement;
