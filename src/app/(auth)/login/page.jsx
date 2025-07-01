@@ -55,7 +55,7 @@ const SignInPage = () => {
             } else {
                 setSuccessMessage("Login successful! Redirecting...");
                 setTimeout(() => {
-                    router.push("/voice-of-customer");
+                    router.push("/assistant");
                 }, 2000);
             }
         } catch (err) {
@@ -72,7 +72,7 @@ const SignInPage = () => {
                     <span className="border-l-4 border-[#1a1b41] pl-2">Content Strategies</span>
                 </h2>
                 <p className="text-center  mb-4">
-                    Sign Into Your Podcast Database
+                    Sign Into Your AI Navigator Account
                 </p>
 
                 {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}

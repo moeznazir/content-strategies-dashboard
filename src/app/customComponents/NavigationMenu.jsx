@@ -24,14 +24,14 @@ const NavigationMenu = () => {
     const [companies, setCompanies] = useState([]);
     const [showCompanySelect, setShowCompanySelect] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState(null);
+    const [isHoveringCompany, setIsHoveringCompany] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const supabase = createClient(
         process.env.NEXT_PUBLIC_API_URL,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     );
-
-
+    const storedEmail = localStorage.getItem("email");
     const isExcludedPath =
         pathname.endsWith("/") ||
         pathname.endsWith("/login") ||
@@ -40,18 +40,16 @@ const NavigationMenu = () => {
         pathname.endsWith("/sign-up");
 
     const menuItems = [
-        { name: "PrivateGPT", href: "/assistant", allowedRoles: ["admin", "super-admin", "super-editor"] },
-        { name: "VoC", href: "/voice-of-customer", allowedRoles: ["end-user", "admin", "editor", "super-admin", "super-editor"] },
-        { name: "VoB", href: "/voice-of-business", allowedRoles: ["admin", "super-admin","super-editor"] },
-        { name: "VoM", href: "/voice-of-market", allowedRoles: ["admin", "super-admin","super-editor"] },
-        { name: "User Management", href: "/user-management", allowedRoles: ["admin", "super-admin", "super-editor"] },
-        { name: "Category Management", href: "/category", allowedRoles: ["admin", "super-admin","super-editor"] },
+        { name: "PrivateGPT", href: "/assistant", allowedRoles: ["end-user", "editor", "admin", "super-admin", "super-editor"] },
+        { name: "VoC", href: "/voice-of-customer", allowedRoles: ["end-user", "admin", "editor", "super-admin", "super-editor"], hideForCompanyId: 6 },
+        { name: "VoB", href: "/voice-of-business", allowedRoles: ["end-user", "admin", "editor", "super-admin", "super-editor"], hideForCompanyId: 6 },
+        { name: "VoM", href: "/voice-of-market", allowedRoles: ["end-user", "admin", "editor", "super-admin", "super-editor"], hideForCompanyId: 6 },
         { name: "AI-Navigator Users", href: "/ai-navigator-users", allowedRoles: ["super-admin"] },
-
-
+        { name: "User Management", href: "/user-management", allowedRoles: ["admin", "editor", "super-admin", "super-editor"] },
 
     ];
-    const fetchCompanies = async () => { 
+
+    const fetchCompanies = async () => {
         try {
             const { data, error } = await supabase
                 .from('companies')
@@ -65,10 +63,12 @@ const NavigationMenu = () => {
             console.log("Error fetching companies:", error);
         }
     };
+
     useEffect(() => {
         const fetchData = async () => {
             const storedRole = localStorage.getItem("system_roles");
             const storedCompanyId = localStorage.getItem("company_id");
+
 
             if (storedRole) {
                 setUserRoles(storedRole.trim());
@@ -108,7 +108,6 @@ const NavigationMenu = () => {
             }
         }
     }, [companies, userRoles]);
-
 
     const handleCompanySelect = (companyId) => {
         localStorage.removeItem("company_id");
@@ -170,8 +169,16 @@ const NavigationMenu = () => {
         setSelectedCompany(null);
 
         router.push('/login');
-        ShowCustomToast("Logout successfully", 'success','success', 2000);
+        ShowCustomToast("Logout successfully", 'success', 2000);
     };
+
+    const filteredMenuItems = menuItems.filter(item => {
+        const companyId = localStorage.getItem("company_id");
+        if (item.hideForCompanyId && companyId == item.hideForCompanyId) {
+            return false;
+        }
+        return item?.allowedRoles?.includes(user?.role);
+    });
 
     return (
         shouldShowDashboard && (
@@ -213,7 +220,6 @@ const NavigationMenu = () => {
                                     onClick={() => {
                                         setShowCompanySelect(false);
                                     }}
-                                    // className="px-4 py-2 rounded border rounded border-gray-300 hover:bg-gray-400"
                                     style={{ color: appColors.textColor, borderColor: appColors.borderColor }}
                                 >
                                     Cancel
@@ -221,7 +227,6 @@ const NavigationMenu = () => {
                                 <CustomButton
                                     onClick={() => handleCompanySelect(selectedCompany)}
                                     disabled={!selectedCompany}
-                                // className={`px-4 py-2 rounded ${selectedCompany ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                                 >
                                     Confirm
                                 </CustomButton>
@@ -250,79 +255,81 @@ const NavigationMenu = () => {
                                 }}
                                 className="hidden md:flex space-x-4"
                             >
-                                {menuItems
-                                    .filter((el) => el?.allowedRoles?.includes(user?.role))
-                                    .map((item) => (
-                                        <ToggleGroupItem
-                                            key={item.name}
-                                            value={item.name}
-                                            asChild
-                                            className={clsx(
-                                                "px-0 py-2 rounded-lg font-medium",
-                                                selectedItem === item.name
-                                                    ? " font-bold underline underline-offset-4 decoration-[#3a86ff] decoration-2"
-                                                    : "text-gray-400 hover:text-gray-200",
-                                            )}
-                                            style={{
-                                                fontSize: "0.875rem",
-                                            }}
-                                        >
-                                            <Link href={item.href}>{item.name}</Link>
-                                        </ToggleGroupItem>
-                                    ))}
+                                {filteredMenuItems.map((item) => (
+                                    <ToggleGroupItem
+                                        key={item.name}
+                                        value={item.name}
+                                        asChild
+                                        className={clsx(
+                                            "px-0 py-2 rounded-lg font-medium",
+                                            selectedItem === item.name
+                                                ? " font-bold underline underline-offset-4 decoration-[#3a86ff] decoration-2"
+                                                : "text-gray-400 hover:text-gray-200",
+                                        )}
+                                        style={{
+                                            fontSize: "0.875rem",
+                                        }}
+                                    >
+                                        <Link href={item.href}>{item.name}</Link>
+                                    </ToggleGroupItem>
+                                ))}
                             </ToggleGroup>
                         </div>
 
                         {/* User and Company Info */}
                         <div className="flex items-center space-x-4">
-                            {["super-admin", "super-editor"].includes(userRoles) && localStorage.getItem("company_id") && (
-                                <div className="hidden md:flex items-center">
-                                    <span className="text-sm font-semibold text-blue-700 bg-blue-100 px-4 py-1 rounded-full shadow-sm border border-blue-200">
-                                        Selected Company:{" "}
-                                        <span className="ml-1 text-blue-900 font-bold">
-                                            {companies.find(c => c.id == localStorage.getItem("company_id"))?.company_name ||
-                                                "Loading..."}
-                                        </span>
-                                    </span>
-                                </div>
-                            )}
-
-
-
                             {/* User Icon */}
                             <div className="relative cursor-pointer">
                                 <div
                                     onClick={() => setIsOpen(!isOpen)}
-                                    className="cursor-pointer flex px-3 items-center border rounded-full h-10 w-10 justify-center transition-colors duration-200 bg-white shadow-md"
+                                    className="cursor-pointer flex px-3 items-center border rounded-full h-10 w-10 justify-center transition-colors duration-200 bg-white text-black bold shadow-md"
                                     aria-label="User Menu"
                                 >
-                                    👤
+                                    {storedEmail ? storedEmail.charAt(0).toUpperCase() : '👤'}
                                 </div>
+
 
                                 {/* Dropdown Menu */}
                                 {isOpen && (
                                     <div
-                                        className="absolute right-0 mt-2 bg-white border border-gray-300 shadow-lg rounded-md z-50 min-w-[120px]" onClick={(e) => e.stopPropagation()}
+                                        className="absolute right-0 mt-2 border border-gray-500 shadow-lg bg-[#2B2B4B] rounded-md z-50 min-w-[180px]"
+                                        onClick={(e) => e.stopPropagation()}
                                     >
-                                        {["super-admin", "super-editor"].includes(userRoles) && (
-                                            <button
-                                                onClick={() => {
-                                                    setShowCompanySelect(true);
-                                                    setIsOpen(false);
-                                                    fetchCompanies();
-                                                }}
-                                                className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100  whitespace-nowrap"
-                                            >
-                                                Change Company
-                                            </button>
-                                        )}
+                                        {/* Selected Company Info */}
+                                        {["super-admin", "super-editor"].includes(userRoles) && localStorage.getItem("company_id") && (
+                                            <div className="px-4 py-2 border-b border-gray-700 whitespace-nowrap ">
+                                                <p className="text-xs text-white">Selected Company:   {companies.find(c => c.id == localStorage.getItem("company_id"))?.company_name || "Loading..."}</p>
 
+                                            </div>
+                                        )}
+                                        {["super-admin", "super-editor"].includes(userRoles) && (
+                                            <>
+                                                <button
+                                                    onClick={() => {
+                                                        setShowCompanySelect(true);
+                                                        setIsOpen(false);
+                                                        fetchCompanies();
+                                                    }}
+                                                    className="w-full px-4 py-2 text-left text-white whitespace-nowrap hover:bg-white/10"
+                                                >
+                                                    Change Company
+                                                </button>
+                                                <Link href="/category">
+                                                    <span
+                                                        onClick={() => setIsOpen(false)}
+                                                        className="block w-full px-4 py-2 text-left text-white whitespace-nowrap hover:bg-white/10"
+                                                    >
+                                                        Category Management
+                                                    </span>
+                                                </Link>
+                                            </>
+                                        )}
                                         <button
                                             onClick={() => {
                                                 handleLogout();
                                                 setIsOpen(false);
                                             }}
-                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                                            className="w-full px-4 py-2 text-left text-white hover:bg-white/10"
                                         >
                                             Logout
                                         </button>
@@ -349,7 +356,7 @@ const NavigationMenu = () => {
                     {isMobileMenuOpen && (
                         <div id="mobile-menu" className="md:hidden bg-white shadow-lg py-4">
                             <nav className="space-y-2 px-4">
-                                {menuItems.filter((el) => el?.allowedRoles?.includes(user?.role)).map((item) => (
+                                {filteredMenuItems.map((item) => (
                                     <Link href={item.href} key={item.name}>
                                         <span
                                             onClick={() => {
@@ -367,6 +374,18 @@ const NavigationMenu = () => {
                                         </span>
                                     </Link>
                                 ))}
+                                {["super-admin", "super-editor"].includes(userRoles) && (
+                                    <Link href="/category">
+                                        <span
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                            className="block cursor-pointer px-4 py-2 font-medium text-gray-500"
+                                        >
+                                            Category Management
+                                        </span>
+                                    </Link>
+                                )}
                             </nav>
                         </div>
                     )}

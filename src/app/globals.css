@@ -14,7 +14,9 @@ html, body {
   margin: 0;
   padding: 0;
 }
-
+.Toastify__close-button > svg {
+  color: white !important;
+}
 /* Fully hide scrollbar on all browsers */
 .no-scrollbar {
   scrollbar-width: none; /* Firefox */

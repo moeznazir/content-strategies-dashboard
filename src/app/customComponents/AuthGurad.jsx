@@ -19,7 +19,7 @@ const AuthGuard = ({ children }) => {
             pathname.endsWith("/sign-up");
 
         if (token && isExcludedPath) {
-            router.push(`/voice-of-customer`);
+            router.push(`/assistant`);
         } else if (!token && !isExcludedPath) {
             router.push(`/login`);
         }

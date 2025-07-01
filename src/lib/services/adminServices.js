@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 export const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_API_URL,
   process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY,
-   {
+  {
     auth: {
       autoRefreshToken: false,
       persistSession: false
@@ -42,7 +42,7 @@ export const getCompanyUsersForSuperAmin = async () => {
     const { data, error } = await supabaseAdmin.rpc("get_all_the_ai_navigator_users", {
       requesting_user_id: localStorage.getItem("current_user_id"),
     });
-    
+
 
     if (error) {
       console.log('RPC Error:', error);
@@ -104,3 +104,15 @@ export const updateUserRoles = async (userId, newRoles) => {
     console.log('Unexpected error while updating roles:', err);
   }
 };
+export const updateUserStatus = async (userId, status) => {
+  const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+    user_metadata: {
+      account_status: status,
+    },
+  });
+
+  if (error) return { error: error.message };
+  return { user: data.user };
+};
+
+

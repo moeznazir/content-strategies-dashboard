@@ -236,7 +236,6 @@ const Assistant = () => {
             }}
         >
 
-
             <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
                 {/* Chat history container with scroll */}
                 <div className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar" style={{ maxHeight: '65vh' }}>

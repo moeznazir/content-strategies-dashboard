@@ -502,7 +502,8 @@ const Dashboard = () => {
   const fetchAllFilterCounts = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('get_filter_counts', {
-        current_user_id: localStorage.getItem('current_user_id')
+        current_user_id: localStorage.getItem('current_user_id'),
+        input_company_id: localStorage.getItem('company_id'), 
       });
 
       if (error) {

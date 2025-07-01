@@ -51,7 +51,7 @@ const Alert = () => {
         <Dialog open={isVisible} onOpenChange={() => { }} trapFocus={true} >
             <DialogOverlay className="fixed inset-0 bg-black bg-black flex justify-center items-center" />
 
-            <DialogContent className="z-50 max-w-sm w-full rounded-lg shadow-lg p-4 space-y-4" style={{ backgroundColor: appColors.primaryColor }} >
+            <DialogContent className="z-50 max-w-sm w-full rounded-lg shadow-lg p-4 space-y-6" style={{ backgroundColor: appColors.primaryColor }} >
                 {/* Header */}
                 {title && (
                     <DialogHeader className="text-lg  border-b font-semibold text-center">
@@ -60,7 +60,7 @@ const Alert = () => {
                 )}
 
                 {/* Message & Child UI */}
-                {message && <p className="text-center">{message}</p>}
+                {message && <p className="text-center mt-4">{message}</p>}
                 {childUI && <div className="w-full">{childUI}</div>}
 
                 {/* Footer (Buttons) */}
