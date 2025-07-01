@@ -15,7 +15,11 @@ export const loginUser = async (loginData) => {
         if (error) return { error: error.message || "Invalid email or password." };
         const userId = data?.user?.id;
         const system_roles = data?.user?.user_metadata?.system_roles;
+        const accountStatus = data?.user?.user_metadata?.account_status;
         console.log("dataaaaaa", data);
+        if (accountStatus === 'Disabled') {
+            return { error: "Account disabled. Please contact the admin." };
+        }
         // 👉 Fetch the user's profile
         const { data: profile, error: profileError } = await supabase
             .from("users_profiles")
@@ -50,7 +54,6 @@ export const loginUser = async (loginData) => {
 
 export const signUpUser = async (signUpData, companyId) => {
     try {
-
         const { data: company, error: companyError } = await supabase
             .from('companies')
             .select('id, company_name')
@@ -59,18 +62,26 @@ export const signUpUser = async (signUpData, companyId) => {
 
         if (companyError) throw companyError;
         if (!company) throw new Error("Company does not exist");
-        // console.log("companyyyy",data);
-        console.log("companhyyyyyyyyi",company);
-        const systemRoles = company.company_name == "Ai-Navigator" ? ["super-editor"] : ["end-user"];
+
+        const systemRoles = company.company_name === "AI-Navigator" ? ["super-editor"] : ["end-user"];
+
+        // Dynamically construct the `userMetadata` object
+        const userMetadata = {
+            system_roles: systemRoles,
+            title_roles: signUpData.title_roles,
+            account_status: 'Enabled'
+        };
+
+        if (company.company_name !== "AI-Navigator") {
+            userMetadata.company_name = company.company_name;
+        }
+
         // Step 1: Sign up the user
         const { data, error } = await supabase.auth.signUp({
             email: signUpData.email,
             password: signUpData.password,
             options: {
-                data: {
-                    system_roles: systemRoles,
-                    title_roles: signUpData.title_roles,
-                },
+                data: userMetadata,
             },
         });
 
@@ -84,7 +95,7 @@ export const signUpUser = async (signUpData, companyId) => {
             .insert([
                 {
                     id: userId,
-                    company_id: companyId
+                    company_id: companyId,
                 },
             ]);
 
@@ -101,7 +112,19 @@ export const signUpUser = async (signUpData, companyId) => {
 
 export const resetPasswordLink = async (email) => {
     try {
-        const {data, error } = await supabase.auth.resetPasswordForEmail(email, {
+
+        const { data: userExists, error: checkError } = await supabase.rpc(
+            'check_user_exists',
+            { email_input: email }
+        );
+
+        if (checkError) throw checkError;
+
+        if (!userExists) {
+            return { error: "No account found with this email." };
+        }
+
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/reset-password`,
         });
         console.log("dataaaaaa", data);

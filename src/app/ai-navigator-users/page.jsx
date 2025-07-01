@@ -5,7 +5,7 @@ import { FaChevronLeft, FaChevronRight, FaTimes, FaEdit } from "react-icons/fa";
 import DraggableTable from "../customComponents/DraaggableTable";
 import Alert from "../customComponents/Alert";
 import { getRandomColor } from "../constants/constant";
-import { getAiNavigatorUsers, updateUserRoles } from "@/lib/services/adminServices";
+import { getAiNavigatorUsers, updateUserRoles, updateUserStatus } from "@/lib/services/adminServices";
 import CustomButton from "../customComponents/CustomButton";
 import CustomSelect from "../customComponents/CustomSelect";
 import { appColors } from "@/lib/theme";
@@ -22,8 +22,9 @@ const AiNavigatorUserManagement = () => {
   const [systemRoles, setSystemRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [accountStatus, setAccountStatus] = useState(currentUser?.raw_user_meta_data?.account_status || 'Enabled');
 
-
+  console.log('statusssss', currentUser);
   // Predefined system roles
   const availableRoles = [
     { value: 'admin', label: 'Admin' },
@@ -35,10 +36,11 @@ const AiNavigatorUserManagement = () => {
     { label: "Email", id: "email" },
     { label: "Title", id: "title_roles" },
     { label: "System Roles", id: "system_roles" },
+    { label: "Status", id: "account_status" },
     { label: "Last Sign In", id: "last_sign_in_at" },
     { label: "Created At", id: "created_at" },
     { label: "Updated At", id: "updated_at" },
-    { label: "Actions", id: "action" },
+    // { label: "Actions", id: "action" },
   ];
 
   const arrayFields = ["title_roles", "system_roles"];
@@ -88,6 +90,7 @@ const AiNavigatorUserManagement = () => {
           email: user.email || '',
           title_roles: titleRoles.join(', '),
           system_roles: systemRoles.join(', '),
+          account_status: user.raw_user_meta_data?.account_status || 'Enabled',
           last_sign_in_at: lastSignIn,
           created_at: createdAt,
           updated_at: updatedAt,
@@ -112,6 +115,12 @@ const AiNavigatorUserManagement = () => {
     }
   }, []);
   useEffect(() => {
+    if (currentUser) {
+      setAccountStatus(currentUser?.raw_user_meta_data?.account_status || 'Enabled');
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
     setCurrentPage(1);
     fetchUsers(1, false);
   }, [fetchUsers]);
@@ -131,25 +140,38 @@ const AiNavigatorUserManagement = () => {
     }
   };
 
-  const handleUpdateRoles = async () => {
-    try {
-      if (!currentUser) return;
+  const handleUpdateStatus = async () => {
+    if (!currentUser) return;
 
-      const result = await updateUserRoles(currentUser.id, selectedRoles);
+    const result = await updateUserStatus(currentUser.id, accountStatus);
 
-      if (result?.error) {
-        console.log("Error updating user:", result.error);
-      } else {
-        Alert.show('Success', 'User role updated successfully.', [
-          { text: 'OK', primary: true },
-        ]);
-        fetchUsers(); 
-        setShowEditModal(false);
-      }
-    } catch (err) {
-      console.log("Error updating user:", err.message);
+    if (result?.error) {
+      console.error("Error updating status:", result.error);
+    } else {
+      Alert.show("Success", `User has been ${accountStatus}.`, [{ text: "OK", primary: true }]);
+
+      // ✅ Update local state for the updated user
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.id === currentUser.id
+            ? {
+              ...user,
+              raw_user_meta_data: {
+                ...user.raw_user_meta_data,
+                account_status: accountStatus,
+              },
+              account_status: accountStatus,
+            }
+            : user
+        )
+      );
+
+
+      setShowEditModal(false);
     }
   };
+
+
 
   const paginatedUsers = users.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -236,7 +258,7 @@ const AiNavigatorUserManagement = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-full max-w-md" style={{ backgroundColor: appColors.primaryColor }}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold border-b w-full">Update System Roles</h2>
+              <h2 className="text-xl font-bold border-b w-full">Update User Status</h2>
             </div>
             <div className="mb-6 p-4 rounded-lg shadow-sm border border-gray-100" style={{ backgroundColor: appColors.primaryColor }}>
               <div className="flex items-start gap-4">
@@ -263,40 +285,31 @@ const AiNavigatorUserManagement = () => {
                   <h3 className="text-lg  font-medium text-gray-300 ">{currentUser.email}</h3>
 
                   <div className="mt-2 flex items-center">
-                    <span className="text-sm font-medium text-gray-300 mr-2">Current Roles:</span>
+                    <span className="text-sm font-medium text-gray-300 mr-2">Current Status:</span>
                     <div className="flex flex-wrap gap-1">
-                      {selectedRoles.length > 0 ? (
-                        selectedRoles.map(role => (
-                          <span
-                            key={role}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                          >
-                            {role}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-sm text-gray-400">No roles assigned</span>
-                      )}
+                      {accountStatus}
+
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mb-6 -mt-2">
-              <div className="space-y-2">
-                <CustomSelect
-                  id="roles"
-                  title="Select Roles"
-                  value={selectedRoles}
-                  onChange={(selected) => setSelectedRoles(selected)}
-                  placeholder="Select Role"
-                  options={availableRoles}
-                  isMulti={true}
-                // className="w-full mb-2 "
-                />
-
+            <div className="mb-2 mt-4">
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-sm font-medium text-gray-300">
+                  Status: {accountStatus === 'Enabled' ? 'Enabled' : 'Disabled'}
+                </label>
+                <button
+                  onClick={() => setAccountStatus(prev => prev === 'Enabled' ? 'Disabled' : 'Enabled')}
+                  className={`w-12 h-6 rounded-full relative transition-all ${accountStatus === 'Enabled' ? 'bg-green-500' : 'bg-red-500'}`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform ${accountStatus === 'Enabled' ? 'translate-x-6' : 'translate-x-1'}`}
+                  />
+                </button>
               </div>
+
             </div>
 
             <div className="flex justify-end space-x-3">
@@ -306,7 +319,7 @@ const AiNavigatorUserManagement = () => {
               />
               <CustomButton
                 title={" Update Roles"}
-                onClick={handleUpdateRoles}
+                onClick={handleUpdateStatus}
               />
 
             </div>
