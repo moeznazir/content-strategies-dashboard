@@ -37,6 +37,7 @@ export const loginUser = async (loginData) => {
         localStorage.setItem("system_roles", system_roles);
         localStorage.setItem("company_id", profile.company_id);
         localStorage.setItem("avatar_url", data?.user?.user_metadata?.avatar_url);
+        localStorage.setItem("account_status", data?.user?.user_metadata?.account_status);
 
         console.log("Logged in user profile:", profile);
 

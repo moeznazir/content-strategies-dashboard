@@ -1,8 +1,10 @@
 'use client';
 import { getAllContext, sendChats } from '@/lib/services/chatServices';
 import { appColors } from '@/lib/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ShowCustomToast } from '../customComponents/CustomToastify';
+import PromptLibraryModal from '../customComponents/PromptLibraryModal';
+import ContextModal from '../customComponents/ContextModal';
 
 const Assistant = () => {
     const [activeTab, setActiveTab] = useState(null);
@@ -21,18 +23,22 @@ const Assistant = () => {
     const [optimizedQuery, setOptimizedQuery] = useState('');
     const [selectedAddOn, setSelectedAddOn] = useState(null);
     const [showLibraryDropdown, setShowLibraryDropdown] = useState(false);
-    const [showLibraryModal, setShowLibraryModal] = useState(false);
     const [showAddonsDropdown, setShowAddonsDropdown] = useState(false);
     const [isPromptMode, setIsPromptMode] = useState(true);
     const [chatHistory, setChatHistory] = useState([]);
-    const [selectedPromptDetails, setSelectedPromptDetails] = useState(null);
-    const [selectedTemplate, setSelectedTemplate] = useState('');
     const [showContextModal, setShowContextModal] = useState(false);
     const [showOptimizationModal, setShowOptimizationModal] = useState(false);
     const [showContextDropdown, setShowContextDropdown] = useState(false);
     const [showAddonsModal, setShowAddonsModal] = useState(false);
     const [hoveredTab, setHoveredTab] = useState(null);
 
+
+    const chatContainerRef = useRef(null);
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [chatHistory]);
     // Load chat history from localStorage on component mount
     useEffect(() => {
         const savedChats = localStorage.getItem('chatHistory');
@@ -129,8 +135,7 @@ const Assistant = () => {
         } else if (tabId === 'library') {
             setActiveTab('library');
             setShowLibraryDropdown(!showLibraryDropdown);
-            setShowContextDropdown(false);
-            // setShowOptimizationDropdown(false);
+            setHasSearched(true)
             setShowAddonsDropdown(false);
             setSelectedAddOn(null);
         }
@@ -220,6 +225,9 @@ const Assistant = () => {
         }
     };
 
+
+
+
     // Group documents by layer
     const persistentDocuments = documents.filter(doc => doc?.tags?.includes('layer_1'));
     const customerVoiceDocuments = documents.filter(doc => doc?.tags?.includes('layer_2'));
@@ -238,21 +246,28 @@ const Assistant = () => {
 
             <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
                 {/* Chat history container with scroll */}
-                <div className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar" style={{ maxHeight: '65vh' }}>
+                <div
+                    ref={chatContainerRef}
+                    className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar"
+                    style={{ maxHeight: '65vh' }}>
                     {chatHistory.length > 0 ? (
                         chatHistory.map((chat, index) => (
                             <div key={index} className="w-full space-y-4 mb-6">
                                 {/* User message - aligned to right */}
                                 <div className="flex justify-end">
-                                    <div className="bg-white/10 text-white rounded-full  pl-3 pr-3 pt-1 pb-1 max-w-3xl">
-                                        <p className="whitespace-pre-wrap">{chat.userMessage}</p>
+                                    <div className="bg-white/10 text-white rounded-lg px-4 py-2 max-w-3xl break-words overflow-hidden">
+                                        <pre className="whitespace-pre-wrap font-sans text-wrap break-all">
+                                            {chat.userMessage}
+                                        </pre>
                                     </div>
                                 </div>
 
                                 {/* AI response - aligned to left */}
                                 <div className="flex justify-start">
-                                    <div className=" text-white rounded-lg p-3 max-w-3xl">
-                                        <p className="whitespace-pre-wrap">{chat.aiResponse}</p>
+                                    <div className="text-white rounded-lg px-4 py-2 max-w-3xl w-full break-words overflow-hidden">
+                                        <pre className="whitespace-pre-wrap font-sans text-wrap break-all">
+                                            {chat.aiResponse}
+                                        </pre>
                                     </div>
                                 </div>
                             </div>
@@ -416,153 +431,33 @@ const Assistant = () => {
                     ))}
                 </div>
 
-
                 {/* Context Modal */}
-                {showContextModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold">Select Context</h2>
-                                <button
-                                    onClick={() => setShowContextModal(false)}
-                                    className="text-white hover:text-gray-300 text-2xl"
-                                >
-                                    &times;
-                                </button>
-                            </div>
-
-                            {isLoading ? (
-                                <div className="text-center py-8 text-white/80 text-base">Loading documents...</div>
-                            ) : (
-                                <>
-                                    <div className="mb-6">
-                                        <div
-                                            className="flex items-center mb-3 cursor-pointer"
-                                            onClick={() => setIsPersistentOpen(!isPersistentOpen)}
-                                        >
-                                            <span className="text-blue-700">
-                                                {isPersistentOpen ? '▼' : '▶'}
-                                            </span>
-                                            <h3 className="font-semibold ml-2 text-lg text-blue-500">Persistent Context</h3>
-                                            <span className="ml-2 text-xs bg-blue-500 text-white-700 px-2 py-1 rounded-full">
-                                                {persistentDocuments.length} documents
-                                            </span>
-                                        </div>
-
-                                        {isPersistentOpen && (
-                                            <div className="grid grid-cols-1 gap-2">
-                                                {persistentDocuments.length > 0 ? (
-                                                    persistentDocuments.map((doc) => (
-                                                        <div
-                                                            key={doc?.doc_id}
-                                                            className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-all"
-                                                            onClick={() => handleDocSelect(doc.doc_id, doc.title)}
-                                                        >
-                                                            <svg
-                                                                className="flex-shrink-0"
-                                                                width="24"
-                                                                height="24"
-                                                                viewBox="0 0 48 48"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <g transform="translate(10, 10)" fill="green" fillOpacity="0.8">
-                                                                    <rect y="0" width="34" height="4" rx="1" />
-                                                                    <rect y="6" width="34" height="4" rx="1" />
-                                                                    <rect y="12" width="34" height="4" rx="1" />
-                                                                    <rect y="18" width="34" height="4" rx="1" />
-                                                                    <rect y="24" width="34" height="4" rx="1" />
-                                                                    <rect y="30" width="34" height="4" rx="1" />
-                                                                </g>
-                                                            </svg>
-                                                            <span className="text-sm text-white/90">{doc.title}</span>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="col-span-2 text-gray-400 text-sm">No documents in Persistent Context</div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <div
-                                            className="flex items-center mb-3 cursor-pointer"
-                                            onClick={() => setIsCustomerVoiceOpen(!isCustomerVoiceOpen)}
-                                        >
-                                            <span className="text-blue-700">
-                                                {isCustomerVoiceOpen ? '▼' : '▶'}
-                                            </span>
-                                            <h3 className="font-semibold ml-2 text-lg text-blue-500">Voice-of-the-Customer</h3>
-                                            <span className="ml-2 text-xs bg-blue-500 text-white-700 px-2 py-1 rounded-full">
-                                                {customerVoiceDocuments.length} documents
-                                            </span>
-                                        </div>
-
-                                        {isCustomerVoiceOpen && (
-                                            <div className="grid grid-cols-1 gap-2">
-                                                {customerVoiceDocuments.length > 0 ? (
-                                                    customerVoiceDocuments.map((doc) => (
-                                                        <div
-                                                            key={doc.doc_id}
-                                                            className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-all"
-                                                            onClick={() => handleDocSelect(doc.doc_id, doc.title)}
-                                                        >
-                                                            <svg
-                                                                className="flex-shrink-0"
-                                                                width="24"
-                                                                height="24"
-                                                                viewBox="0 0 48 48"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <g transform="translate(10, 10)" fill="blue" fillOpacity="0.8">
-                                                                    <rect y="0" width="34" height="4" rx="1" />
-                                                                    <rect y="6" width="34" height="4" rx="1" />
-                                                                    <rect y="12" width="34" height="4" rx="1" />
-                                                                    <rect y="18" width="34" height="4" rx="1" />
-                                                                    <rect y="24" width="34" height="4" rx="1" />
-                                                                    <rect y="30" width="34" height="4" rx="1" />
-                                                                </g>
-                                                            </svg>
-                                                            <span className="text-sm text-white/90">{doc.title}</span>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="col-span-2 text-gray-400 text-sm">No documents in Voice-of-the-Customer</div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex justify-end mt-6">
-                                        <button
-                                            onClick={() => setShowContextModal(false)}
-                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                                        >
-                                            Done
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                )}
-
+                <ContextModal
+                    showContextModal={showContextModal}
+                    setShowContextModal={setShowContextModal}
+                />
+                {/* Library Modal */}
+                < PromptLibraryModal
+                    showLibraryDropdown={showLibraryDropdown}
+                    setShowLibraryDropdown={setShowLibraryDropdown}
+                />
                 {/* Optimization Modal */}
                 {showOptimizationModal && (
-                    <div className="fixed inset-0  flex items-center justify-center">
-                        <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold">Prompt Optimization</h2>
+                    <div className="fixed inset-0  flex items-center justify-center bg-gray-600 bg-opacity-50 z-50" >
+                        <div className=" border rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto" style={{ backgroundColor: appColors.primaryColor }}>
+                            <div className="flex justify-between items-center mb-4 ">
+                                <h2 className="text-xl font-bold -mt-4 ">Prompt Optimization</h2>
                                 <button
                                     onClick={() => setShowOptimizationModal(false)}
-                                    className="text-white hover:text-gray-300 text-2xl"
+                                    className="text-white -mt-4 hover:text-gray-300 text-2xl"
                                 >
                                     &times;
                                 </button>
                             </div>
+                            <hr className='-mx-6 -mt-2' />
 
                             <div className="mb-4">
-                                <h3 className="text-sm font-medium mb-1">Original Query:</h3>
+                                <h3 className="text-sm font-medium mb-1 mt-4">Original Query:</h3>
                                 <div className="bg-white/5 p-3 rounded-lg mb-3 text-sm">
                                     <p>{searchQuery}</p>
                                 </div>
@@ -579,7 +474,7 @@ const Assistant = () => {
 
                             <div className="flex justify-end gap-3">
                                 <button
-                                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                                    className="px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                                     onClick={() => {
                                         setOptimizedQuery(searchQuery);
                                         setShowOptimizationModal(false);
@@ -588,7 +483,7 @@ const Assistant = () => {
                                     Cancel
                                 </button>
                                 <button
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                                    className="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                                     onClick={() => {
                                         setSearchQuery(optimizedQuery);
                                         setShowOptimizationModal(false);
@@ -602,20 +497,38 @@ const Assistant = () => {
                 )}
 
                 {/* Add-Ons Modal */}
+                {showAddonsDropdown && (
+                    <div className="ml-[42%] mb-4 w-[220px] !mt-[-8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[rgba(255,255,255,0.05)]">
+                        <div className="flex flex-col divide-y divide-white/10">
+                            {['Industry', 'Audience', 'Tone', 'Objective', `Dos & Don'ts`].map((label, idx) => (
+                                <div
+                                    key={idx}
+                                    className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm text-white transition-colors"
+                                    onClick={() => {
+                                        setSelectedAddOn(label);
+                                        setShowAddonsDropdown(false);
+                                    }}                                >
+                                    {label}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {/* Add-Ons Modal Details */}
                 {showAddonsModal && (
-                    <div className="fixed inset-0 flex items-center justify-center">
-                        <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto">
+                    <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
+                        <div className="bg-[#2b2b4b] border rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto" style={{ backgroundColor: appColors.primaryColor }}>
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold">Optional Add-Ons</h2>
+                                <h2 className="text-xl font-bold -mt-2">Optional Add-Ons</h2>
                                 <button
                                     onClick={() => setShowAddonsModal(false)}
-                                    className="text-white hover:text-gray-300 text-2xl"
+                                    className="text-white -mt-3 hover:text-gray-300 text-2xl"
                                 >
                                     &times;
                                 </button>
                             </div>
-
-                            <div className="space-y-6">
+                            <hr className='-mx-6 -mt-2' />
+                            <div className="space-y-6 mt-4">
                                 {/* Industry */}
                                 <div>
                                     <label className="block font-semibold mb-3 text-lg border-b pb-2">Industry:</label>
@@ -715,7 +628,7 @@ const Assistant = () => {
                             <div className="flex justify-end gap-3 mt-6">
                                 <button
                                     onClick={() => setShowAddonsModal(false)}
-                                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                                    className="px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -724,168 +637,11 @@ const Assistant = () => {
                                         // You can add form save logic here
                                         setShowAddonsModal(false);
                                     }}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                                    className="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                                 >
                                     Apply Add-Ons
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Library Modal */}
-                <div className="relative ml-[5%] mb-4 w-[220px]">
-                    {showLibraryDropdown && (
-                        <div className="ml-[15%] w-[220px] !mt-[8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[rgba(255,255,255,0.05)]">
-                            <div className="flex flex-col divide-y divide-white/10">
-                                {prompts.map((prompt) => (
-                                    <div
-                                        key={prompt.prompt_id}
-                                        onClick={() => {
-                                            handlePromptSelect({ target: { value: prompt.name } });
-                                            setShowLibraryDropdown(false);
-                                            setSelectedPromptDetails(prompt); // Add this to your state
-                                        }}
-                                        className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm transition-colors"
-                                    >
-                                        {prompt.name}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Add this state to your component */}
-                    {selectedPromptDetails && (
-                        <div className="fixed inset-0 flex items-center justify-center">
-                            <div className="bg-[#2b2b4b] rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h2 className="text-xl font-bold">Prompt Details</h2>
-                                    <button
-                                        onClick={() => setSelectedPromptDetails(null)}
-                                        className="text-white hover:text-gray-300"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-
-                                <div className="flex gap-6">
-                                    {/* Left Side - Templates */}
-                                    <div className="w-1/2">
-                                        <h3 className="font-semibold mb-2">Selected Option: {selectedPromptDetails.name}</h3>
-
-                                        <div className="mb-4">
-                                            <h4 className="font-medium mb-2">Templates:</h4>
-                                            <div className="space-y-2">
-                                                <div
-                                                    className="p-3 bg-white/10 rounded cursor-pointer hover:bg-white/20"
-                                                    onClick={() => setSelectedTemplate('Template 1')}
-                                                >
-                                                    <h5 className="font-medium">Template 1</h5>
-                                                    <p className="text-sm text-white/80">Standard professional template</p>
-                                                </div>
-                                                <div
-                                                    className="p-3 bg-white/10 rounded cursor-pointer hover:bg-white/20"
-                                                    onClick={() => setSelectedTemplate('Template 2')}
-                                                >
-                                                    <h5 className="font-medium">Template 2</h5>
-                                                    <p className="text-sm text-white/80">Casual friendly template</p>
-                                                </div>
-                                                <div
-                                                    className="p-3 bg-white/10 rounded cursor-pointer hover:bg-white/20"
-                                                    onClick={() => setSelectedTemplate('Template 3')}
-                                                >
-                                                    <h5 className="font-medium">Template 3</h5>
-                                                    <p className="text-sm text-white/80">Technical detailed template</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-white/10 p-4 rounded">
-                                            <h4 className="font-medium mb-2">Current Template:</h4>
-                                            <p className="text-sm">{selectedTemplate || "No template selected"}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Right Side - Form Fields */}
-                                    <div className="w-1/2">
-                                        <h3 className="font-semibold mb-4">Contact Information</h3>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1">Name</label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full bg-white/10 border border-white/20 rounded p-2 text-sm"
-                                                    placeholder="Enter name"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1">Email</label>
-                                                <input
-                                                    type="email"
-                                                    className="w-full bg-white/10 border border-white/20 rounded p-2 text-sm"
-                                                    placeholder="Enter email"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1">Contact Number</label>
-                                                <input
-                                                    type="tel"
-                                                    className="w-full bg-white/10 border border-white/20 rounded p-2 text-sm"
-                                                    placeholder="Enter phone number"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1">Additional Notes</label>
-                                                <textarea
-                                                    className="w-full bg-white/10 border border-white/20 rounded p-2 text-sm h-24"
-                                                    placeholder="Enter any additional information"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end gap-3 mt-6">
-                                    <button
-                                        onClick={() => setSelectedPromptDetails(null)}
-                                        className="px-3 py-1.5 rounded-lg transition-colors text-sm bg-white/10 hover:bg-white/20"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            // Handle submit logic here
-                                            setSelectedPromptDetails(null);
-                                        }}
-                                        className="px-3 py-1.5 rounded-lg transition-colors text-sm bg-blue-600 hover:bg-blue-700"
-                                    >
-                                        Use Template
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                {/* Add-Ons Modal */}
-                {showAddonsDropdown && (
-                    <div className="ml-[42%] mb-4 w-[220px] !mt-[-8px] text-left text-white overflow-hidden rounded-md border border-white/20 bg-[rgba(255,255,255,0.05)]">
-                        <div className="flex flex-col divide-y divide-white/10">
-                            {['Industry', 'Audience', 'Tone', 'Objective', `Dos & Don'ts`].map((label, idx) => (
-                                <div
-                                    key={idx}
-                                    className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm text-white transition-colors"
-                                    onClick={() => {
-                                        setSelectedAddOn(label);
-                                        setShowAddonsDropdown(false);
-                                    }}                                >
-                                    {label}
-                                </div>
-                            ))}
                         </div>
                     </div>
                 )}
