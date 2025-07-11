@@ -10,10 +10,12 @@ import Image from "next/image";
 import { EXCLUED_PATHS, accessibleRoutes } from "../constants/constant";
 import Alert from "./Alert";
 import { ShowCustomToast } from "./CustomToastify";
+import { FaBuilding, FaThList, FaUserCog, FaSignOutAlt } from "react-icons/fa";
 import DynamicBranding from "./DynamicLabelAndLogo";
 import { createClient } from '@supabase/supabase-js';
 import { appColors } from "@/lib/theme";
 import CustomButton from "./CustomButton";
+import AccountSettings from "../account-settings/page";
 
 const NavigationMenu = () => {
     const [selectedItem, setSelectedItem] = useState();
@@ -338,7 +340,7 @@ const NavigationMenu = () => {
             <>
                 {/* Company Selection Modal for Super Admin */}
                 {showCompanySelect && (
-                    <div className="fixed inset-0 bg-white/10 flex items-center justify-center z-50"
+                    <div className="fixed inset-0  flex items-center justify-center bg-gray-600 bg-opacity-50 z-50"
                         style={{ color: appColors.textHeadingColor, border: appColors.borderColor }}>
                         <div className="bg-white p-6 rounded-lg shadow-lg mt-20 ml-10 max-w-md w-full" style={{ backgroundColor: appColors.primaryColor }}>
                             <div className="flex justify-between items-center mb-4 -mt-2 border-b pb-2">
@@ -388,162 +390,30 @@ const NavigationMenu = () => {
                     </div>
                 )}
 
-                {/* Account Settings Modal */}
-                {showAccountSettings && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full" style={{ backgroundColor: appColors.primaryColor }}>
-                            <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                <h2 className="text-xl font-bold" style={{ color: appColors.textColor }}>Account Settings</h2>
-                                <div
-                                    onClick={() => {
-                                        setShowAccountSettings(false);
-                                        setAvatarFile(null);
-                                        setAvatarPreview('');
-                                        setNewEmail('');
-                                        setCurrentPassword('');
-                                        setNewPassword('');
-                                        setConfirmPassword('');
-                                    }}
-                                    className="text-gray-500 cursor-pointer hover:text-gray-700"
-                                >
-                                    ✕
-                                </div>
-                            </div>
+                {/* Account Settings Page */}
+                {/* {showAccountSettings && (
+                    <AccountSettings
+                        setShowAccountSettings={setShowAccountSettings}
+                        setAvatarFile={setAvatarFile}
+                        setAvatarPreview={setAvatarPreview}
+                        setNewEmail={setNewEmail}
+                        setCurrentPassword={setCurrentPassword}
+                        setNewPassword={setNewPassword}
+                        setConfirmPassword={setConfirmPassword}
+                        handleAccountSettingsSubmit={handleAccountSettingsSubmit}
+                        handleAvatarChange={handleAvatarChange}
+                        avatarUrl={avatarUrl}
+                        avatarPreview={avatarPreview}
+                        storedEmail={storedEmail}
+                        currentEmail={currentEmail}
+                        newEmail={newEmail}
+                        currentPassword={currentPassword}
+                        newPassword={newPassword}
+                        confirmPassword={confirmPassword}
+                        isUpdating={isUpdating}
+                    />
 
-                            <form onSubmit={handleAccountSettingsSubmit}>
-                                <div className="mb-4">
-                                    <label className="block mb-2 text-sm font-medium" style={{ color: appColors.textColor }}>
-                                        Profile Picture
-                                    </label>
-                                    <div className="flex items-center space-x-4">
-                                        <div className="relative">
-                                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300">
-                                                {avatarUrl ? (
-                                                    <img src={avatarPreview ? avatarPreview : localStorage.getItem('avatar_url')} alt="Avatar Preview" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                        {storedEmail ? storedEmail.charAt(0).toUpperCase() : '👤'}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <input
-                                                type="file"
-                                                id="avatar"
-                                                accept="image/*"
-                                                onChange={handleAvatarChange}
-                                                className="hidden"
-                                            />
-                                            <label
-                                                htmlFor="avatar"
-                                                className="absolute -bottom-2 -right-2 bg-blue-500 text-white rounded-full p-1 cursor-pointer"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                                </svg>
-                                            </label>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500">Click to upload a new profile picture</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block mb-2 text-sm font-medium" style={{ color: appColors.textColor }}>
-                                        Current Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={currentEmail}
-                                        disabled
-                                        className="w-full p-2 border rounded"
-                                        style={{ color: appColors.textColor, borderColor: appColors.borderColor, backgroundColor: appColors.primaryColor }}
-                                    />
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block mb-2 text-sm font-medium" style={{ color: appColors.textColor }}>
-                                        New Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={newEmail}
-                                        onChange={(e) => setNewEmail(e.target.value)}
-                                        className="w-full p-2 border rounded"
-                                        style={{ color: appColors.textColor, borderColor: appColors.borderColor, backgroundColor: appColors.primaryColor }}
-                                        placeholder="Enter new email"
-                                    />
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block mb-2 text-sm font-medium" style={{ color: appColors.textColor }}>
-                                        Current Password (required for password change)
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={currentPassword}
-                                        onChange={(e) => setCurrentPassword(e.target.value)}
-                                        className="w-full p-2 border rounded"
-                                        style={{ color: appColors.textColor, borderColor: appColors.borderColor, backgroundColor: appColors.primaryColor }}
-                                        placeholder="Enter current password"
-                                    />
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block mb-2 text-sm font-medium" style={{ color: appColors.textColor }}>
-                                        New Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
-                                        className="w-full p-2 border rounded"
-                                        style={{ color: appColors.textColor, borderColor: appColors.borderColor, backgroundColor: appColors.primaryColor }}
-                                        placeholder="Enter new password"
-                                    />
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block mb-2 text-sm font-medium" style={{ color: appColors.textColor }}>
-                                        Confirm New Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="w-full p-2 border rounded"
-                                        style={{ color: appColors.textColor, borderColor: appColors.borderColor, backgroundColor: appColors.primaryColor }}
-                                        placeholder="Confirm new password"
-                                    />
-                                </div>
-
-                                <div className="flex justify-end space-x-2">
-                                    <CustomButton
-                                        type="button"
-                                        onClick={() => {
-                                            setShowAccountSettings(false);
-                                            setAvatarFile(null);
-                                            setAvatarPreview('');
-                                            setNewEmail('');
-                                            setCurrentPassword('');
-                                            setNewPassword('');
-                                            setConfirmPassword('');
-                                        }}
-                                        style={{ color: appColors.textColor, borderColor: appColors.borderColor }}
-                                    >
-                                        Cancel
-                                    </CustomButton>
-                                    <CustomButton
-                                        type="submit"
-                                        disabled={isUpdating}
-                                    >
-                                        {isUpdating ? 'Updating...' : 'Save Changes'}
-                                    </CustomButton>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
+                )} */}
                 {showEmailChangeModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" >
                         <div className="rounded-lg shadow-xl max-w-md w-full p-6" style={{ backgroundColor: appColors.primaryColor }}>
@@ -648,15 +518,21 @@ const NavigationMenu = () => {
                                 </div>
 
                                 {/* Dropdown Menu */}
+
                                 {isOpen && (
                                     <div
-                                        className="absolute right-0 mt-2 border border-gray-500 shadow-lg bg-[#2B2B4B] rounded-md z-50 min-w-[180px]"
+                                        className="absolute right-0 mt-3 border border-gray-500 shadow-lg bg-[#2B2B4B] rounded-md z-50 min-w-[180px]"
                                         onClick={(e) => e.stopPropagation()}
                                     >
+                                        {/* Triangle Pointer */}
+                                        <div className="absolute -top-[8.5px] right-3 w-4 h-4 bg-[#2B2B4B] rotate-45 z-[-1] border-l border-t border-gray-500"></div>
                                         {/* Selected Company Info */}
                                         {["super-admin", "super-editor"].includes(userRoles) && localStorage.getItem("company_id") && (
-                                            <div className="px-4 py-2 border-b border-gray-700 whitespace-nowrap ">
-                                                <p className="text-xs text-white">Selected Company:   {companies.find(c => c.id == localStorage.getItem("company_id"))?.company_name || "Loading..."}</p>
+                                            <div className="px-4 py-2 border-b border-gray-700 whitespace-nowrap">
+                                                <p className="text-xs text-white">
+                                                    Selected Company:{" "}
+                                                    {companies.find(c => c.id == localStorage.getItem("company_id"))?.company_name || "Loading..."}
+                                                </p>
                                             </div>
                                         )}
 
@@ -668,40 +544,46 @@ const NavigationMenu = () => {
                                                         setIsOpen(false);
                                                         fetchCompanies();
                                                     }}
-                                                    className="w-full px-4 py-2 text-left text-white whitespace-nowrap hover:bg-white/10"
+                                                    className="w-full px-4 py-2 text-left text-sm text-white whitespace-nowrap hover:bg-white/10 flex items-center gap-2"
                                                 >
+                                                    <FaBuilding className="text-blue-500 text-sm" />
                                                     Change Company
                                                 </div>
                                                 <Link href="/category">
                                                     <span
                                                         onClick={() => setIsOpen(false)}
-                                                        className="block w-full px-4 py-2 text-left text-white whitespace-nowrap hover:bg-white/10"
+                                                        className="block w-full px-4 py-2 text-left text-sm text-white whitespace-nowrap hover:bg-white/10 flex items-center gap-2"
                                                     >
+                                                        <FaThList className="text-blue-500 text-sm" />
                                                         Category Management
                                                     </span>
                                                 </Link>
                                             </>
                                         )}
-                                        <div
-                                            onClick={() => {
-                                                setShowAccountSettings(true);
-                                                setIsOpen(false);
-                                            }}
-                                            className="w-full px-4 py-2 text-left text-white whitespace-nowrap hover:bg-white/10"
-                                        >
-                                            Account Settings
-                                        </div>
+
+                                        <Link href="/account-settings">
+                                            <span
+                                                onClick={() => setIsOpen(false)}
+                                                className="block w-full px-4 py-2 text-left text-sm text-white whitespace-nowrap hover:bg-white/10 flex items-center gap-2"
+                                            >
+                                                <FaUserCog className="text-blue-500 text-sm" />
+                                                Account Settings
+                                            </span>
+                                        </Link>
+
                                         <div
                                             onClick={() => {
                                                 handleLogout();
                                                 setIsOpen(false);
                                             }}
-                                            className="w-full px-4 py-2 text-left text-white hover:bg-white/10"
+                                            className="w-full px-4 py-2 text-left text-sm text-white hover:bg-white/10 flex items-center gap-2"
                                         >
+                                            <FaSignOutAlt className="text-blue-500 text-sm" />
                                             Logout
                                         </div>
                                     </div>
                                 )}
+
                             </div>
                         </div>
 

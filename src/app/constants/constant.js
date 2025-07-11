@@ -1,11 +1,11 @@
 export const EXCLUED_PATHS = ['/', '/login', '/forgot-password', '/sign-up', '/reset-password'];
 
 export const accessibleRoutes = {
-    "end-user": ["/voice-of-customer",'/assistant',"/voice-of-business","/voice-of-market"],
-    "admin": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business","/voice-of-market"],
-    "editor": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business","/voice-of-market"],
-    "super-admin":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category','/ai-navigator-users'],
-    "super-editor":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category']
+    "end-user": ["/voice-of-customer",'/assistant',"/voice-of-business","/voice-of-market",'/account-settings'],
+    "admin": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business","/voice-of-market",'/account-settings'],
+    "editor": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business","/voice-of-market",'/account-settings'],
+    "super-admin":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category','/ai-navigator-users','/account-settings'],
+    "super-editor":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category','/account-settings']
 };
 
 export const getRandomColor = () => {
