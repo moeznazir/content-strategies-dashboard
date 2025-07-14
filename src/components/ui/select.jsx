@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-const Select = React.forwardRef(({ title, className, multiple, ...props }, ref) => {
+const Select = React.forwardRef(({ title, className, multiple, required = false, ...props }, ref) => {
   return (
     <div className="w-full">
       {title && (
@@ -22,6 +22,7 @@ const Select = React.forwardRef(({ title, className, multiple, ...props }, ref) 
           className
         )}
         ref={ref}
+        required={required}
         {...props}
       >
         {props.children}

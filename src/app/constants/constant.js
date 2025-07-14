@@ -4,7 +4,7 @@ export const accessibleRoutes = {
     "end-user": ["/voice-of-customer",'/assistant',"/voice-of-business","/voice-of-market",'/account-settings'],
     "admin": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business","/voice-of-market",'/account-settings'],
     "editor": ["/voice-of-customer", "/user-management","/assistant","/voice-of-business","/voice-of-market",'/account-settings'],
-    "super-admin":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category','/ai-navigator-users','/account-settings'],
+    "super-admin":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category','/ai-navigator-users','/account-settings','/manage-library'],
     "super-editor":["/voice-of-customer", "/user-management","/assistant","/voice-of-business",'/voice-of-market','/category','/account-settings']
 };
 

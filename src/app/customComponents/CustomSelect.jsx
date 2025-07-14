@@ -17,16 +17,24 @@ export default function CustomSelect({
     options = [],
     isMulti = false,
     placeholder,
+    required = false,
+    errorMessage,
     ...props
 }) {
     return (
         <div className="w-full">
             {title && (
-                <label
-                    htmlFor={id}
-                    className="block text-sm font-bold text-gray-300 mb-1"
-                >
+                <label htmlFor={id} className="block text-sm font-bold mb-1" style={{ color: appColors.textColor }}>
                     {title}
+                    {required ? (
+                        <span
+                            className="text-red-500 ml-1"
+                            style={{ display: 'inline-block' }}
+                            aria-hidden="true"
+                        >
+                            *
+                        </span>
+                    ) : null}
                 </label>
             )}
 
@@ -34,10 +42,10 @@ export default function CustomSelect({
                 id={id}
                 value={
                     isMulti
-                      ? options.filter((option) => Array.isArray(value) && value.includes(option.value))
-                      : options.find((option) => option.value === value?.value) || null
-                  }
-                                  onChange={(selectedOptions) =>
+                        ? options.filter((option) => Array.isArray(value) && value.includes(option.value))
+                        : options.find((option) => option.value === value?.value) || null
+                }
+                onChange={(selectedOptions) =>
                     onChange(isMulti ? selectedOptions.map((opt) => opt.value) : selectedOptions.value)
                 }
                 options={options}
@@ -45,6 +53,7 @@ export default function CustomSelect({
                 isDisabled={disabled}
                 className={className}
                 placeholder={placeholder}
+                required={required}
                 styles={{
                     control: (provided, state) => ({
                         ...provided,
@@ -93,6 +102,11 @@ export default function CustomSelect({
                 }}
 
             />
+            {/* {required && !value && (
+                <p className="mt-1 text-sm text-red-500">
+                    {errorMessage || 'This field is required'}
+                </p>
+            )} */}
         </div>
     );
 }
