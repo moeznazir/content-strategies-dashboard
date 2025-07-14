@@ -46,11 +46,15 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
     };
 
     return (
-        <th
+        <th 
             ref={(node) => ref(drop(node))}
             className={`
-          px-2 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
+            px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
           ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+          ${(column.id === 'dept_name') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+          ${(column.id === 'temp_name') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+          ${(column.id === 'doc_title') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+          ${(column.id === 'action') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
           ${(column.id === 'company_specific') ? 'left-0 px-6 z-25' : ''}
           ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
           ${column.id === 'file_name' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
@@ -385,13 +389,12 @@ const DraggableTable = ({
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
-                                                ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
-                                                ${(column.id === 'company_specific') ? 'left-0 px-6 z-25' : ''}
-                                                ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
-                                                ${column.id === 'file_name' ? 'sticky left-[130px] w-[200px] bg-[#1a1b41]' : ''}
-                                                ${column.id === 'Guest' ? 'sticky left-[125px] px-[8px] bg-[#1a1b41]' : ''}
-                                                ${column.id === 'email' ? ' px-[30px] ' : ''}
-                                                ${column.id === 'title_roles' ? ' px-[10px] ' : ''}
+                                                ${(column.id === 'Avatar') ? 'sticky left-0  px-6 z-25 bg-[#1a1b41]' : ''}
+                                                ${(column.id === 'company_specific') ? 'left-0  px-6 z-25' : ''}
+                                                ${(column.id === 'thumbnail') ? 'sticky left-0  px-6  z-25 bg-[#1a1b41]' : ''}
+                                                ${column.id === 'file_name' ? 'sticky left-[130px] w-[200px]  px-6 bg-[#1a1b41]' : ''}
+                                                ${column.id === 'Guest' ? 'sticky left-[125px]  px-6  bg-[#1a1b41]' : ''}
+                                                
                                      `}
                                         >
                                             {column.id === "Avatar" ? (
@@ -635,6 +638,8 @@ const DraggableTable = ({
                                                 ) : (
                                                     <span className="text-gray-400">N/A</span>
                                                 )
+                                            ) : column.id === "action" ? (
+                                                row[column.id] || null
                                             ) : (
                                                 row[column.id] || "-"
                                             )}

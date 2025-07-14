@@ -35,7 +35,9 @@ const SINGLESELECT_FIELDS = [
     // "Guest Role",
     "Videos",
     "file_type",
-    "category"
+    "category",
+    "template_id",
+    "department_id"
 
 ];
 
@@ -747,7 +749,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Initialize form values properly
     const initialValues = {};
     displayFields.forEach(field => {
-        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key === "Challenges" || field.key == "Sales Insights" || field.key == 'Case_Study_Other_Video') {
+        if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" ||
+            field.key === "Challenges" || field.key == "Sales Insights" || field.key == 'Case_Study_Other_Video') {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
             // Handle file_type and category as arrays
@@ -760,6 +763,23 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             // Handle file field
             else if (field.key === 'file') {
                 initialValues[field.key] = entityData?.[field.key] || null;
+            }
+            // Update this part in your initialValues setup
+            else if (field.key === 'template_id' || field.key === 'department_id') {
+                const rawValue = (prefilledData && prefilledData[field.key]) || entityData?.[field.key];
+                const options = field.options || OPTIONS[field.key] || [];
+
+                // Force conversion to option object
+                if (rawValue !== undefined && rawValue !== null) {
+                    initialValues[field.key] = typeof rawValue === 'object' ?
+                        rawValue :
+                        options.find(opt => opt.value == rawValue) || {
+                            value: rawValue,
+                            label: String(rawValue)
+                        };
+                } else {
+                    initialValues[field.key] = null;
+                }
             }
             else {
                 initialValues[field.key] = (prefilledData && prefilledData[field.key]) || entityData?.[field.key] ||
@@ -858,7 +878,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     Challenges: challengesEntries.length > 0 ? challengesEntries : null,
                     "Sales Insights": salesInsightsEntries.length > 0 ? salesInsightsEntries : null,
                     Case_Study_Other_Video: caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null,
-                    company_id: localStorage.getItem('company_id')
+                    company_id: localStorage.getItem('company_id'),
+                    template_id: values.template_id?.value || values.template_id || null,
+                    department_id: values.department_id?.value || values.department_id || null
                 };
 
                 const formattedValues = isDashboardForm ? formattedValuesDashboard : { company_id: localStorage.getItem('company_id'), ...values };
@@ -936,11 +958,19 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                             continue;
                         }
                     }
-
+                    if (field.key === 'template_id' || field.key === 'department_id') {
+                        continue;
+                    }
                     // Non-file fields
                     formattedValues[field.key] = fieldValue;
                 }
-
+                // After your big loop:
+                if (formattedValues.template_id) {
+                    formattedValues.template_id = formik.values?.template_id?.value || formik.values.template_id || null;
+                }
+                if (formattedValues.department_id) {
+                    formattedValues.department_id = formik.values?.department_id?.value || formik.values.department_id || null;
+                }
                 console.log("Final formatted values:", formattedValues);
 
                 let response;
@@ -1513,6 +1543,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             <>
                                                 <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                     {field.label === "Video Type" ? "Content Type" : field.label}:
+                                                    {(field.key == 'temp_name' || field.key == 'dept_name' || field.key == 'doc_title' || field.key == 'department_id' || field.key == 'template_id') && (
+                                                        <span className="text-red-500 ml-1">*</span>
+                                                    )}
                                                 </label>
 
                                                 {(field.key === 'file_type' || field.key === 'category') ? (
@@ -1539,6 +1572,65 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             className="w-full mb-2"
                                                         />
                                                     ) : null
+                                                ) : (field.key == 'temp_name' || field.key == 'dept_name' || field.key == 'dept_name' || field.key == 'doc_title') ? (
+                                                    <CustomInput
+                                                        type={field.type || "text"}
+                                                        name={field.key}
+                                                        value={formik.values[field.key] || ""}
+                                                        onChange={formik.handleChange}
+                                                        required={true}
+                                                        onBlur={formik.handleBlur}
+                                                        className="w-full p-2 border rounded"
+                                                        placeholder={field.placeholder || `Select ${field.label}...`}
+                                                    />
+                                                ) : (field.key === 'template_id' || field.key === 'department_id') ? (
+                                                    SINGLESELECT_FIELDS.includes(field.key) ? (
+                                                        <>
+                                                            {console.log('Final Debug:', {
+                                                                field: field.key,
+                                                                options: field.options || OPTIONS[field.key],
+                                                                formikValue: formik.values[field.key],
+                                                                resolvedValue: (field.options || OPTIONS[field.key] || []).find(
+                                                                    opt => opt.value == formik.values[field.key]?.value ||
+                                                                        opt.value == formik.values[field.key]
+                                                                ),
+                                                                isMatch: (field.options || OPTIONS[field.key] || []).some(
+                                                                    opt => opt.value == formik.values[field.key]?.value ||
+                                                                        opt.value == formik.values[field.key]
+                                                                )
+                                                            })}
+                                                            <CustomSelect
+                                                                key={`${field.key}-${formik.values[field.key]?.value || 'empty'}`}
+                                                                id={field.key}
+                                                                options={field.options || OPTIONS[field.key] || []}
+
+                                                                value={
+                                                                    formik.values[field.key] ?
+                                                                        // Try to find matching option by value
+                                                                        (field.options || OPTIONS[field.key] || []).find(
+                                                                            opt => opt.value == formik.values[field.key]?.value ||
+                                                                                opt.value == formik.values[field.key]
+                                                                        ) ||
+                                                                        // Fallback to creating basic object if value exists
+                                                                        (formik.values[field.key] !== null && formik.values[field.key] !== undefined ?
+                                                                            { value: formik.values[field.key], label: String(formik.values[field.key]) }
+                                                                            : null)
+                                                                        : null
+                                                                }
+                                                                isMulti={false}
+                                                                required={true}
+                                                                onChange={(selectedOption) => {
+                                                                    // Always store the complete option object
+                                                                    formik.setFieldValue(field.key, selectedOption || null);
+                                                                }}
+                                                                placeholder={field.placeholder || `Select ${field.label}...`}
+                                                                className="w-full mb-2"
+
+                                                            />
+                                                        </>
+
+                                                    ) : null
+
                                                 ) : MULTISELECT_FIELDS.includes(field.key) ? (
                                                     <CustomSelect
                                                         id={field.key}

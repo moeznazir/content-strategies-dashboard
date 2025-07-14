@@ -558,6 +558,15 @@ const NavigationMenu = () => {
                                                         Category Management
                                                     </span>
                                                 </Link>
+                                                <Link href="/manage-library">
+                                                    <span
+                                                        onClick={() => setIsOpen(false)}
+                                                        className="block w-full px-4 py-2 text-left text-sm text-white whitespace-nowrap hover:bg-white/10 flex items-center gap-2"
+                                                    >
+                                                        <FaThList className="text-blue-500 text-sm" />
+                                                        Manage Library
+                                                    </span>
+                                                </Link>
                                             </>
                                         )}
 

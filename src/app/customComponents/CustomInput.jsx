@@ -10,7 +10,9 @@ export default function CustomInput({
     label,
     onChange,
     disabled,
+    required = false,
     className,
+    errorMessage,
     ...props
 }) {
     return (
@@ -18,6 +20,15 @@ export default function CustomInput({
             {label && (
                 <label htmlFor={id} className="block text-sm font-bold mb-1" style={{ color: appColors.textColor }}>
                     {label}
+                    {required ? (
+                        <span
+                            className="text-red-500 ml-1"
+                            style={{ display: 'inline-block' }}
+                            aria-hidden="true"
+                        >
+                            *
+                        </span>
+                    ) : null}
                 </label>
             )}
             <Input
@@ -27,6 +38,7 @@ export default function CustomInput({
                 value={value}
                 onChange={onChange}
                 disabled={disabled}
+                required={required}
                 {...props}
                 className={`w-full px-3 py-2 border border-gray-300 rounded-md 
     focus:outline-none focus:ring-1 focus:ring-[#1a1b41] 
@@ -37,7 +49,11 @@ export default function CustomInput({
                     color: appColors.textColor
                 }}
             />
-
+            {/* {required && !value && (
+                <p className="mt-1 text-sm text-red-500">
+                    {errorMessage || 'This field is required'}
+                </p>
+            )} */}
 
 
         </div>
