@@ -965,12 +965,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     formattedValues[field.key] = fieldValue;
                 }
                 // After your big loop:
-                if (formattedValues.template_id) {
+                if (formattedValues.template_id){
                     formattedValues.template_id = formik.values?.template_id?.value || formik.values.template_id || null;
                 }
-                if (formattedValues.department_id) {
-                    formattedValues.department_id = formik.values?.department_id?.value || formik.values.department_id || null;
-                }
+      if (formattedValues.department_id){
+                formattedValues.department_id = formik.values?.department_id?.value || formik.values.department_id || null;
+      }
                 console.log("Final formatted values:", formattedValues);
 
                 let response;

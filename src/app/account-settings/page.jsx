@@ -450,7 +450,7 @@ const AccountSettingsPage = () => {
                                         <div className="flex gap-3">
                                             <CustomButton
                                                 type="button"
-                                                onClick={() => router.push('/voice-of-customer')}
+                                                onClick={() => router.push('/assistant')}
                                                 variant="outline"
                                                 className="px-4 py-2 text-sm border-white/30 text-white"
                                             >
