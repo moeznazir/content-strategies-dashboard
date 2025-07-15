@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import { ToggleGroup, ToggleGroupItem } from "@radix-ui/react-toggle-group";
 import { HiMenu } from "react-icons/hi";
 import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
-import { EXCLUED_PATHS, accessibleRoutes } from "../constants/constant";
+import { accessibleRoutes } from "../constants/constant";
 import Alert from "./Alert";
 import { ShowCustomToast } from "./CustomToastify";
 import { FaBuilding, FaThList, FaUserCog, FaSignOutAlt } from "react-icons/fa";
@@ -15,7 +14,6 @@ import DynamicBranding from "./DynamicLabelAndLogo";
 import { createClient } from '@supabase/supabase-js';
 import { appColors } from "@/lib/theme";
 import CustomButton from "./CustomButton";
-import AccountSettings from "../account-settings/page";
 
 const NavigationMenu = () => {
     const [selectedItem, setSelectedItem] = useState();
@@ -26,18 +24,8 @@ const NavigationMenu = () => {
     const [companies, setCompanies] = useState([]);
     const [showCompanySelect, setShowCompanySelect] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState(null);
-    const [isHoveringCompany, setIsHoveringCompany] = useState(false);
-    const [showAccountSettings, setShowAccountSettings] = useState(false);
-    const [currentEmail, setCurrentEmail] = useState('');
-    const [newEmail, setNewEmail] = useState('');
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [avatarFile, setAvatarFile] = useState(null);
-    const [avatarPreview, setAvatarPreview] = useState('');
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [showEmailChangeModal, setShowEmailChangeModal] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState(null);
+    const dropdownRef = useRef(null);
 
     const pathname = usePathname();
     const router = useRouter();
@@ -76,16 +64,30 @@ const NavigationMenu = () => {
             console.log("Error fetching companies:", error);
         }
     };
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
 
+        // Add when the dropdown is open
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+
+        // Clean up
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen]);
     useEffect(() => {
         const fetchData = async () => {
             const storedRole = localStorage.getItem("system_roles");
             const storedCompanyId = localStorage.getItem("company_id");
-            const email = localStorage.getItem("email");
 
             if (storedRole) {
                 setUserRoles(storedRole.trim());
-                setCurrentEmail(email || '');
 
                 // If user is super-admin or super-editor, fetch companies
                 if (["super-admin", "super-editor"].includes(storedRole.trim())) {
@@ -186,147 +188,7 @@ const NavigationMenu = () => {
         ShowCustomToast("Logout successfully", 'success', 2000);
     };
 
-    const handleAvatarChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setAvatarFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarPreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
-    const updateUserEmail = async () => {
-        if (!newEmail) return;
-
-        try {
-            const { error } = await supabase.auth.updateUser({ email: newEmail });
-            if (error) throw error;
-
-            // localStorage.setItem("email", newEmail);
-            setShowEmailChangeModal(true);
-            // setCurrentEmail(newEmail);
-
-        } catch (error) {
-            ShowCustomToast(error.message, 'error', 3000);
-        }
-    };
-
-    const updateUserPassword = async () => {
-
-        try {
-            const { error } = await supabase.auth.updateUser({
-                password: newPassword
-            });
-
-            if (error) throw error;
-
-            ShowCustomToast("Password updated successfully", 'success', 2000);
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-        } catch (error) {
-            ShowCustomToast(error.message, 'error', 3000);
-        }
-    };
-
-    const uploadAvatar = async () => {
-        if (!avatarFile) return;
-
-        try {
-            setIsUpdating(true);
-            const fileExt = avatarFile.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            // Upload the avatar
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, avatarFile);
-
-            if (uploadError) throw uploadError;
-
-            // Get the public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            // Update user metadata
-            const { error: updateError } = await supabase.auth.updateUser({
-                data: { avatar_url: publicUrl }
-
-            });
-            localStorage.setItem("avatar_url", publicUrl);
-            setAvatarUrl(publicUrl)
-            if (updateError) throw updateError;
-
-            ShowCustomToast("Avatar updated successfully", 'success', 2500);
-            setAvatarPreview(publicUrl);
-        } catch (error) {
-            ShowCustomToast(error.message, 'error', 3000);
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleAccountSettingsSubmit = async (e) => {
-        e.preventDefault();
-
-        try {
-            setIsUpdating(true);
-            let shouldLogoutLater = false;
-            let passwordUpdated = false;
-
-            if (newPassword !== confirmPassword) {
-                ShowCustomToast("New passwords don't match", 'error', 2000);
-                return;
-            }
-            if (currentPassword == null || currentPassword == '' || !currentPassword) {
-                ShowCustomToast("Please enter current password", 'info', 2000);
-                return;
-            }
-
-            // Update email if changed
-            if (newEmail && newEmail !== currentEmail) {
-                await updateUserEmail();
-            }
-
-            // Update password if provided
-            if (newPassword && currentPassword) {
-                // Validate password length first
-                if (newPassword.length < 6) {
-                    throw new Error("Password must be at least 6 characters");
-                }
-
-                await updateUserPassword();
-                passwordUpdated = true;
-                shouldLogoutLater = true;
-            }
-
-            // Update avatar if selected
-            if (avatarFile) {
-                await uploadAvatar();
-            }
-
-
-            // Only schedule logout if password was successfully updated
-            if (passwordUpdated && shouldLogoutLater) {
-                setTimeout(() => {
-                    ShowCustomToast("Session expired. Please login again.", 'info', 3000);
-                    handleLogout();
-                }, 5000); // 5 seconds
-            }
-
-        } catch (error) {
-            // Clear any pending logout if error occurs
-            // clearTimeout(logoutTimer);
-            ShowCustomToast(error.message, 'error', 3000);
-        } finally {
-            setIsUpdating(false);
-        }
-    };
     const filteredMenuItems = menuItems.filter(item => {
         const companyId = localStorage.getItem("company_id");
         if (item.hideForCompanyId && companyId == item.hideForCompanyId) {
@@ -384,68 +246,6 @@ const NavigationMenu = () => {
                                     disabled={!selectedCompany}
                                 >
                                     Confirm
-                                </CustomButton>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Account Settings Page */}
-                {/* {showAccountSettings && (
-                    <AccountSettings
-                        setShowAccountSettings={setShowAccountSettings}
-                        setAvatarFile={setAvatarFile}
-                        setAvatarPreview={setAvatarPreview}
-                        setNewEmail={setNewEmail}
-                        setCurrentPassword={setCurrentPassword}
-                        setNewPassword={setNewPassword}
-                        setConfirmPassword={setConfirmPassword}
-                        handleAccountSettingsSubmit={handleAccountSettingsSubmit}
-                        handleAvatarChange={handleAvatarChange}
-                        avatarUrl={avatarUrl}
-                        avatarPreview={avatarPreview}
-                        storedEmail={storedEmail}
-                        currentEmail={currentEmail}
-                        newEmail={newEmail}
-                        currentPassword={currentPassword}
-                        newPassword={newPassword}
-                        confirmPassword={confirmPassword}
-                        isUpdating={isUpdating}
-                    />
-
-                )} */}
-                {showEmailChangeModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" >
-                        <div className="rounded-lg shadow-xl max-w-md w-full p-6" style={{ backgroundColor: appColors.primaryColor }}>
-                            <div className="flex justify-between items-center mb-4 border-b ">
-                                <h3 className="text-lg font-semibold">Email Change Requested</h3>
-                                <div
-                                    onClick={() => setShowEmailChangeModal(false)}
-                                    className="text-gray-500 hover:text-gray-700"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <p>You'll need to confirm this change from BOTH emails:</p>
-                                <ol className="list-decimal pl-5 space-y-2">
-                                    <li>Check your <span className="font-semibold">{currentEmail}</span> inbox first</li>
-                                    <li>Then check <span className="font-semibold">{newEmail}</span></li>
-                                </ol>
-                                <p className="text-blue-600 text-sm">
-                                    Both confirmations are required within 24 hours.
-                                </p>
-                            </div>
-
-                            <div className="mt-6 flex justify-end space-x-3">
-                                <CustomButton
-                                    onClick={() => setShowEmailChangeModal(false)}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                                >
-                                    I Understand
                                 </CustomButton>
                             </div>
                         </div>
@@ -521,6 +321,7 @@ const NavigationMenu = () => {
 
                                 {isOpen && (
                                     <div
+                                        ref={dropdownRef}
                                         className="absolute right-0 mt-3 border border-gray-500 shadow-lg bg-[#2B2B4B] rounded-md z-50 min-w-[180px]"
                                         onClick={(e) => e.stopPropagation()}
                                     >
@@ -646,7 +447,7 @@ const NavigationMenu = () => {
                                 )}
                                 <span
                                     onClick={() => {
-                                        setShowAccountSettings(true);
+
                                         setIsMobileMenuOpen(false);
                                     }}
                                     className="block cursor-pointer px-4 py-2 font-medium text-gray-500"
