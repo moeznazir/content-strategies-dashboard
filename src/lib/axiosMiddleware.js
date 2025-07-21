@@ -3,9 +3,10 @@ import axios from 'axios';
 // Create Axios instance
 const axiosInstance = axios.create({
   baseURL: 'https://content-strategies.onrender.com',
-  timeout: 600000 ,
+  timeout: 600000,
   headers: {
     'Content-Type': 'application/json',
+    'x-api-key': 'x-api-key'
   },
 });
 

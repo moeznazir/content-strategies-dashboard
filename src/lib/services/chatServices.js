@@ -1,56 +1,118 @@
 import { ShowCustomToast } from "@/app/customComponents/CustomToastify";
 import axiosInstance from "../axiosMiddleware";
 
-export const getAllContext = async (user_id, company_id, limit) => {
+export const sendChats = async ({
+    user_id,                   // string (required)
+    context_document_ids = [],  // array of strings
+    source_document_ids = [],   // array of strings
+    uploaded_document_ids = [], // array of strings
+    add_ons = {},              // object
+    prompt_id = '',         // string
+    prompt = '',               // string (required)
+    conversation_id = ''       // string
+}) => {
     try {
-        const response = await axiosInstance.get('/get-contexts', {
-            params: { user_id, company_id, limit },
-        });
-        console.log('Context:', response.data);
-        return response.data;
-    } catch (error) {
-        return { documents: [] };
-    }
-};
-export const sendChats = async (
-    user_id,
-    company_id,
-    chat_id = 'msg123',
-    doc_ids = [],
-    prompt_id,
-    message,
-    message_id = 'msg123'
-) => {
-    try {
-        const response = await axiosInstance.post('/chat', {
-            user_id,
-            company_id,
-            chat_id,
-            doc_ids,
+        // Validate required parameters
+        if (!user_id) throw new Error('user_id is required');
+        if (!prompt) throw new Error('prompt is required');
+
+        // Create payload with exact parameter names
+        const payload = {
+            context_document_ids,
+            source_document_ids,
+            uploaded_document_ids,
+            add_ons,
             prompt_id,
-            message,
-            message_id,
-        });
+            prompt,
+            conversation_id: conversation_id || `conv-${Date.now()}`,
+            user_id
+        };
+
+        console.log('Sending chat payload:', payload);
+
+        const response = await axiosInstance.post('/chat', payload);
         return response.data;
+
     } catch (error) {
-        let message = 'Unknown error';
-    
+        console.error('Chat API Error:', error);
+
+        let errorMessage = 'Failed to send chat message';
         const errorData = error.response?.data;
-    
-        if (typeof errorData === 'string') {
-            message = errorData;
-        } else if (errorData?.detail && typeof errorData.detail === 'string') {
-            message = errorData.detail;
-        } else if (Array.isArray(errorData)) {
-            message = errorData.map(err => err.msg || JSON.stringify(err)).join('\n');
-        } else if (typeof errorData === 'object') {
-            message = JSON.stringify(errorData);
+
+        // Extract error message from different response formats
+        if (errorData?.detail) {
+            errorMessage = Array.isArray(errorData.detail)
+                ? errorData.detail.map(e => e.msg).join(', ')
+                : errorData.detail;
         } else if (error.message) {
-            message = error.message;
+            errorMessage = error.message;
         }
-    
-        ShowCustomToast(message, 'error');
+
+        ShowCustomToast(errorMessage, 'error');
         return null;
     }
-    
+};
+
+export const createSearchContextandSource = async (data) => {
+    try {
+        const response = await axiosInstance.post('/search-context', data);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating search context:', error);
+        return { error: "Failed to create search context" };
+    }
+};
+
+export const listConversations = async (user_id) => {
+    try {
+        const response = await axiosInstance.post('/list-conversations', { user_id });
+        
+        // Handle both array and object response formats
+        if (Array.isArray(response.data)) {
+            return {
+                conversations: response.data.map(conv => ({
+                    conversation_id: conv.conversation_id,
+                    title: conv.title || `Conversation ${conv.conversation_id.slice(-4)}`
+                }))
+            };
+        } else if (response.data?.data) {
+            // Handle nested data property
+            return {
+                conversations: Array.isArray(response.data.data) 
+                    ? response.data.data.map(conv => ({
+                        conversation_id: conv.conversation_id,
+                        title: conv.title || conv.conversation_title || `Conversation ${conv.conversation_id.slice(-4)}`
+                    }))
+                    : []
+            };
+        }
+        
+        return { conversations: [] };
+    } catch (error) {
+        console.error('Error fetching conversations:', error);
+        return { conversations: [] };
+    }
+};
+
+
+export const fetchConversation = async (conversationId) => {
+  try {
+    const response = await axiosInstance.post('/fetch-conversation', {
+      conversation_id: conversationId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching conversation:', error);
+    return { error: 'Failed to fetch conversation' };
+  }
+};
+
+export const optimizePrompt = async (prompt) => {
+    try {
+        const response = await axiosInstance.post('/optimize-prompt', { prompt });
+        return response.data;
+    } catch (error) {
+        console.error('Error optimizing prompt:', error);
+        return { error: "Failed to optimize prompt" };
+    }
 };

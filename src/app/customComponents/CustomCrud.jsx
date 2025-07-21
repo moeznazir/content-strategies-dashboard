@@ -880,7 +880,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     Case_Study_Other_Video: caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null,
                     company_id: localStorage.getItem('company_id'),
                     template_id: values.template_id?.value || values.template_id || null,
-                    department_id: values.department_id?.value || values.department_id || null
+                    department_id: values.department_id?.value || values.department_id || null,
+                    dynamic_fields: formik.values.dynamic_fields ||
+                        (formik.values.dynamic_fields_description ?
+                            extractFieldsFromTemplate(formik.values.dynamic_fields_description) :
+                            null)
+
                 };
 
                 const formattedValues = isDashboardForm ? formattedValuesDashboard : { company_id: localStorage.getItem('company_id'), ...values };
@@ -965,12 +970,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     formattedValues[field.key] = fieldValue;
                 }
                 // After your big loop:
-                if (formattedValues.template_id){
+                if (formattedValues.template_id) {
                     formattedValues.template_id = formik.values?.template_id?.value || formik.values.template_id || null;
                 }
-      if (formattedValues.department_id){
-                formattedValues.department_id = formik.values?.department_id?.value || formik.values.department_id || null;
-      }
+                if (formattedValues.department_id) {
+                    formattedValues.department_id = formik.values?.department_id?.value || formik.values.department_id || null;
+                }
                 console.log("Final formatted values:", formattedValues);
 
                 let response;
@@ -1462,6 +1467,18 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setChallengesEntries(validatedChallengesEntries);
         setSalesInsightsEntries(validatedSalesInsightsEntries);
 
+        try {
+            // If dynamic_fields_description exists but dynamic_fields doesn't, extract fields
+            if (formik.values.dynamic_fields_description && !formik.values.dynamic_fields) {
+                const fields = extractFieldsFromTemplate(formik.values.dynamic_fields_description);
+                formik.setFieldValue('dynamic_fields', fields);
+            }
+
+            // Rest of your submission logic...
+            await formik.submitForm();
+        } catch (error) {
+            console.error("Form submission error:", error);
+        }
         // setTimeout(async () => {
         //     const errors = await formik.validateForm();
         //     if (Object.keys(errors).length > 0) {
@@ -1651,6 +1668,40 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         placeholder={field.placeholder || `Select ${field.label}...`}
                                                         className="w-full mb-2"
                                                     />
+                                                ) : field.type === "textarea" ? (
+                                                    <div>
+                                                        {/* <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            {field.label}:
+                                                        </label> */}
+                                                        <textarea
+                                                            name={field.key}
+                                                            value={formik.values[field.key] || ""}
+                                                            onChange={(e) => {
+                                                                formik.handleChange(e);
+                                                                if (field.onChange) {
+                                                                    field.onChange(e, formik.values, formik.setValues);
+                                                                }
+                                                            }}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md 
+                                                            focus:outline-none focus:ring-1 focus:ring-[#1a1b41] bg-[#1A1B41]
+                                                            focus:border-gray-300  transition"
+                                                            placeholder={field.placeholder}
+                                                            rows={field.rows || 4}
+                                                        />
+                                                        {formik.errors[field.key] && (
+                                                            <p className="text-red-500 text-sm">{formik.errors[field.key]}</p>
+                                                        )}
+                                                    </div>
+                                                ) : field.type === "readonly" ? (
+                                                    <div>
+                                                        {/* <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                            {field.label}:
+                                                        </label> */}
+                                                        <div className="w-full p-2 border rounded bg-gray-100 bg-[#1A1B41]">
+                                                            {field.value(formik.values)}
+                                                        </div>
+                                                    </div>
                                                 ) : field.type === "image" ? (
                                                     <>
                                                         <input

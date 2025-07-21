@@ -46,14 +46,11 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
     };
 
     return (
-        <th 
+        <th
             ref={(node) => ref(drop(node))}
             className={`
             px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
           ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
-          ${(column.id === 'dept_name') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
-          ${(column.id === 'temp_name') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
-          ${(column.id === 'doc_title') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
           ${(column.id === 'action') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
           ${(column.id === 'company_specific') ? 'left-0 px-6 z-25' : ''}
           ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
@@ -647,7 +644,7 @@ const DraggableTable = ({
                                     ))}
                                     <td className="sticky right-0  px-0 z-10">
                                         <div className="flex gap-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            {showActions && !isEndUser && !isSuperEditor && (
+                                            {showActions && !isEndUser && (
                                                 <>
                                                     {onEdit && (
                                                         <button
