@@ -1,7 +1,8 @@
+import { createSearchContext, createSearchContextandSource } from '@/lib/services/chatServices';
 import { appColors } from '@/lib/theme';
 import { useState, useEffect } from 'react';
 
-const ContextModal = ({ showContextModal, setShowContextModal }) => {
+const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect }) => {
     // State for Context Modals
     const [contentTypeOpen, setContentTypeOpen] = useState(true);
     const [challengesOpen, setChallengesOpen] = useState(true);
@@ -16,6 +17,7 @@ const ContextModal = ({ showContextModal, setShowContextModal }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showInfo, setShowInfo] = useState(true);
     const isSubmitEnabled = searchQuery.trim()
+    const [contactDocuments, setContactDocuments] = useState([]);
 
     // Dummy data for manual search
     const contentTypes = [
@@ -33,13 +35,6 @@ const ContextModal = ({ showContextModal, setShowContextModal }) => {
         { id: 'ch2', name: 'Agent Productivity' },
         { id: 'ch3', name: 'Cost Reduction' },
         { id: 'ch4', name: 'Technology Integration' }
-    ];
-
-    const contactDocuments = [
-        { id: 'doc1', title: 'POV: Contact Centers as an Investable Value Engine' },
-        { id: 'doc2', title: 'We Know That We Need to Know What We Don\'t Know' },
-        { id: 'doc3', title: 'Contact Center Agents\' Perspective on AI' },
-
     ];
 
     const handleContentTypeChange = (typeId) => {
@@ -64,6 +59,28 @@ const ContextModal = ({ showContextModal, setShowContextModal }) => {
                 ? prev.filter(id => id !== docId)
                 : [...prev, docId]
         );
+    };
+    const handleDocumentClick = (doc) => {
+        if (!doc?.id) {
+            console.error('Invalid document ID:', doc);
+            return;
+        }
+
+        // Ensure we have both id and title
+        const docId = doc.id;
+        const docTitle = doc.title || 'Untitled Document';
+
+        // Update local selected documents state
+        setSelectedDocuments(prev =>
+            prev.includes(docId)
+                ? prev.filter(id => id !== docId)
+                : [...prev, docId]
+        );
+
+        // Notify parent component
+        if (onDocSelect) {
+            onDocSelect(docId, docTitle);
+        }
     };
 
     // Dynamic title for results
@@ -97,21 +114,56 @@ const ContextModal = ({ showContextModal, setShowContextModal }) => {
             setFilteredDocuments(results);
         }
     }, [selectedContentTypes, selectedChallenges, contactDocuments]);
-    const handleSubmitAISearch = () => {
+
+    const handleSubmitAISearch = async () => {
         if (!searchQuery || isLoading) return;
-        setHasSearchedAISearch(true); // simulate response
-        // Simulate fake search results
-        setIsLoading(true);
-        setTimeout(() => {
+
+        try {
+            setIsLoading(true);
+
+            const payload = {
+                user_id: localStorage.getItem('current_user_id'),
+                query: searchQuery
+            };
+
+            const response = await createSearchContextandSource(payload);
+
+            // Handle the response format shown in your screenshot
+            if (response.status === 200 && Array.isArray(response.data)) {
+                setSearchResults(response.data.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    type: item.type
+                })));
+                setHasSearchedAISearch(true);
+            } else {
+                throw new Error('Unexpected response format');
+            }
+
+        } catch (error) {
+            console.error('Search Error:', error);
+
+            // Fallback to sample results for demo purposes
             setSearchResults([
-                { doc_id: 'ai1', title: 'AI Search Result 1' },
-                { doc_id: 'ai2', title: 'AI Search Result 2' },
-                { doc_id: 'ai3', title: 'AI Search Result 3' }
+                { id: 'ai1', title: 'Sample Result 1', type: 'voc' },
+                { id: 'ai2', title: 'Sample Result 2', type: 'doc' }
             ]);
             setHasSearchedAISearch(true);
+
+        } finally {
             setIsLoading(false);
-        }, 1000);
+        }
     };
+
+    const clearSearchState = () => {
+        setSearchQuery('');
+        setSearchResults([]);
+        setSelectedDocuments([]);
+        setHasSearchedAISearch(false);
+        setSelectedContentTypes([]);
+        setSelectedChallenges([]);
+    };
+
     return (
         <>
             {showContextModal && (
@@ -130,21 +182,6 @@ const ContextModal = ({ showContextModal, setShowContextModal }) => {
                                         1
                                     </div>
                                 </div>
-
-                                {/* Connecting line */}
-                                {/* <div
-                                    className={`w-12 h-[1px] ${searchMethod === 'manual' ? 'bg-blue-500' : 'bg-gray-300'
-                                        }`}
-                                ></div> */}
-
-                                {/* Step 2 */}
-                                {/* <div className="flex flex-col items-center">
-                                    <div
-                                        className={`w-5 h-5 rounded-full flex items-center justify-center text-sm font-bold border-2  ${searchMethod === 'manual' ? 'bg-blue-500 text-white border-blue-300' : 'bg-white text-black border-gray-400'}`}
-                                    >
-                                        2
-                                    </div>
-                                </div> */}
                             </div>
 
                             {/* Step labels */}
@@ -238,7 +275,7 @@ const ContextModal = ({ showContextModal, setShowContextModal }) => {
                                 {/* STEP 1 - AI Search */}
                                 {searchMethod === 'ai' && (
                                     <div className="mt-6">
-                                        <h3 className="text-lg text-center font-semibold mb-2">Search and select a Resource</h3>
+                                        <h3 className="text-lg text-center font-semibold mb-2">Search and select a Context</h3>
 
                                         {/* INPUT FIELD */}
                                         <div className="flex items-center gap-2">
@@ -292,30 +329,36 @@ const ContextModal = ({ showContextModal, setShowContextModal }) => {
                                                     onClick={() => setIsSearchResultsOpen(!isSearchResultsOpen)}
                                                 >
                                                     <span className="text-blue-700 text-sm">{isSearchResultsOpen ? '▼' : '▶'}</span>
-                                                    <h3 className="font-medium ml-2 text-sm text-blue-400">Search Results</h3>
+                                                    <h3 className="font-medium ml-2 text-sm text-blue-400">Context Documents</h3>
                                                     <span className="ml-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">
                                                         {searchResults.length} docs
                                                     </span>
                                                 </div>
 
                                                 {isSearchResultsOpen && (
-                                                    <div className="max-h-[170px] overflow-y-auto ml-4 mr-4 grid grid-cols-1 gap-1.5 ">
+                                                    <div className="max-h-[170px] overflow-y-auto ml-4 mr-4 grid grid-cols-1 gap-1.5">
                                                         {searchResults.map((doc) => (
                                                             <div
-                                                                key={doc.doc_id}
+                                                                key={doc.id}
                                                                 className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
-                                                                onClick={() => handleDocSelect(doc.doc_id, doc.title)}
+
+                                                                onClick={() => handleDocumentClick(doc)}
                                                             >
                                                                 <svg width="20" height="20" viewBox="0 0 48 48">
                                                                     <g transform="translate(10, 10)" fill="orange" fillOpacity="0.8">
                                                                         <rect y="0" width="34" height="4" rx="1" />
                                                                         <rect y="6" width="34" height="4" rx="1" />
                                                                         <rect y="12" width="34" height="4" rx="1" />
-                                                                        <rect y="18" width="34" height="4" rx="1" />
-                                                                        <rect y="24" width="34" height="4" rx="1" />
                                                                     </g>
                                                                 </svg>
-                                                                <span className="text-xs text-white/90">{doc.title}</span>
+                                                                <div className="flex-1">
+                                                                    <div className="text-xs text-white/90">{doc.title}</div>
+                                                                    {doc.type && (
+                                                                        <div className="text-[10px] text-gray-400 mt-1">
+                                                                            Type: {doc.type.toUpperCase()}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -422,9 +465,18 @@ const ContextModal = ({ showContextModal, setShowContextModal }) => {
                             >
                                 Cancel
                             </button>
-                            <button className="bg-blue-600 hover:bg-blue-700 text-[13px] text-white px-4 py-1 rounded-md">
+                            <button
+                                className={`bg-blue-600 hover:bg-blue-700 text-[13px] text-white px-4 py-1 rounded-md 
+    ${selectedDocuments.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                disabled={selectedDocuments.length === 0}
+                                onClick={() => {
+                                    clearSearchState();
+                                    setShowContextModal(false);
+                                }}
+                            >
                                 Use Template
                             </button>
+
                         </div>
                     </div>
                 </div>

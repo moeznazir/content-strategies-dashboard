@@ -8,7 +8,7 @@ import CustomCrudForm from "../customComponents/CustomCrud";
 import Alert from "../customComponents/Alert";
 import SearchByDateModal from "../customComponents/SearchByDateModal";
 import CustomInput from "../customComponents/CustomInput";
-import { debounce } from "@/lib/utils";
+import { debounce, extractFieldsFromTemplate } from "@/lib/utils";
 import DynamicBranding from "../customComponents/DynamicLabelAndLogo";
 
 
@@ -69,9 +69,10 @@ const ManageLibrary = () => {
             { label: "Actions", id: "action" },
         ],
         documents: [
-            { label: "Document Title", id: "doc_title" },
-            { label: "Template Name", id: "temp_name" },
+            { label: "Prompt Title", id: "doc_title" },
+            { label: "Prompt Name", id: "temp_name" },
             { label: "Description", id: "doc_details" },
+            { label: "Propmpt Template", id: "dynamic_fields_description" },
             { label: "Actions", id: "action" },
         ]
     };
@@ -96,7 +97,7 @@ const ManageLibrary = () => {
 
         ],
         documents: [
-            { label: "Document Name", key: "doc_title", placeholder: "Enter document title", type: "text", required: true },
+            { label: "Prompt Title", key: "doc_title", placeholder: "Enter prompt title", type: "text", required: true },
             {
                 label: "Template Name",
                 key: "template_id",
@@ -105,7 +106,42 @@ const ManageLibrary = () => {
                 options: templateOptions,
                 required: true
             },
-            { label: "Document Details", key: "doc_details", placeholder: "Enter document details (JSON)", type: "json", required: true },
+            { label: "Prompt Details", key: "doc_details", placeholder: "Enter prompt details", type: "json", required: true },
+            {
+                label: "Prompt Template",
+                key: "dynamic_fields_description",
+                placeholder: "Enter your template with {placeholders}",
+                type: "textarea",
+                rows: 10,
+                onChange: (e, formData, setFormData) => {
+                    // Extract fields when template changes
+                    const fields = extractFieldsFromTemplate(e.target.value);
+                    setFormData({
+                        ...formData,
+                        dynamic_fields_description: e.target.value,
+                        dynamic_fields: fields
+                    });
+                }
+            },
+            {
+                label: "Dynamic Fields (auto-generated)",
+                key: "dynamic_fields",
+                type: "readonly",
+                value: (formData) => {
+                    // First ensure dynamic_fields exists and is an array
+                    const fields = formData.dynamic_fields;
+
+                    if (!fields) return ""; // Return empty string if undefined/null
+
+                    // Convert to array if it's a string (like from JSON)
+                    const fieldsArray = Array.isArray(fields) ? fields :
+                        typeof fields === 'string' ? JSON.parse(fields) :
+                            [];
+
+                    // Now safely join the array
+                    return fieldsArray.join(", ");
+                }
+            }
         ]
     };
 
@@ -125,7 +161,7 @@ const ManageLibrary = () => {
             .order('dept_name', { ascending: true });
 
         if (error) {
-            console.error('Error fetching departments:', error);
+            console.log('Error fetching departments:', error);
             return [];
         }
 
@@ -143,7 +179,7 @@ const ManageLibrary = () => {
             .order('temp_name', { ascending: true });
 
         if (error) {
-            console.error('Error fetching templates:', error);
+            console.log('Error fetching templates:', error);
             return [];
         }
 
@@ -225,7 +261,7 @@ const ManageLibrary = () => {
                 message: err.message,
                 details: err.details,
             });
-            Alert.show('Error', `Failed to fetch data: ${err.message}`);
+            // Alert.show('Error', `Failed to fetch data: ${err.message}`);
         } finally {
             loadingState(false);
             if (!isLoadMore) setIsSearchActive(false);
@@ -291,6 +327,9 @@ const ManageLibrary = () => {
             setCurrentEditingTemplate(item);
             setShowEditTemplateModal(true);
         } else if (activeTab === 'documents') {
+            if (item.dynamic_fields_description && !item.dynamic_fields) {
+                item.dynamic_fields = extractFieldsFromTemplate(item.dynamic_fields_description);
+            }
             setCurrentEditingDocument(item);
             setShowEditDocumentModal(true);
         }
@@ -411,7 +450,7 @@ const ManageLibrary = () => {
             case 'templates':
                 return "Add Template";
             case 'documents':
-                return "Add Document";
+                return "Add Prompt";
             default:
                 return "Add";
         }
@@ -448,10 +487,11 @@ const ManageLibrary = () => {
                                     className={`px-4 py-2 text-sm font-medium ${activeTab === tab ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-400 hover:text-white'}`}
                                     onClick={() => setActiveTab(tab)}
                                 >
-                                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                    {tab === 'documents' ? 'Prompts' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                                 </button>
                             ))}
                         </div>
+
 
                         {/* Search Bar with Clear Button */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -470,9 +510,10 @@ const ManageLibrary = () => {
                                             debouncedSearch(e.target.value);
                                         }}
                                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full bg-white/10 placeholder-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder={`Search ${activeTab}...`}
+                                        placeholder={`Search ${activeTab === 'documents' ? 'Prompts' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}...`}
                                     />
                                 </div>
+
 
                                 {/* Clear Search Button - only visible when there's something to clear */}
                                 {(searchText) && (
@@ -695,8 +736,8 @@ const ManageLibrary = () => {
                     setCurrentPage={setCurrentPage}
                     fetchUsers={fetchData}
                     tableName="library_modal_documents"
-                    createRecord="Add Document"
-                    updateRecord="Edit Document"
+                    createRecord="Add Prompt"
+                    updateRecord="Edit Prompt"
                     formatedValueDashboard={false}
                     formatedValueFiles={false}
                     isFilesData={false}
@@ -717,8 +758,8 @@ const ManageLibrary = () => {
                     setCurrentPage={setCurrentPage}
                     fetchUsers={fetchData}
                     tableName="library_modal_documents"
-                    createRecord="Add Document"
-                    updateRecord="Edit Document"
+                    createRecord="Add Prompt"
+                    updateRecord="Edit Prompt"
                     formatedValueDashboard={false}
                     formatedValueFiles={false}
                     isFilesData={false}
