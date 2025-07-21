@@ -528,7 +528,11 @@ const Assistant = () => {
                         className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar"
                         style={{ maxHeight: '65vh' }}
                     >
-                        {currentMessages.length > 0 ? (
+                        {isLoading ? (
+                            <div className="h-full flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                            </div>
+                        ) : currentMessages.length > 0 ? (
                             currentMessages.map((msg, index) => (
                                 <div key={`${msg.id}-${index}`} className="w-full space-y-4 mb-6">
                                     <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
