@@ -35,6 +35,8 @@ const SINGLESELECT_FIELDS = [
     // "Guest Role",
     "Videos",
     "file_type",
+    "content_categories",
+    "market_categories",
     "category",
     "template_id",
     "department_id"
@@ -206,7 +208,37 @@ const OPTIONS = {
         { value: "Marketing", label: "Marketing" },
         { value: "Other", label: "Other" }
     ],
-
+    "market_categories": [
+        { value: "Industry", label: "Industry", count: 0 },
+        { value: "Competitive", label: "Competitive", count: 0 },
+        { value: "Persona", label: "Persona", count: 0 },
+        { value: "Individual", label: "Individual", count: 0 }
+      ],
+      "content_categories": [
+        { value: "Academic Publications and White Papers", label: "Academic Publications and White Papers", count: 0 },
+        { value: "Articles", label: "Articles", count: 0 },
+        { value: "Case Studies and Success Stories", label: "Case Studies and Success Stories", count: 0 },
+        { value: "Competitor Marketing Materials", label: "Competitor Marketing Materials", count: 0 },
+        { value: "Conference Presentations and Industry Events", label: "Conference Presentations and Industry Events", count: 0 },
+        { value: "CRM and Sales Data", label: "CRM and Sales Data", count: 0 },
+        { value: "Customer and Market Survey Feedback", label: "Customer and Market Survey Feedback", count: 0 },
+        { value: "Digital and Social Media", label: "Digital and Social Media", count: 0 },
+        { value: "eBooks", label: "eBooks", count: 0 },
+        { value: "Financial Reports and Analyst Research", label: "Financial Reports and Analyst Research", count: 0 },
+        { value: "Industry Research Content", label: "Industry Research Content", count: 0 },
+        { value: "Job Postings and Organizational Intelligence", label: "Job Postings and Organizational Intelligence", count: 0 },
+        { value: "News and Current Events", label: "News and Current Events", count: 0 },
+        { value: "Partnership and Ecosystem Intelligence", label: "Partnership and Ecosystem Intelligence", count: 0 },
+        { value: "Patent Filings and Intellectual Property", label: "Patent Filings and Intellectual Property", count: 0 },
+        { value: "Press Releases and Company Announcements", label: "Press Releases and Company Announcements", count: 0 },
+        { value: "Product Reviews and Customer Feedback", label: "Product Reviews and Customer Feedback", count: 0 },
+        { value: "Regulatory Filings and Government Data", label: "Regulatory Filings and Government Data", count: 0 },
+        { value: "Reports", label: "Reports", count: 0 },
+        { value: "Social Media and Digital Presence", label: "Social Media and Digital Presence", count: 0 },
+        { value: "Social Media Posts", label: "Social Media Posts", count: 0 },
+        { value: "Transcripts", label: "Transcripts", count: 0 },
+        { value: "Video and Multimedia", label: "Video and Multimedia", count: 0 }
+      ]
 
 };
 
@@ -791,6 +823,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             }
         }
     });
+    // Add this useEffect to sync themeEntries with Formik values
+  
+
+    // Do the same for other entry types (objections, validations, etc.)
     useEffect(() => {
         console.log("Entity data on edit:", entityData);
         console.log("Initial values:", initialValues);
@@ -817,6 +853,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
+
+                console.log('THEMEE DATATATATA', themesData);
                 let objectionData = null;
                 if (objectionEntries.length > 0) {
                     objectionData = objectionEntries.map(entry => ({
@@ -929,7 +967,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                     });
 
                                 if (uploadError) {
-                                    console.error(`Upload failed for ${field.key}:`, uploadError);
+                                    console.log(`Upload failed for ${field.key}:`, uploadError);
                                     throw uploadError;
                                 }
 
@@ -958,7 +996,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 continue;
                             }
                         } catch (error) {
-                            console.error(`File processing failed for ${field.key}:`, error);
+                            console.log(`File processing failed for ${field.key}:`, error);
                             formattedValues[field.key] = null;
                             continue;
                         }
@@ -981,7 +1019,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 let response;
                 // ✅ Force file_type, category, and tags into valid arrays for jsonb
                 if (isFilesData) {
-                    ['file_type', 'category', 'tags'].forEach((key) => {
+                    ['file_type', 'category', 'tags','market_categories','content_categories'].forEach((key) => {
                         if (!(key in formattedValues)) return;
                         const val = formattedValues[key];
 
@@ -1055,7 +1093,35 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             }
         },
     });
-
+    useEffect(() => {
+        // Only set fields that exist in formik.values
+        if ('Themes' in formik.values) {
+          formik.setFieldValue('Themes', themeEntries.length > 0 ? themeEntries : null);
+        }
+        if ('Validations' in formik.values) {
+          formik.setFieldValue('Validations', validationEntries.length > 0 ? validationEntries : null);
+        }
+        if ('Challenges' in formik.values) {
+          formik.setFieldValue('Challenges', challengesEntries.length > 0 ? challengesEntries : null);
+        }
+        if ('Sales Insights' in formik.values) {
+          formik.setFieldValue('Sales Insights', salesInsightsEntries.length > 0 ? salesInsightsEntries : null);
+        }
+        if ('Case_Study_Other_Video' in formik.values) {
+          formik.setFieldValue('Case_Study_Other_Video', caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null);
+        }
+        if ('Objections' in formik.values) {
+          formik.setFieldValue('Objections', objectionEntries.length > 0 ? objectionEntries : null);
+        }
+      }, [
+        themeEntries,
+        validationEntries,
+        challengesEntries,
+        salesInsightsEntries,
+        caseStudyVideoEntries,
+        objectionEntries,
+        formik.values
+      ]);
     //Themes Handlers
     const handleAddTheme = () => {
         // if (!currentTheme || !currentRanking || !currentJustification) {
@@ -1477,7 +1543,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             // Rest of your submission logic...
             await formik.submitForm();
         } catch (error) {
-            console.error("Form submission error:", error);
+            console.log("Form submission error:", error);
         }
         // setTimeout(async () => {
         //     const errors = await formik.validateForm();
@@ -1489,7 +1555,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         // }, 0);
 
     };
-
+    console.log('OPTIONS:', OPTIONS['Themes']);
+    console.log('Current Theme:', currentTheme);
+    console.log('Theme Entries:', themeEntries);
     console.log("Vhalllll", displayFields);
     return (
         <>
@@ -1501,7 +1569,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         <hr className="border-t border-gray-300 mb-6 mt-[10px] -mx-4" />
                     </h2>
                     <form onSubmit={formik.handleSubmit} className="border rounded-lg p-4 -mt-[10px]">
-                        <div className="max-h-[60vh] overflow-y-auto pr-2">
+                        <div className="max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
                                     {![
@@ -1565,7 +1633,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                     )}
                                                 </label>
 
-                                                {(field.key === 'file_type' || field.key === 'category') ? (
+                                                {(field.key === 'file_type' || field.key === 'category' || field.key ==='content_categories'  || field.key === 'market_categories') ? (
                                                     MULTISELECT_FIELDS.includes(field.key) ? (
                                                         <CustomSelect
                                                             key={`${field.key}-${JSON.stringify(formik.values[field.key])}`} // Force re-render
@@ -1698,7 +1766,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         {/* <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                             {field.label}:
                                                         </label> */}
-                                                        <div className="w-full p-2 border rounded bg-gray-100 bg-[#1A1B41]">
+                                                        <div className="w-full p-2 border rounded bg-gray-100"style={{ backgroundColor: appColors.primaryColor }}>
                                                             {field.value(formik.values)}
                                                         </div>
                                                     </div>

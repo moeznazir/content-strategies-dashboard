@@ -25,7 +25,7 @@ export const fetchCategoryLabels = async () => {
 
     return data;
   } catch (error) {
-    console.error("Fetch error:", error);
+    console.log("Fetch error:", error);
     return [];
   }
 };

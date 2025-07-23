@@ -34,7 +34,7 @@ export const sendChats = async ({
         return response.data;
 
     } catch (error) {
-        console.error('Chat API Error:', error);
+        console.log('Chat API Error:', error);
 
         let errorMessage = 'Failed to send chat message';
         const errorData = error.response?.data;
@@ -58,7 +58,7 @@ export const createSearchContextandSource = async (data) => {
         const response = await axiosInstance.post('/search-context', data);
         return response.data;
     } catch (error) {
-        console.error('Error creating search context:', error);
+        console.log('Error creating search context:', error);
         return { error: "Failed to create search context" };
     }
 };
@@ -89,7 +89,7 @@ export const listConversations = async (user_id) => {
         
         return { conversations: [] };
     } catch (error) {
-        console.error('Error fetching conversations:', error);
+        console.log('Error fetching conversations:', error);
         return { conversations: [] };
     }
 };
@@ -102,7 +102,7 @@ export const fetchConversation = async (conversationId) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching conversation:', error);
+    console.log('Error fetching conversation:', error);
     return { error: 'Failed to fetch conversation' };
   }
 };
@@ -112,7 +112,7 @@ export const optimizePrompt = async (prompt) => {
         const response = await axiosInstance.post('/optimize-prompt', { prompt });
         return response.data;
     } catch (error) {
-        console.error('Error optimizing prompt:', error);
+        console.log('Error optimizing prompt:', error);
         return { error: "Failed to optimize prompt" };
     }
 };
