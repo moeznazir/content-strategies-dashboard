@@ -257,7 +257,7 @@ const ManageLibrary = () => {
             setCurrentPage(page);
 
         } catch (err) {
-            console.error("Fetch error:", {
+            console.log("Fetch error:", {
                 message: err.message,
                 details: err.details,
             });

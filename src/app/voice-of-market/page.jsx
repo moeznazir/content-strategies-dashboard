@@ -44,16 +44,16 @@ const VoiceOfMarket = () => {
         { label: "Thumbnail", id: "thumbnail" },
         { label: "File Name", id: "file_name" },
         // { label: "File", id: "file" },
-
         { label: "File Type", id: "file_type" },
         { label: "Category", id: "category" },
+        { label: "Market Categories", id: "market_categories" },
+        { label: "Content Categories", id: "content_categories" },
         { label: "Description", id: "description" },
-
         { label: "Tag", id: "tags" },
         { label: "Actions", id: "action" },
     ];
 
-    const arrayFields = ["category", "file_type", "tags"];
+    const arrayFields = ["category", "file_type", "tags", "market_categories", "content_categories"];
     const [filterOptions, setFilterOptions] = useState({
         file_type: [
             { value: "Document", label: "Document", count: 0 },
@@ -66,7 +66,38 @@ const VoiceOfMarket = () => {
             { value: "Archive", label: "Archive", count: 0 },
             { value: "Other", label: "Other", count: 0 }
         ],
-        category: []
+        category: [],
+        market_categories: [
+            { value: "Industry", label: "Industry", count: 0 },
+            { value: "Competitive", label: "Competitive", count: 0 },
+            { value: "Persona", label: "Persona", count: 0 },
+            { value: "Individual", label: "Individual", count: 0 }
+        ],
+        content_categories: [
+            { value: "Academic Publications and White Papers", label: "Academic Publications and White Papers", count: 0 },
+            { value: "Articles", label: "Articles", count: 0 },
+            { value: "Case Studies and Success Stories", label: "Case Studies and Success Stories", count: 0 },
+            { value: "Competitor Marketing Materials", label: "Competitor Marketing Materials", count: 0 },
+            { value: "Conference Presentations and Industry Events", label: "Conference Presentations and Industry Events", count: 0 },
+            { value: "CRM and Sales Data", label: "CRM and Sales Data", count: 0 },
+            { value: "Customer and Market Survey Feedback", label: "Customer and Market Survey Feedback", count: 0 },
+            { value: "Digital and Social Media", label: "Digital and Social Media", count: 0 },
+            { value: "eBooks", label: "eBooks", count: 0 },
+            { value: "Financial Reports and Analyst Research", label: "Financial Reports and Analyst Research", count: 0 },
+            { value: "Industry Research Content", label: "Industry Research Content", count: 0 },
+            { value: "Job Postings and Organizational Intelligence", label: "Job Postings and Organizational Intelligence", count: 0 },
+            { value: "News and Current Events", label: "News and Current Events", count: 0 },
+            { value: "Partnership and Ecosystem Intelligence", label: "Partnership and Ecosystem Intelligence", count: 0 },
+            { value: "Patent Filings and Intellectual Property", label: "Patent Filings and Intellectual Property", count: 0 },
+            { value: "Press Releases and Company Announcements", label: "Press Releases and Company Announcements", count: 0 },
+            { value: "Product Reviews and Customer Feedback", label: "Product Reviews and Customer Feedback", count: 0 },
+            { value: "Regulatory Filings and Government Data", label: "Regulatory Filings and Government Data", count: 0 },
+            { value: "Reports", label: "Reports", count: 0 },
+            { value: "Social Media and Digital Presence", label: "Social Media and Digital Presence", count: 0 },
+            { value: "Social Media Posts", label: "Social Media Posts", count: 0 },
+            { value: "Transcripts", label: "Transcripts", count: 0 },
+            { value: "Video and Multimedia", label: "Video and Multimedia", count: 0 }
+        ]
     });
     const fileCrudDetails = [
         { label: "Thumbnail", key: "thumbnail", placeholder: "Upload thumbnail (optional)", type: "image" },
@@ -75,6 +106,8 @@ const VoiceOfMarket = () => {
         { label: "File Link", key: "file_link", placeholder: "Enter file link to upload", type: "file", required: true },
         { label: "File Type", key: "file_type", placeholder: "Select file type", type: "select", required: true },
         { label: "Category", key: "category", placeholder: "Select category", type: "select", required: true, options: filterOptions.category },
+        { label: "Market Categories", key: "market_categories", placeholder: "Select market categories", type: "select", required: true },
+        { label: "Content Categories", key: "content_categories", placeholder: "Select content_categories", type: "select", required: true },
         { label: "Date Recorded", key: "uploaded_at", placeholder: "Select date", type: "date", required: true },
         { label: "Description", key: "description", placeholder: "Enter file description", type: "textarea", required: true },
         { label: "Tags", key: "tags", placeholder: "Enter tags (comma separated)", type: "text" }
@@ -83,7 +116,9 @@ const VoiceOfMarket = () => {
 
     const [selectedFilters, setSelectedFilters] = useState({
         "file_type": [],
-        "category": []
+        "category": [],
+        "market_categories": [],
+        "content_categories": []
     });
 
 
@@ -126,6 +161,8 @@ const VoiceOfMarket = () => {
                 search_term: searchText.trim() || null,
                 file_types_json: selectedFilters["file_type"]?.length ? selectedFilters["file_type"] : null,
                 categories_json: selectedFilters["category"]?.length ? selectedFilters["category"] : null,
+                market_categories_json: selectedFilters["market_categories"]?.length ? selectedFilters["market_categories"] : null,
+                content_categories_json: selectedFilters["content_categories"]?.length ? selectedFilters["content_categories"] : null,
                 from_date: fromDateISO,
                 to_date: toDateISO,
                 current_user_id: localStorage.getItem('current_user_id'),
@@ -164,6 +201,8 @@ const VoiceOfMarket = () => {
 
                 // Format known JSONB fields for display
                 formattedItem.file_type_display = formatArrayField(formattedItem.file_type);
+                formattedItem.market_categories = formatArrayField(formattedItem.market_categories);
+                formattedItem.content_categories = formatArrayField(formattedItem.content_categories);
                 formattedItem.category_display = formatArrayField(formattedItem.category);
                 formattedItem.tags_display = formatArrayField(formattedItem.tags);
 
@@ -213,7 +252,7 @@ const VoiceOfMarket = () => {
         try {
             const { data, error } = await supabase.rpc('get_filter_counts_voice_of_market', {
                 current_user_id: localStorage.getItem('current_user_id'),
-                input_company_id: localStorage.getItem('company_id'), 
+                input_company_id: localStorage.getItem('company_id'),
             });
 
             if (error) {
@@ -224,7 +263,9 @@ const VoiceOfMarket = () => {
             // Initialize counts object
             const counts = {
                 "file_type": {},
-                "category": {}
+                "category": {},
+                "content_categories": {},
+                "market_categories": {}
             };
 
             // Process the counts data
@@ -381,7 +422,9 @@ const VoiceOfMarket = () => {
         setSearchText("");
         setSelectedFilters({
             "file_type": [],
-            "category": []
+            "category": [],
+            "market_categories": [],
+            "content_categories": []
         });
         setFromDate("");
         setToDate("");
@@ -547,7 +590,10 @@ const VoiceOfMarket = () => {
                             ? 'File Type'
                             : field === 'category'
                                 ? 'Category'
-                                : field;
+                                : field === 'content_categories' ?
+                                    'Content Categories' :
+                                    field === 'market_categories' ?
+                                        'Market Categories' : field;
                         return (
                             <MultiSelectDropdown
                                 key={field}
@@ -659,7 +705,7 @@ const VoiceOfMarket = () => {
                 />
             )}
         </div>
-        
+
     );
 };
 

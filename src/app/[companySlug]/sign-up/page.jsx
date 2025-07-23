@@ -57,7 +57,7 @@ const Signup = () => {
                 setCompany(data);
             } catch (error) {
                 setCompanyError("Error loading company information");
-                console.error("Error fetching company:", error);
+                console.log("Error fetching company:", error);
             }
         };
 

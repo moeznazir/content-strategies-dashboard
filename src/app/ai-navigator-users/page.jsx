@@ -146,7 +146,7 @@ const AiNavigatorUserManagement = () => {
     const result = await updateUserStatus(currentUser.id, accountStatus);
 
     if (result?.error) {
-      console.error("Error updating status:", result.error);
+      console.log("Error updating status:", result.error);
     } else {
       Alert.show("Success", `User has been ${accountStatus}.`, [{ text: "OK", primary: true }]);
 
@@ -318,7 +318,7 @@ const AiNavigatorUserManagement = () => {
                 onClick={() => setShowEditModal(false)}
               />
               <CustomButton
-                title={" Update Roles"}
+                title={" Update Status"}
                 onClick={handleUpdateStatus}
               />
 

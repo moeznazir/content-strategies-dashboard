@@ -435,7 +435,7 @@ const DraggableTable = ({
                                                         className="w-10 h-10 rounded-full object-cover"
                                                     />
                                                 </div>
-                                            ) : column.id === "title_roles" || column.id === "system_roles" || column.id === 'file_type' || column.id === 'category' || column.id === 'tags' || column.id === 'account_status' ? (
+                                            ) : column.id === "title_roles" || column.id === "system_roles" || column.id === 'file_type' || column.id === 'category' || column.id === 'tags' || column.id === 'account_status' || column.id ==='market_categories' || column.id === 'content_categories' ? (
                                                 <div className="flex flex-wrap gap-1">
                                                     {(Array.isArray(row[column.id])
                                                         ? row[column.id]

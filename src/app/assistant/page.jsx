@@ -78,7 +78,7 @@ const Assistant = () => {
                 setConversations(validConversations);
 
             } catch (error) {
-                console.error('Failed to load conversations:', error);
+                console.log('Failed to load conversations:', error);
                 ShowCustomToast('Failed to load conversations', 'error');
             } finally {
                 setIsLoading(false);
@@ -116,7 +116,7 @@ const Assistant = () => {
                         ShowCustomToast('Failed to optimize prompt', 'error');
                     }
                 } catch (error) {
-                    console.error('Optimization error:', error);
+                    console.log('Optimization error:', error);
                     ShowCustomToast('Error optimizing prompt', 'error');
                 } finally {
                     setIsLoading(false);
@@ -145,7 +145,7 @@ const Assistant = () => {
 
             setCurrentMessages(formattedMessages);
         } catch (error) {
-            console.error('Failed to load conversation:', error);
+            console.log('Failed to load conversation:', error);
             ShowCustomToast('Failed to load conversation', 'error');
         } finally {
             setIsLoading(false);
@@ -331,7 +331,7 @@ const Assistant = () => {
             // ShowCustomToast('File(s) uploaded successfully!', 'success');
             setSelectedUploadedDocuments([...selectedUploadedDocuments, ...uploadedDocumentIds]);
         } catch (error) {
-            console.error('Upload error:', error);
+            console.log('Upload error:', error);
             ShowCustomToast('Error uploading file(s)', 'error');
             // Remove failed files from display
             setSelectedFiles(selectedFiles.filter(f => !newFiles.some(nf => nf.name === f.name)));
@@ -475,7 +475,7 @@ const Assistant = () => {
 
         } catch (error) {
             ShowCustomToast('Something went wrong, Please try again', 'info', 2000);
-            console.error('Error sending chat:', error);
+            console.log('Error sending chat:', error);
         } finally {
             setIsLoading(false);
         }
