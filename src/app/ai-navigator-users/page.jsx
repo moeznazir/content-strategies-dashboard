@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from "react";
 import { createClient } from '@supabase/supabase-js';
-import { FaChevronLeft, FaChevronRight, FaTimes, FaEdit } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaTimes, FaEdit, FaLink } from "react-icons/fa";
 import DraggableTable from "../customComponents/DraaggableTable";
 import Alert from "../customComponents/Alert";
 import { getRandomColor } from "../constants/constant";
@@ -9,6 +9,8 @@ import { getAiNavigatorUsers, updateUserRoles, updateUserStatus } from "@/lib/se
 import CustomButton from "../customComponents/CustomButton";
 import CustomSelect from "../customComponents/CustomSelect";
 import { appColors } from "@/lib/theme";
+import { fetchUserCompanySlug } from "@/lib/services/companySlugServices";
+import { ShowCustomToast } from "../customComponents/CustomToastify";
 
 const ITEMS_PER_PAGE = 100;
 
@@ -171,6 +173,17 @@ const AiNavigatorUserManagement = () => {
     }
   };
 
+  const handleShareSignupLink = async () => {
+    try {
+      const slug = await fetchUserCompanySlug();
+      const url = `${window.location.origin}/${slug}/signup`;
+
+      await navigator.clipboard.writeText(url);
+      ShowCustomToast("Signup Url copied to clipboard!", 'success', 2000);
+    } catch (error) {
+      ShowCustomToast("Failed to generate signup Url.", 'error', 2000);
+    }
+  };
 
 
   const paginatedUsers = users.slice(
@@ -186,7 +199,32 @@ const AiNavigatorUserManagement = () => {
     <div className="w-[90%] mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">AI-Navigator Users</h1>
+        {/* Right-aligned action buttons */}
+      <div className="flex gap-2">
+        {["Share Signup Url"].map((text, i) => {
+          const getIcon = (label) => {
+            switch (label) {
+              case "Share Signup Url": return <FaLink className="w-3 h-3" />;
+              default: return null;
+            }
+          };
+          return (
+            <button
+              key={i}
+              className={`px-4 py-2 text-sm  bg-white/10 hover:bg-white/20
+                         transform -translate-y-[1px] rounded-full flex items-center gap-2 cursor-pointer`}
+              onClick={() => {
+                if (text === "Share Signup Url") handleShareSignupLink();
+              }}
+            >
+              {getIcon(text)}
+              {text}
+            </button>
+          );
+        })}
       </div>
+      </div>
+      
 
       <div className="max-w-full mx-auto">
         <div className="overflow-y-auto overflow-x-auto shadow-md rounded-lg">
