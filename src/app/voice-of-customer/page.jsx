@@ -62,13 +62,13 @@ const Dashboard = () => {
 
   const columns = [
     { label: "Avatar", id: "Avatar" },
-    { label: "Guest", id: "Guest" },
+    // { label: "Guest", id: "Guest" },
     { label: "Content Type", id: "Video Type" },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
-    { label: "Guest Title", id: "Guest Title" },
-    { label: "Guest Company", id: "Guest Company" },
-    { label: "Guest Industry", id: "Guest Industry" },
+    // { label: "Guest Title", id: "Guest Title" },
+    // { label: "Guest Company", id: "Guest Company" },
+    // { label: "Guest Industry", id: "Guest Industry" },
     // { label: "Guest Role", id: "Guest Role" },
     { label: "Date Recorded", id: "Date Recorded" },
     { label: "Episode #", id: "Episode_Number" },
@@ -88,7 +88,7 @@ const Dashboard = () => {
     { label: "Public vs. Private", id: "Public_vs_Private" },
     { label: "Discussion Guide", id: "Discussion Guide", type: 'url' },
     { label: "Report Link", id: "report_link", type: 'url' },
-    { label: "Transcript", id: "Transcript" },
+    { label: "Transcript", id: "Transcript", type: "url" },
     { label: "Client", id: "Client" },
     { label: "Employee", id: "Employee" },
     // { label: "Tags", id: "Tags" },
@@ -99,8 +99,8 @@ const Dashboard = () => {
     { label: "Sales Insights", id: "Sales Insights" },
     // { label: "Case Study Other Video", id: "Case_Study_Other_Video" },
     { label: "Challenge Video", id: "Challenge Report_Unedited Video Link", type: 'url' },
-    { label: "Challenge Transcript", id: "Challenge Report_Unedited Transcript Link" },
-    { label: "Challenge Report", id: "Challenge Report_Summary" },
+    { label: "Challenge Transcript", id: "Challenge Report_Unedited Transcript Link", type: "url" },
+    { label: "Challenge Report", id: "Challenge Report_Summary" , type: "url"},
     { label: "Podcast Video (Unedited)", id: "Podcast Report_Unedited Video Link", type: 'url' },
     { label: "Podcast Transcript", id: "Podcast Report_Unedited Transcript Link" },
     { label: "Podcast Summary", id: "Podcast Report_Summary" },
@@ -153,7 +153,6 @@ const Dashboard = () => {
     "Sales Insights",
     "Case_Study_Other_Video",
     "Video Type",
-
   ];
 
   const dashboardCrudDetails = [
@@ -177,10 +176,10 @@ const Dashboard = () => {
     { label: "Top Three Takeaways", key: "Text comments for the rating (OPTIONAL input from the user)", placeholder: "Enter Comments", type: "textarea" },
     { label: "Key Quote", key: "Quote", placeholder: "Enter Quote" },
     { label: "Mentions", key: "Mentions", placeholder: "Select Mention", type: "select" },
-    { label: "Mentioned Quotes", key: "Mentioned_Quotes", placeholder: "Enter Mentioned Quotes" },
+    { label: "Mentioned Quotes", key: "Mentioned_Quotes", placeholder: "Enter Mentioned Quotes", type: "mentioned_quotes_filed" },
     { label: "Public vs. Private", key: "Public_vs_Private", placeholder: "Select Visibility", type: "select" },
     { label: "Discussion Guide", key: "Discussion Guide", placeholder: "Enter Discussion Guide Link", type: "url" },
-    { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript" },
+    { label: "Transcript", key: "Transcript", placeholder: "Enter Transcript", type: "url" },
     { label: "Client", key: "Client", placeholder: "Select Client", type: "select" },
     { label: "Employee", key: "Employee", placeholder: "Enter Employee" },
     // { label: "Tags", key: "Tags", placeholder: "Select Tags", type: "multiselect" },
@@ -190,8 +189,8 @@ const Dashboard = () => {
     { label: "Challenges", key: "Challenges", placeholder: "Select an ICP Challenge", type: "multiselect" },
     { label: "Sales Insights", key: "Sales Insights", placeholder: "Select Sales Insights", type: "multiselect" },
     { label: "Challenge Video", key: "Challenge Report_Unedited Video Link", type: "url" },
-    { label: "Challenge Transcript", key: "Challenge Report_Unedited Transcript Link" },
-    { label: "Challenge Report", key: "Challenge Report_Summary" },
+    { label: "Challenge Transcript", key: "Challenge Report_Unedited Transcript Link", type: "url" },
+    { label: "Challenge Report", key: "Challenge Report_Summary" , type: "url"},
     { label: "Podcast Video (Unedited)", key: "Podcast Report_Unedited Video Link", type: "url" },
     { label: "Podcast Transcript", key: "Podcast Report_Unedited Transcript Link" },
     { label: "Podcast Summary", key: "Podcast Report_Summary" },
@@ -503,7 +502,7 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase.rpc('get_filter_counts', {
         current_user_id: localStorage.getItem('current_user_id'),
-        input_company_id: localStorage.getItem('company_id'), 
+        input_company_id: localStorage.getItem('company_id'),
       });
 
       if (error) {
@@ -664,9 +663,9 @@ const Dashboard = () => {
       const url = `${window.location.origin}/${slug}/signup`;
 
       await navigator.clipboard.writeText(url);
-      ShowCustomToast("Signup Url copied to clipboard!", 'success', 2000); 
+      ShowCustomToast("Signup Url copied to clipboard!", 'success', 2000);
     } catch (error) {
-      ShowCustomToast("Failed to generate signup Url.",'error',2000);
+      ShowCustomToast("Failed to generate signup Url.", 'error', 2000);
     }
   };
 

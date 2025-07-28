@@ -103,16 +103,16 @@ const Modal = ({ data, onClose }) => {
 
     // Define sections
     const sections = [
-        {
-            id: "guestDetails",
-            title: "Guest Details",
-            fields: [
-                "Guest",
-                "Guest Title",
-                "Guest Company",
-                "Guest Industry"
-            ]
-        },
+        // {
+        //     id: "guestDetails",
+        //     title: "Guest Details",
+        //     fields: [
+        //         "Guest",
+        //         "Guest Title",
+        //         "Guest Company",
+        //         "Guest Industry"
+        //     ]
+        // },
         {
             id: "transcript",
             title: "Transcript",
@@ -340,7 +340,59 @@ const Modal = ({ data, onClose }) => {
         if (specialFields.includes(key)) {
             return renderSpecialField(key, value);
         }
+  // Handle Mentioned Quotes specifically
+  if (key === "Mentioned_Quotes") {
+    // Clean and normalize the quotes data
+    let quotesArray = [];
+    
+    if (Array.isArray(value)) {
+        quotesArray = value.map(q => String(q).replace(/^"+|"+$/g, '').trim());
+    } else if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            quotesArray = Array.isArray(parsed) 
+                ? parsed.map(q => String(q).replace(/^"+|"+$/g, '').trim())
+                : [String(value).replace(/^"+|"+$/g, '').trim()];
+        } catch {
+            quotesArray = [String(value).replace(/^"+|"+$/g, '').trim()];
+        }
+    } else if (value) {
+        quotesArray = [String(value).replace(/^"+|"+$/g, '').trim()];
+    }
 
+    // Filter out empty quotes
+    quotesArray = quotesArray.filter(q => q && q !== '""' && q !== "''");
+
+    const isExpanded = expandedFields[key];
+    const visibleQuotes = isExpanded ? quotesArray : quotesArray.slice(0, 3);
+    const hasMoreQuotes = quotesArray.length > 3 && !isExpanded;
+
+    return (
+        <div className="space-y-1">
+            {visibleQuotes.length > 0 ? (
+                visibleQuotes.map((quote, index) => (
+                    <div 
+                        key={index} 
+                        className="inline-block bg-[#E5E7EB] dark:bg-gray-700 text-black px-2 py-1 rounded-md text-sm mr-2 mb-2"
+                    >
+                        {quote}
+                    </div>
+                ))
+            ) : (
+                <span className="text-gray-400 text-sm">No quotes available</span>
+            )}
+            {hasMoreQuotes && (
+                <button
+                    onClick={() => toggleExpand(key)}
+                    className="text-blue-500 hover:text-blue-700 text-sm flex items-center gap-1"
+                >
+                    {isExpanded ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+                    {isExpanded ? 'Show less' : `Show ${quotesArray.length - 3} more`}
+                </button>
+            )}
+        </div>
+    );
+}
         // Handle array fields
         if (arrayFields.includes(key) && Array.isArray(value)) {
             const isExpanded = expandedFields[key];
@@ -570,13 +622,13 @@ const Modal = ({ data, onClose }) => {
                 </div>
 
                 {/* User Avatar */}
-                <div className="flex justify-center my-6 -mb-1">
+                {/* <div className="flex justify-center my-6 -mb-1">
                     <img
                         src={data.Avatar || "/default-avatar.png"}
                         alt="User Avatar"
                         className="w-32 h-32 rounded-full object-cover border-4 border-orange-500"
                     />
-                </div>
+                </div> */}
 
                 {/* Main Content */}
                 <div className="space-y-5 px-2">

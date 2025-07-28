@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { createClient } from "@supabase/supabase-js";
@@ -213,8 +213,8 @@ const OPTIONS = {
         { value: "Competitive", label: "Competitive", count: 0 },
         { value: "Persona", label: "Persona", count: 0 },
         { value: "Individual", label: "Individual", count: 0 }
-      ],
-      "content_categories": [
+    ],
+    "content_categories": [
         { value: "Academic Publications and White Papers", label: "Academic Publications and White Papers", count: 0 },
         { value: "Articles", label: "Articles", count: 0 },
         { value: "Case Studies and Success Stories", label: "Case Studies and Success Stories", count: 0 },
@@ -238,12 +238,20 @@ const OPTIONS = {
         { value: "Social Media Posts", label: "Social Media Posts", count: 0 },
         { value: "Transcripts", label: "Transcripts", count: 0 },
         { value: "Video and Multimedia", label: "Video and Multimedia", count: 0 }
-      ]
+    ]
 
 };
+const GUEST_FIELDS = [
+    "Avatar",
+    "Guest",
+    "Guest Title",
+    "Guest Company",
+    "Guest Industry"
+];
 
 
-// Updated ThemeEntry component to properly display theme data
+
+// Updated component to properly display data
 const ThemeEntry = ({ theme, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -348,16 +356,7 @@ const SalesInsightsEntry = ({ insight, ranking, justification, perception, whyIt
     );
 };
 
-
-const CaseStudyVideoEntry = ({
-    video_title,
-    video_link,
-    copy_and_paste_text,
-    link_to_document,
-    onEdit,
-    onRemove,
-    index,
-}) => {
+const CaseStudyVideoEntry = ({ video_title, video_link, copy_and_paste_text, link_to_document, onEdit, onRemove, index }) => {
     return (
         <div
             className="border rounded-lg p-3 mb-3"
@@ -411,7 +410,6 @@ const CaseStudyVideoEntry = ({
     );
 };
 
-
 const ValidationEntry = ({ validation, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -437,6 +435,43 @@ const ValidationEntry = ({ validation, ranking, justification, perception, whyIt
         </div>
     );
 };
+const GuestEntry = ({ guest, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="flex justify-between items-start">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden">
+                        {guest.Avatar ? (
+                            <img
+                                src={guest.Avatar}
+                                alt="Guest Avatar"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <span className="text-white text-xs">No Image</span>
+                        )}
+                    </div>
+                    <div>
+                        <p><span className="font-medium text-[15px] ">Guest Name:</span> <span className='text-gray-400 text-sm'>{guest["Guest"] || "N/A"}</span></p>
+                        <p><span className="font-medium text-[15px]">Guest Title:</span> <span className='text-gray-400 text-sm'>{guest["Guest Title"] || "N/A"}</span></p>
+                        <p><span className="font-medium text-[15px]">Guest Company:</span> <span className='text-gray-400 text-sm'>{guest["Guest Company"] || "N/A"}</span></p>
+                        <p><span className="font-medium text-[15px]">Guest Industry:</span> <span className='text-gray-400 text-sm'>{guest["Guest Industry"] || "N/A"}</span></p>
+                    </div>
+                </div>
+                <div className="flex space-x-1">
+                    <div onClick={() => onEdit(index)} className="text-blue-500 hover:text-blue-700">
+                        <PencilIcon className="h-5 w-5" />
+                    </div>
+                    <div onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700">
+                        <TrashIcon className="h-5 w-5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank, prefilledData = null, tableName, createRecord, updateRecord, isDashboardForm, isFilesData }) => {
     const [loading, setLoading] = useState(false);
 
@@ -448,7 +483,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [currentWhyItMatters, setCurrentWhyItMatters] = useState("");
     const [currentDeeperInsight, setCurrentDeeperInsight] = useState("");
     const [currentSupportingQuotes, setCurrentSupportingQuotes] = useState("");
-
     const [themeEntries, setThemeEntries] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
 
@@ -504,6 +538,22 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [caseStudyVideoEntries, setCaseStudyVideoEntries] = useState([]);
     const [caseStudyVideoEditIndex, setCaseStudyVideoEditIndex] = useState(null);
 
+
+    // Mentioned Quotes fileds
+    const [currentMentionedQuote, setCurrentMentionedQuote] = useState("");
+    const [mentionedQuotes, setMentionedQuotes] = useState([]);
+
+    // Guest 
+    const [guestEntries, setGuestEntries] = useState([]);
+    const [currentGuest, setCurrentGuest] = useState({
+        "Avatar": "",
+        "Guest": "",
+        "Guest Title": "",
+        "Guest Company": "",
+        "Guest Industry": ""
+    });
+    const [guestEditIndex, setGuestEditIndex] = useState(null);
+    const avatarInputRef = useRef(null);
 
     function normalizeThemes(data) {
         if (!Array.isArray(data)) return [];
@@ -603,11 +653,72 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         });
     }
 
+    function normalizeGuestData(data,entityData) {
+        if (!data) return [];
 
+        // Handle empty string case
+        if (typeof data === 'string' && data.trim() === '') return [];
+
+        // Handle string format (could be JSON string or single guest name)
+        if (typeof data === 'string') {
+            try {
+                // First try to parse as JSON
+                const parsed = JSON.parse(data);
+                if (Array.isArray(parsed)) {
+                    return parsed.map(guest => ({
+                        "Avatar": guest.Avatar || "",
+                        "Guest": guest.Guest || "",
+                        "Guest Title": guest["Guest Title"] || "",
+                        "Guest Company": guest["Guest Company"] || "",
+                        "Guest Industry": guest["Guest Industry"] || ""
+                    }));
+                }
+
+                // If it's a single guest object
+                return [{
+                    "Avatar": parsed.Avatar || "",
+                    "Guest": parsed.Guest || "",
+                    "Guest Title": parsed["Guest Title"] || "",
+                    "Guest Company": parsed["Guest Company"] || "",
+                    "Guest Industry": parsed["Guest Industry"] || ""
+                }];
+            } catch (e) {
+                // If parsing fails, treat as a single guest name
+                return [{
+                    "Avatar": "",
+                    "Guest": data,
+                    "Guest Title": entityData['Guest Title'],
+                    "Guest Company": entityData['Guest Company'],
+                    "Guest Industry": entityData['Guest Industry']
+                }];
+            }
+        }
+        console.log("guest datata", data);
+        // Handle array format
+        if (Array.isArray(data)) {
+            return data.map(guest => ({
+                "Avatar": guest.Avatar || "",
+                "Guest": guest.Guest || "",
+                "Guest Title": guest["Guest Title"] || "",
+                "Guest Company": guest["Guest Company"] || "",
+                "Guest Industry": guest["Guest Industry"] || ""
+            }));
+        }
+
+        // Handle single guest object
+        return [{
+            "Avatar": data.Avatar || "",
+            "Guest": data.Guest || "",
+            "Guest Title": data["Guest Title"] || "",
+            "Guest Company": data["Guest Company"] || "",
+            "Guest Industry": data["Guest Industry"] || ""
+        }];
+  
+    }
     useEffect(() => {
         if (entityData?.id) {
             const matchedData = themesRank?.find(item => item.id === entityData.id);
-
+            // setGuestEntries(normalizeGuestData(entityData.Guest, entityData));
             // --- Handle Themes
             const themeData = matchedData?.Themes;
             if (themeData) {
@@ -691,6 +802,64 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 setCaseStudyVideoEntries([]);
             }
 
+            // --- Mentioned Details 
+            if (entityData?.Mentioned_Quotes) {
+                try {
+                    const parsed = Array.isArray(entityData.Mentioned_Quotes)
+                        ? entityData.Mentioned_Quotes
+                        : JSON.parse(entityData.Mentioned_Quotes);
+                    setMentionedQuotes(parsed || []);
+                } catch (e) {
+                    setMentionedQuotes([]);
+                }
+            } else {
+                setMentionedQuotes([]);
+            }
+
+            // Guest Details
+            if (entityData?.Guest) {
+                try {
+                    setGuestEntries(normalizeGuestData(entityData.Guest, entityData));
+                } catch (e) {
+                    console.error("Error parsing guest data:", e);
+                    setGuestEntries([]);
+                }
+            } else {
+                setGuestEntries([]);
+            }
+            // Handle Avatar data (if it's a string array)
+            if (entityData?.Avatar) {
+                try {
+                    let avatarUrls = [];
+                    if (typeof entityData.Avatar === 'string') {
+                        // Try to parse as JSON array first
+                        try {
+                            avatarUrls = JSON.parse(entityData.Avatar);
+                            if (!Array.isArray(avatarUrls)) {
+                                // If not an array, treat as single URL
+                                avatarUrls = [entityData.Avatar];
+                            }
+                        } catch (e) {
+                            // If parsing fails, treat as single URL
+                            avatarUrls = [entityData.Avatar];
+                        }
+                    } else if (Array.isArray(entityData.Avatar)) {
+                        avatarUrls = entityData.Avatar;
+                    }
+
+                    // Update guest entries with avatar URLs
+                    setGuestEntries(prev => prev.map((guest, index) => ({
+                        ...guest,
+                        Avatar: avatarUrls[index] || ""
+                    })));
+                } catch (e) {
+                    console.error("Error parsing avatar data:", e);
+                }
+            }
+
+
+
+
         } else {
             // Clear on new entry
             setThemeEntries([]);
@@ -698,6 +867,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setObjectionEntries([]);
             setChallengesEntries([]);
             setSalesInsightsEntries([]);
+            setGuestEntries([]);
         }
     }, [entityData, themesRank]);
 
@@ -823,21 +993,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             }
         }
     });
-    // Add this useEffect to sync themeEntries with Formik values
-  
-
-    // Do the same for other entry types (objections, validations, etc.)
-    useEffect(() => {
-        console.log("Entity data on edit:", entityData);
-        console.log("Initial values:", initialValues);
-    }, [entityData]);
-    console.log("Initial values after transformation:", {
-        category: initialValues.category,
-        file_type: initialValues.file_type
-    });
 
     const formik = useFormik({
         initialValues,
+
         // validationSchema,
         onSubmit: async (values) => {
             try {
@@ -853,8 +1012,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
-
-                console.log('THEMEE DATATATATA', themesData);
                 let objectionData = null;
                 if (objectionEntries.length > 0) {
                     objectionData = objectionEntries.map(entry => ({
@@ -879,7 +1036,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
-
                 let challengesData = null;
                 if (challengesEntries.length > 0) {
                     challengesData = challengesEntries.map(entry => ({
@@ -892,7 +1048,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
-
                 let salesInsightsData = null;
                 if (salesInsightsEntries.length > 0) {
                     salesInsightsData = salesInsightsEntries.map(entry => ({
@@ -906,7 +1061,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     }));
                 }
 
-
                 // Create the payload with properly formatted values
                 const formattedValuesDashboard = {
                     ...values,
@@ -919,10 +1073,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     company_id: localStorage.getItem('company_id'),
                     template_id: values.template_id?.value || values.template_id || null,
                     department_id: values.department_id?.value || values.department_id || null,
+                    Guest: values.Guest ? JSON.stringify(values.Guest) : null,
+                    Avatar: values.Avatar ? JSON.stringify(values.Avatar) : null,
                     dynamic_fields: formik.values.dynamic_fields ||
                         (formik.values.dynamic_fields_description ?
                             extractFieldsFromTemplate(formik.values.dynamic_fields_description) :
-                            null)
+                            null),
+
 
                 };
 
@@ -1007,19 +1164,25 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     // Non-file fields
                     formattedValues[field.key] = fieldValue;
                 }
-                // After your big loop:
+
+                //For template_id and department_id:
                 if (formattedValues.template_id) {
                     formattedValues.template_id = formik.values?.template_id?.value || formik.values.template_id || null;
                 }
                 if (formattedValues.department_id) {
                     formattedValues.department_id = formik.values?.department_id?.value || formik.values.department_id || null;
                 }
+                // if (formattedValues.Guest || formattedValues.Avatar) {
+                //     formattedValues.Guest = guestEntries.length > 0 ? guestEntries : null;
+                //     formattedValues.Avatar = guestEntries.length > 0 ?
+                //         guestEntries.map(g => g.Avatar).filter(Boolean) : null;
+                // }
                 console.log("Final formatted values:", formattedValues);
 
                 let response;
                 // ✅ Force file_type, category, and tags into valid arrays for jsonb
                 if (isFilesData) {
-                    ['file_type', 'category', 'tags','market_categories','content_categories'].forEach((key) => {
+                    ['file_type', 'category', 'tags', 'market_categories', 'content_categories'].forEach((key) => {
                         if (!(key in formattedValues)) return;
                         const val = formattedValues[key];
 
@@ -1093,27 +1256,43 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             }
         },
     });
+    const handleAddMentionedQuote = () => {
+        if (!currentMentionedQuote.trim()) return;
+
+        setMentionedQuotes([...mentionedQuotes, currentMentionedQuote.trim()]);
+        setCurrentMentionedQuote("");
+    };
+
+    const handleRemoveMentionedQuote = (index) => {
+        setMentionedQuotes(mentionedQuotes.filter((_, i) => i !== index));
+    };
+
+    useEffect(() => {
+        if ('Mentioned_Quotes' in formik.values) {
+            formik.setFieldValue('Mentioned_Quotes', mentionedQuotes.length > 0 ? mentionedQuotes : null);
+        }
+    }, [mentionedQuotes, formik.values]);
     useEffect(() => {
         // Only set fields that exist in formik.values
         if ('Themes' in formik.values) {
-          formik.setFieldValue('Themes', themeEntries.length > 0 ? themeEntries : null);
+            formik.setFieldValue('Themes', themeEntries.length > 0 ? themeEntries : null);
         }
         if ('Validations' in formik.values) {
-          formik.setFieldValue('Validations', validationEntries.length > 0 ? validationEntries : null);
+            formik.setFieldValue('Validations', validationEntries.length > 0 ? validationEntries : null);
         }
         if ('Challenges' in formik.values) {
-          formik.setFieldValue('Challenges', challengesEntries.length > 0 ? challengesEntries : null);
+            formik.setFieldValue('Challenges', challengesEntries.length > 0 ? challengesEntries : null);
         }
         if ('Sales Insights' in formik.values) {
-          formik.setFieldValue('Sales Insights', salesInsightsEntries.length > 0 ? salesInsightsEntries : null);
+            formik.setFieldValue('Sales Insights', salesInsightsEntries.length > 0 ? salesInsightsEntries : null);
         }
         if ('Case_Study_Other_Video' in formik.values) {
-          formik.setFieldValue('Case_Study_Other_Video', caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null);
+            formik.setFieldValue('Case_Study_Other_Video', caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null);
         }
         if ('Objections' in formik.values) {
-          formik.setFieldValue('Objections', objectionEntries.length > 0 ? objectionEntries : null);
+            formik.setFieldValue('Objections', objectionEntries.length > 0 ? objectionEntries : null);
         }
-      }, [
+    }, [
         themeEntries,
         validationEntries,
         challengesEntries,
@@ -1121,7 +1300,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         caseStudyVideoEntries,
         objectionEntries,
         formik.values
-      ]);
+    ]);
     //Themes Handlers
     const handleAddTheme = () => {
         // if (!currentTheme || !currentRanking || !currentJustification) {
@@ -1501,6 +1680,97 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setValidationEditIndex(validationEditIndex - 1);
         }
     };
+    const handleAddGuest = async () => {
+        // Validate at least one field is filled
+        if (!currentGuest["Guest Title"] && !currentGuest["Guest Company"] && !currentGuest["Guest Industry"]) {
+            ShowCustomToast("Please fill at least one guest field", "error");
+            return;
+        }
+
+        let avatarUrl = currentGuest.Avatar;
+
+        // If Avatar is a File object, upload it first
+        if (currentGuest.Avatar instanceof File) {
+            try {
+                const fileExt = currentGuest.Avatar.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                // Upload the file
+                const { error: uploadError } = await supabase
+                    .storage
+                    .from('images')
+                    .upload(filePath, currentGuest.Avatar);
+
+                if (uploadError) throw uploadError;
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase
+                    .storage
+                    .from('images')
+                    .getPublicUrl(filePath);
+
+                avatarUrl = publicUrl;
+            } catch (error) {
+                console.error("Avatar upload failed:", error);
+                ShowCustomToast("Failed to upload avatar", "error");
+                return;
+            }
+        }
+        if (avatarInputRef.current) {
+            avatarInputRef.current.value = "";
+        }
+        const newEntry = {
+            "Guest": currentGuest["Guest"],
+            "Guest Title": currentGuest["Guest Title"],
+            "Guest Company": currentGuest["Guest Company"],
+            "Guest Industry": currentGuest["Guest Industry"],
+            "Avatar": avatarUrl || null
+        };
+
+        if (guestEditIndex !== null) {
+            const updated = [...guestEntries];
+            updated[guestEditIndex] = newEntry;
+            setGuestEntries(updated);
+            setGuestEditIndex(null);
+        } else {
+            setGuestEntries([...guestEntries, newEntry]);
+        }
+
+        setCurrentGuest({
+            "Avatar": "",
+            "Guest Title": "",
+            "Guest Company": "",
+            "Guest Industry": ""
+        });
+    };
+
+    const handleEditGuest = (index) => {
+        const entry = guestEntries[index];
+        setCurrentGuest({
+            ...entry,
+            Avatar: entry.Avatar // Keep the existing URL or File
+        });
+        setGuestEditIndex(index);
+    };
+
+
+    const handleRemoveGuest = (index) => {
+        const updated = guestEntries.filter((_, i) => i !== index);
+        setGuestEntries(updated);
+        if (guestEditIndex === index) {
+            setCurrentGuest({
+                "Avatar": "",
+                "Guest": "",
+                "Guest Title": "",
+                "Guest Company": "",
+                "Guest Industry": ""
+            });
+            setGuestEditIndex(null);
+        } else if (guestEditIndex > index) {
+            setGuestEditIndex(guestEditIndex - 1);
+        }
+    };
 
     const handleFormSubmit = async () => {
         // Convert all rankings to numbers in theme entries
@@ -1534,12 +1804,25 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setSalesInsightsEntries(validatedSalesInsightsEntries);
 
         try {
+
+            const guestData = guestEntries.map(guest => ({
+                "Guest": guest["Guest"],
+                "Guest Title": guest["Guest Title"],
+                "Guest Company": guest["Guest Company"],
+                "Guest Industry": guest["Guest Industry"]
+            }));
+
+            const avatarUrls = guestEntries.map(guest => guest.Avatar).filter(Boolean);
             // If dynamic_fields_description exists but dynamic_fields doesn't, extract fields
             if (formik.values.dynamic_fields_description && !formik.values.dynamic_fields) {
                 const fields = extractFieldsFromTemplate(formik.values.dynamic_fields_description);
                 formik.setFieldValue('dynamic_fields', fields);
             }
-
+            formik.setValues({
+                ...formik.values,
+                Guest: guestData.length > 0 ? guestData : null,
+                Avatar: avatarUrls.length > 0 ? avatarUrls : null
+            });
             // Rest of your submission logic...
             await formik.submitForm();
         } catch (error) {
@@ -1555,10 +1838,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         // }, 0);
 
     };
-    console.log('OPTIONS:', OPTIONS['Themes']);
-    console.log('Current Theme:', currentTheme);
-    console.log('Theme Entries:', themeEntries);
-    console.log("Vhalllll", displayFields);
+
     return (
         <>
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50" onClick={onClose} />
@@ -1609,7 +1889,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                         'Case Study Other Video_Video Link',
                                         'Case Study Other Video_Copy and Paste Text',
                                         'Case Study Other Video_Link To Document',
-                                        "file_link"
+                                        "file_link",
+                                        "Avatar", "Guest Title", "Guest Company", "Guest Industry"
                                     ].includes(field.key) ? (
 
                                         !(
@@ -1633,7 +1914,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                     )}
                                                 </label>
 
-                                                {(field.key === 'file_type' || field.key === 'category' || field.key ==='content_categories'  || field.key === 'market_categories') ? (
+                                                {(field.key === 'file_type' || field.key === 'category' || field.key === 'content_categories' || field.key === 'market_categories') ? (
                                                     MULTISELECT_FIELDS.includes(field.key) ? (
                                                         <CustomSelect
                                                             key={`${field.key}-${JSON.stringify(formik.values[field.key])}`} // Force re-render
@@ -1766,9 +2047,160 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         {/* <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                             {field.label}:
                                                         </label> */}
-                                                        <div className="w-full p-2 border rounded bg-gray-100"style={{ backgroundColor: appColors.primaryColor }}>
+                                                        <div className="w-full p-2 border rounded bg-gray-100" style={{ backgroundColor: appColors.primaryColor }}>
                                                             {field.value(formik.values)}
                                                         </div>
+                                                    </div>
+                                                ) : field.key === 'Guest' ? (
+                                                    <div>
+                                                        <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor }}>
+                                                            <div className="grid grid-cols-1 gap-4">
+                                                                {GUEST_FIELDS.map(fieldKey => (
+                                                                    <div key={fieldKey}>
+                                                                        <label className="block font-semibold text-sm mb-1">
+                                                                            {fieldKey}:
+                                                                        </label>
+                                                                        {fieldKey === 'Avatar' ? (
+                                                                            <div>
+                                                                                <input
+                                                                                    type="file"
+                                                                                    accept="image/*"
+                                                                                    ref={avatarInputRef}
+                                                                                    onChange={(event) => {
+                                                                                        const file = event.target.files[0];
+                                                                                        if (file) {
+                                                                                            setCurrentGuest(prev => ({
+                                                                                                ...prev,
+                                                                                                Avatar: file
+                                                                                            }));
+                                                                                        }
+                                                                                    }}
+                                                                                    className="w-full p-2 border rounded"
+                                                                                />
+                                                                                {currentGuest.Avatar && typeof currentGuest.Avatar === 'string' && (
+                                                                                    <img
+                                                                                        src={currentGuest.Avatar}
+                                                                                        alt="Current Avatar"
+                                                                                        className="mt-2 h-16 w-16 rounded-full object-cover"
+                                                                                    />
+                                                                                )}
+                                                                                {/* {currentGuest.Avatar instanceof File && (
+                                                                                    <div className="mt-2 text-sm text-gray-400">
+                                                                                        {currentGuest.Avatar.name} (preview not available)
+                                                                                    </div>
+                                                                                )} */}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <CustomInput
+                                                                                type="text"
+                                                                                value={currentGuest[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentGuest(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+
+                                                                <div className="flex justify-end">
+                                                                    <CustomButton
+                                                                        type="button"
+                                                                        onClick={handleAddGuest}
+                                                                        className="flex items-center gap-1"
+                                                                    >
+                                                                        <PlusIcon className="h-4 w-4" />
+                                                                        {guestEditIndex !== null ? "Update Guest" : "Add Guest"}
+                                                                    </CustomButton>
+                                                                </div>
+                                                            </div>
+
+                                                            {guestEntries.length > 0 && (
+                                                                <div className="mt-4">
+                                                                    <h4 className="font-medium text-sm mb-2">Added Guests:</h4>
+                                                                    {guestEntries.map((entry, index) => (
+                                                                        <GuestEntry
+                                                                            key={index}
+                                                                            index={index}
+                                                                            guest={entry}
+                                                                            onEdit={handleEditGuest}
+                                                                            onRemove={handleRemoveGuest}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : field.type == "mentioned_quotes_filed" ? (
+                                                    <div className="mb-4" >
+
+                                                        <div className="flex items-center gap-2 mb-2" >
+                                                            <CustomInput
+                                                                type="text"
+                                                                value={currentMentionedQuote}
+                                                                onChange={(e) => setCurrentMentionedQuote(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter' && currentMentionedQuote.trim()) {
+                                                                        handleAddMentionedQuote();
+                                                                    }
+                                                                }}
+                                                                className="flex-1 p-2 border rounded text-white"
+                                                                placeholder={field.placeholder || "Enter quote..."}
+                                                            />
+                                                            {currentMentionedQuote && (
+                                                                <>
+                                                                    <CustomButton
+                                                                        type="button"
+                                                                        title={"Add"}
+                                                                        onClick={handleAddMentionedQuote}
+                                                                        className="px-2 py-0 w-[50px] bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                                    />
+
+                                                                    <CustomButton
+                                                                        type="button"
+                                                                        title={"Cancel"}
+                                                                        onClick={() => setCurrentMentionedQuote("")}
+                                                                        className="px-2 py-0 bg-gray-500 w-[100px] text-white rounded hover:bg-gray-600"
+                                                                    />
+                                                                </>
+                                                            )}
+                                                        </div>
+
+                                                        {mentionedQuotes.length > 0 && (
+                                                            <div
+                                                                className="max-w-full overflow-x-auto whitespace-nowrap border border-gray-300 rounded p-2"
+                                                                style={{
+                                                                    backgroundColor: appColors.primaryColor,
+                                                                    maxHeight: '160px'  // Adjust height as needed
+                                                                }}
+                                                            >
+                                                                <label className="font-bold block mb-2">Added Mentioned Quotes:</label>
+                                                                <div className="flex space-x-2">
+                                                                    {mentionedQuotes.map((quote, index) => (
+                                                                        <div
+                                                                            key={index}
+                                                                            className="flex items-center justify-between px-2  rounded border border-gray-400 min-w-[100px]"
+                                                                            style={{
+                                                                                backgroundColor: appColors.primaryColor,
+                                                                                flex: '0 0 auto'  // Prevent flex items from shrinking
+                                                                            }}
+                                                                        >
+                                                                            <span className="mr-2 overflow-hidden text-ellipsis">{quote}</span>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => handleRemoveMentionedQuote(index)}
+                                                                                className="text-red-500 hover:text-red-700 ml-2 flex-shrink-0"
+                                                                                style={{ fontSize: '1.2rem' }}
+                                                                            >
+                                                                                ×
+                                                                            </button>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ) : field.type === "image" ? (
                                                     <>

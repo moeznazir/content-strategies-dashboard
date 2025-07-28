@@ -16,6 +16,109 @@ import FileContentViewer from "./FilePreview";
 
 
 const ItemType = "COLUMN";
+const GuestDetailsModal = ({ guests, onClose }) => {
+    // Normalize guests data to handle both formats
+    const normalizedGuests = React.useMemo(() => {
+        if (!guests) return [];
+
+        // If guests is already an array (from JSON format)
+        if (Array.isArray(guests)) return guests;
+
+        // If single guest object (from separate columns)
+        if (typeof guests === 'object') return [guests];
+
+        // If string (legacy format)
+        if (typeof guests === 'string') {
+            try {
+                // Try to parse as JSON array
+                const parsed = JSON.parse(guests);
+                return Array.isArray(parsed) ? parsed : [parsed];
+            } catch {
+                // Fallback to simple guest name
+                return [{ Guest: guests }];
+            }
+        }
+
+        return [];
+    }, [guests]);
+
+    return (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1a1b41] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+                <div className="flex justify-between items-center mb-6 -mt-2">
+                    <h2 className="text-xl font-bold -mt-1">Guest Details</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 -mt-1 hover:text-white"
+                    >
+                        <FaTimes size={24} />
+                    </button>
+                </div>
+                <hr className="border-b border-gray-300 mb-4 -mt-[15px] -mx-6" />
+
+                {normalizedGuests.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {normalizedGuests.map((guest, index) => (
+                            <div
+                                key={index}
+                                className="border rounded-lg p-4 flex flex-col items-center"
+                                style={{ backgroundColor: appColors.primaryColor }}
+                            >
+                                <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden mb-4">
+                                    {guest.Avatar ? (
+                                        <img
+                                            src={guest.Avatar}
+                                            alt="Guest Avatar"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-white">No Image</span>
+                                    )}
+                                </div>
+                                <div className="text-left text-sm space-y-1">
+                                    {/* Guest Name */}
+                                    <p>
+                                        <span className=" font-semibold text-gray-200">Guest Name:</span>{" "}
+                                        <span className="text-[13px] text-gray-400">{guest.Guest || "N/A"}</span>
+                                    </p>
+
+                                    {/* Guest Title */}
+                                    {guest["Guest Title"] && (
+                                        <p>
+                                            <span className=" font-semibold text-gray-200">Guest Title:</span>{" "}
+                                            <span className="text-[13px] text-gray-400">{guest["Guest Title"]}</span>
+                                        </p>
+                                    )}
+
+                                    {/* Guest Company */}
+                                    {guest["Guest Company"] && (
+                                        <p>
+                                            <span className=" font-semibold text-gray-200">Guest Company:</span>{" "}
+                                            <span className="text-[13px] text-gray-400">{guest["Guest Company"]}</span>
+                                        </p>
+                                    )}
+
+                                    {/* Guest Industry */}
+                                    {guest["Guest Industry"] && (
+                                        <p>
+                                            <span className=" font-semibold text-gray-200">Guest Industry:</span>{" "}
+                                            <span className="text-[13px] text-gray-400">{guest["Guest Industry"]}</span>
+                                        </p>
+                                    )}
+                                </div>
+
+
+
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-center text-gray-400">No guest data available</p>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const DraggableHeader = ({ column, index, moveColumn }) => {
     const [isResizing, setIsResizing] = useState(false);
@@ -71,7 +174,7 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
         >
 
             <ResizableBox
-                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action' || column.id == 'thumbnail') ? 100 : 250}
+                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id === 'action' || column.id == 'thumbnail') ? 120 : 250}
                 height={20}
                 minConstraints={[50]}
                 maxConstraints={[1000]}
@@ -131,6 +234,7 @@ const DraggableTable = ({
     const [selectedCaseStudyVideos, setSelectedCaseStudyVideos] = useState(null);
     const [isEndUser, setIsEndUser] = useState(false);
     const [isSuperEditor, setIsSuperEditor] = useState(false);
+    const [selectedGuests, setSelectedGuests] = useState(null);
     console.log("Selected Row:", selectedRow);
     console.log("Selected Row ID:", selectedRow?.id);
 
@@ -386,18 +490,19 @@ const DraggableTable = ({
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
-                                                ${(column.id === 'Avatar') ? 'sticky left-0  px-6 z-25 bg-[#1a1b41]' : ''}
+                                                ${(column.id === 'Avatar') ? 'sticky left-0  px-4 z-25 bg-[#1a1b41]' : ''}
                                                 ${(column.id === 'company_specific') ? 'left-0  px-6 z-25' : ''}
                                                 ${(column.id === 'thumbnail') ? 'sticky left-0  px-6  z-25 bg-[#1a1b41]' : ''}
                                                 ${column.id === 'file_name' ? 'sticky left-[130px] w-[200px]  px-6 bg-[#1a1b41]' : ''}
                                                 ${column.id === 'Guest' ? 'sticky left-[125px]  px-6  bg-[#1a1b41]' : ''}
                                                 
-                                     `}
-                                        >
+                                     `}>
+
+                                        {/* Show avatar overlapping in table */}
                                             {column.id === "Avatar" ? (
                                                 <div className="flex items-center">
                                                     {/* Add new content from this row */}
-                                                    {!isEndUser && (
+                                                    {/* {!isEndUser && (
                                                         <button
                                                             onClick={() => handleAddFromRow(row)}
                                                             className="text-blue-500 mr-2"
@@ -405,7 +510,7 @@ const DraggableTable = ({
                                                         >
                                                             <FaPlus size={18} />
                                                         </button>
-                                                    )}
+                                                    )} */}
 
                                                     {/* Expand Icon Before Avatar */}
                                                     <button
@@ -414,11 +519,131 @@ const DraggableTable = ({
                                                     >
                                                         <FaExpandAlt size={18} />
                                                     </button>
-                                                    <img
-                                                        src={row[column.id] || "/default-avatar.png"}
-                                                        alt="User Avatar"
-                                                        className="w-10 h-10 rounded-full object-cover"
-                                                    />
+
+                                                    {/* Handle both formats */}
+                                                    {(Array.isArray(row.Guest) || (typeof row.Guest === 'string' && row.Guest.startsWith('['))) ? (
+                                                        // JSON array format
+                                                        (() => {
+                                                            let avatars = [];
+                                                            try {
+                                                                avatars = Array.isArray(row.Avatar)
+                                                                    ? row.Avatar
+                                                                    : (typeof row.Avatar === 'string' && row.Avatar.startsWith('['))
+                                                                        ? JSON.parse(row.Avatar || '[]')
+                                                                        : row.Avatar
+                                                                            ? [row.Avatar]
+                                                                            : [];
+                                                            } catch (e) {
+                                                                console.error("Error parsing avatars:", e);
+                                                            }
+
+                                                            return (
+                                                                <div
+                                                                    className="flex items-center cursor-pointer"
+                                                                    onClick={() => {
+                                                                        try {
+                                                                            const guests = Array.isArray(row.Guest)
+                                                                                ? row.Guest
+                                                                                : JSON.parse(row.Guest || '[]');
+                                                                            const parsedAvatars = avatars;
+
+                                                                            const guestData = guests.map((guest, index) => ({
+                                                                                ...(typeof guest === 'string' ? { Guest: guest } : guest),
+                                                                                Avatar: parsedAvatars[index] || null
+                                                                            }));
+
+                                                                            setSelectedGuests(guestData);
+                                                                        } catch (e) {
+                                                                            console.error("Error parsing guest data:", e);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <div className="flex -space-x-3">
+                                                                        {avatars.slice(0, 2).map((avatar, idx) => (
+                                                                            <div
+                                                                                key={idx}
+                                                                                className="relative"
+                                                                                style={{ zIndex: 10 - idx }}
+                                                                            >
+                                                                                <img
+                                                                                    src={avatar || "/default-avatar.png"}
+                                                                                    alt="Guest Avatar"
+                                                                                    className="w-10 h-10 rounded-full object-cover border-[1px] border-white"
+                                                                                />
+                                                                            </div>
+                                                                        ))}
+                                                                        {avatars.length > 2 && (
+                                                                            <div
+                                                                                className="relative"
+                                                                                style={{ zIndex: 0 }}
+                                                                            >
+                                                                                <div className="ml-2">
+                                                                                    <div className="w-6 h-6 rounded-full bg-gray-600 border-2 border-[#1a1b41] flex items-center justify-center text-[10px] font-bold">
+                                                                                        +{avatars.length - 2}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })()
+                                                    ) : (
+                                                        // Separate columns format
+                                                        <div
+                                                            className="cursor-pointer"
+                                                            onClick={() => {
+                                                                const guestData = {
+                                                                    Avatar: row.Avatar,
+                                                                    Guest: row.Guest,
+                                                                    "Guest Title": row["Guest Title"],
+                                                                    "Guest Company": row["Guest Company"],
+                                                                    "Guest Industry": row["Guest Industry"]
+                                                                };
+                                                                setSelectedGuests([guestData]);
+                                                            }}
+                                                        >
+                                                            <img
+                                                                src={row[column.id] || "/default-avatar.png"}
+                                                                alt="User Avatar"
+                                                                className="w-10 h-10 rounded-full object-cover"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : column.id === "Guest" ? (
+                                                <div className="flex flex-col gap-1">
+                                                    {(Array.isArray(row.Guest) || (typeof row.Guest === 'string' && row.Guest.startsWith('['))) ? (
+                                                        // JSON array format
+                                                        (Array.isArray(row.Guest) ? row.Guest : JSON.parse(row.Guest || '[]'))
+                                                            .slice(0, 3)
+                                                            .map((guest, idx) => (
+                                                                <div key={idx} className="flex items-center gap-2">
+                                                                    {(typeof guest === 'object' ? guest["Guest Title"] : guest) && (
+                                                                        <span className="font-medium">
+                                                                            {typeof guest === 'object' ? guest["Guest Title"] : guest}
+                                                                        </span>
+                                                                    )}
+                                                                    {(typeof guest === 'object' && guest["Guest Company"]) && (
+                                                                        <span className="text-xs text-gray-400">
+                                                                            ({guest["Guest Company"]})
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            ))
+                                                    ) : (
+                                                        // Separate columns format
+                                                        row[column.id] && (
+                                                            <div className="flex items-center gap-2">
+                                                                {row["Guest Title"] && (
+                                                                    <span className="font-medium">{row["Guest Title"]}</span>
+                                                                )}
+                                                                {row["Guest Company"] && (
+                                                                    <span className="text-xs text-gray-400">({row["Guest Company"]})</span>
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    )}
                                                 </div>
                                             ) : column.id == "thumbnail" ? (
                                                 <div className="flex items-center">
@@ -435,12 +660,17 @@ const DraggableTable = ({
                                                         className="w-10 h-10 rounded-full object-cover"
                                                     />
                                                 </div>
-                                            ) : column.id === "title_roles" || column.id === "system_roles" || column.id === 'file_type' || column.id === 'category' || column.id === 'tags' || column.id === 'account_status' || column.id ==='market_categories' || column.id === 'content_categories' ? (
+                                            ) : column.id === "title_roles" || column.id === "system_roles" || column.id === 'file_type' || column.id === 'category' || column.id === 'tags' || column.id === 'account_status' || column.id === 'market_categories' || column.id === 'content_categories' || column.id === 'Mentioned_Quotes' ? (
                                                 <div className="flex flex-wrap gap-1">
                                                     {(Array.isArray(row[column.id])
                                                         ? row[column.id]
                                                         : typeof row[column.id] === 'string'
-                                                            ? row[column.id].split(',').map(item => item.trim()).filter(Boolean) // Split comma-separated strings
+                                                            ? column.id === 'Mentioned_Quotes'
+                                                                ? row[column.id]
+                                                                    .replace(/^\[|\]$/g, '') // Remove square brackets
+                                                                    .split('"')              // Split by quotes
+                                                                    .filter(item => item.trim() && item !== ',' && item !== ' ') // Filter out empty items and commas
+                                                                : row[column.id].split(',').map(item => item.trim()).filter(Boolean)
                                                             : []
                                                     )
                                                         .filter(item => item && item !== "nan" && item !== "[]")
@@ -721,7 +951,7 @@ const DraggableTable = ({
                 )}
             </div>
 
-            {/* Show Modal when a row is selected */}
+            {/* Show Themes/Objects etc Modal when a row is selected */}
             {selectedRow && (
                 <Modal
                     data={{
@@ -823,6 +1053,12 @@ const DraggableTable = ({
                 <RankingModal
                     data={selectedCaseStudyVideos}
                     onClose={() => setSelectedCaseStudyVideos(null)}
+                />
+            )}
+            {selectedGuests && (
+                <GuestDetailsModal
+                    guests={selectedGuests}
+                    onClose={() => setSelectedGuests(null)}
                 />
             )}
         </DndProvider>
