@@ -77,6 +77,7 @@ const Assistant = () => {
 
                 setConversations(validConversations);
 
+
             } catch (error) {
                 console.log('Failed to load conversations:', error);
                 ShowCustomToast('Failed to load conversations', 'error');
@@ -397,7 +398,10 @@ const Assistant = () => {
             setHasSearched(true);
 
             const userId = localStorage.getItem('current_user_id');
+            const isNewConversation = !selectedConversation;
             const conversationId = selectedConversation || `conv-${Date.now()}`;
+
+
             let advice = {};
             if (addOns?.advice?.do?.length > 0) {
                 advice.do = addOns.advice.do;
@@ -440,6 +444,31 @@ const Assistant = () => {
             });
 
             setApiResponse(response);
+            const { conversations: updatedConversations } = await listConversations(userId);
+            const validConversations = updatedConversations.filter(conv =>
+                conv.conversation_id && typeof conv.conversation_id === 'string'
+            );
+
+            // Sort conversations by date (newest first)
+            const sortedConversations = [...validConversations].sort((a, b) =>
+                new Date(b.created_at) - new Date(a.created_at)
+            );
+
+            setConversations(sortedConversations);
+
+            // If this was a new conversation, select the newest one
+            if (isNewConversation && sortedConversations.length > 0) {
+                setSelectedConversation(sortedConversations[0].conversation_id);
+
+                // Also load the new conversation's messages
+                const response = await fetchConversation(sortedConversations[0].conversation_id);
+                const messages = response.data || [];
+                setCurrentMessages(messages.map(msg => ({
+                    role: msg.role,
+                    content: msg.content,
+                    id: msg.id || Date.now().toString()
+                })));
+            }
 
             // Update chat history
             const newMessages = [
@@ -528,11 +557,8 @@ const Assistant = () => {
                         className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar"
                         style={{ maxHeight: '65vh' }}
                     >
-                        {isLoading ? (
-                            <div className="h-full flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
-                            </div>
-                        ) : currentMessages.length > 0 ? (
+                        {/* Always show existing messages */}
+                        {currentMessages.length > 0 && (
                             currentMessages.map((msg, index) => (
                                 <div key={`${msg.id}-${index}`} className="w-full space-y-4 mb-6">
                                     <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -544,10 +570,20 @@ const Assistant = () => {
                                     </div>
                                 </div>
                             ))
-                        ) : (
+                        )}
+
+                        {/* Show loading indicator at the bottom while loading */}
+                        {isLoading && (
+                            <div className="flex justify-center my-4">
+                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                            </div>
+                        )}
+
+                        {/* Show empty state if no messages */}
+                        {!isLoading && currentMessages.length === 0 && (
                             <div className="h-full flex items-center justify-center">
                                 <h1 className="text-2xl font-bold" style={{ color: appColors.textColor }}>
-                                    {conversations.length === 0 ? 'Start a new conversation' : 'Select a conversation or start a new chat'}
+                                    {conversations.length === 0 ? 'How can I help you today?' : 'Choose a conversation or begin a new one!'}
                                 </h1>
                             </div>
                         )}
