@@ -29,24 +29,19 @@ export const COMPANY_CONFIG = [
       logo: "/logo_content_stratigies.png"
     },
     {
-      id: "2", 
-      podcastTitle: "Testing Titles",
-      logo: "/nextjs-icon-svgrepo-com.svg"
-    },
-    {
-      id: "3",
-      podcastTitle: "Testing Title",
-      logo: "/nextjs-icon-svgrepo-com (1).svg"
-    },
-    {
       id: "4",
       podcastTitle: "Go Beyond the Connection Podcast",
-      logo: "/nextjs-icon-svgrepo-com (1).svg"
+      logo: "/BigleafDark.png"
     },
     {
       id: "5",
       podcastTitle: "Go Beyond the Connection Podcast",
-      logo: "/nextjs-icon-svgrepo-com (1).svg"
+      logo: "/EastridgeDark.png"
+    },
+    {
+      id: "7",
+      podcastTitle: "Conversations from the frontline of digital services",
+      logo: "/TaskUsDark.png"
     }
   ];
   
