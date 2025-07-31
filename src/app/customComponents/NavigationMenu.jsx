@@ -130,7 +130,7 @@ const NavigationMenu = () => {
         localStorage.setItem("company_id", companyId);
         setSelectedCompany(companyId);
         setShowCompanySelect(false);
-        window.location.reload();
+        window.location.href = '/assistant';
     };
 
     const user = {
