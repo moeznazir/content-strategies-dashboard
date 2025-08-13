@@ -6,6 +6,8 @@ import { ShowCustomToast } from '../customComponents/CustomToastify';
 import PromptLibraryModal from '../customComponents/PromptLibraryModal';
 import ContextModal from '../customComponents/ContextModal';
 import { createClient } from '@supabase/supabase-js';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -563,9 +565,93 @@ const Assistant = () => {
                                 <div key={`${msg.id}-${index}`} className="w-full space-y-4 mb-6">
                                     <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                         <div className={`rounded-lg px-4 py-2 max-w-3xl break-words overflow-hidden ${msg.role === 'user' ? 'bg-white/10 text-white' : 'text-white'}`}>
-                                            <pre className="whitespace-pre-wrap font-sans text-wrap break-all">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    // Headings with gradient text
+                                                    h1: ({ node, ...props }) => (
+                                                        <h1 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent" {...props} />
+                                                    ),
+                                                    h2: ({ node, ...props }) => (
+                                                        <h2 className="text-xl font-semibold mb-3 mt-4 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" {...props} />
+                                                    ),
+                                                    h3: ({ node, ...props }) => (
+                                                        <h3 className="text-lg font-medium mb-2 mt-3 text-gray-200" {...props} />
+                                                    ),
+
+                                                    // Lists with custom bullets
+                                                    ul: ({ node, ...props }) => (
+                                                        <ul className="list-disc pl-5 mb-4 space-y-1 marker:text-blue-400" {...props} />
+                                                    ),
+                                                    ol: ({ node, ...props }) => (
+                                                        <ol className="list-decimal pl-5 mb-4 space-y-1 marker:text-blue-400 marker:font-bold" {...props} />
+                                                    ),
+                                                    li: ({ node, ...props }) => (
+                                                        <li className="mb-1.5 pl-1.5" {...props} />
+                                                    ),
+
+                                                    // Paragraphs with better line height
+                                                    p: ({ node, ...props }) => (
+                                                        <p className="leading-relaxed text-gray-100" {...props} />
+                                                    ),
+
+                                                    // Enhanced table styling
+                                                    table: ({ node, ...props }) => (
+                                                        <div className="overflow-x-auto rounded-lg border border-gray-700 shadow-sm mb-4">
+                                                            <table className="min-w-full divide-y divide-gray-700" {...props} />
+                                                        </div>
+                                                    ),
+                                                    thead: ({ node, ...props }) => (
+                                                        <thead className="bg-gradient-to-r from-gray-700 to-gray-800" {...props} />
+                                                    ),
+                                                    tbody: ({ node, ...props }) => (
+                                                        <tbody className="divide-y divide-gray-700" {...props} />
+                                                    ),
+                                                    tr: ({ node, ...props }) => (
+                                                        <tr className="hover:bg-gray-800/50 transition-colors duration-150" {...props} />
+                                                    ),
+                                                    th: ({ node, ...props }) => (
+                                                        <th
+                                                            className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                                                            {...props}
+                                                        />
+                                                    ),
+                                                    td: ({ node, ...props }) => (
+                                                        <td className="px-4 py-3 text-sm text-gray-200" {...props} />
+                                                    ),
+
+                                                    // Code blocks with syntax highlighting feel
+                                                    code: ({ node, inline, ...props }) => inline ? (
+                                                        <code className="bg-gray-700 px-1.5 py-0.5 rounded-md text-sm font-mono text-purple-300" {...props} />
+                                                    ) : (
+                                                        <div className="bg-gray-800 rounded-lg overflow-hidden mb-4 shadow-inner">
+                                                            <pre className="p-3 overflow-x-auto text-sm font-mono text-gray-200">
+                                                                <code {...props} />
+                                                            </pre>
+                                                        </div>
+                                                    ),
+
+                                                    // Blockquotes with elegant styling
+                                                    blockquote: ({ node, ...props }) => (
+                                                        <blockquote
+                                                            className="border-l-4 border-blue-500 pl-4 italic text-gray-300 my-4 py-2 bg-gray-800/50 rounded-r-lg"
+                                                            {...props}
+                                                        />
+                                                    ),
+
+                                                    // Links with hover effect
+                                                    a: ({ node, ...props }) => (
+                                                        <a
+                                                            className="text-blue-400 hover:text-blue-300 underline underline-offset-4 transition-colors"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            {...props}
+                                                        />
+                                                    )
+                                                }}
+                                            >
                                                 {msg.content}
-                                            </pre>
+                                            </ReactMarkdown>
                                         </div>
                                     </div>
                                 </div>
