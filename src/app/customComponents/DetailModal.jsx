@@ -18,7 +18,7 @@ const Modal = ({ data, onClose }) => {
     ];
 
     // Special fields that need custom rendering
-    const specialFields = ["Themes", "Validations", "Objections", "Challenges", 'Sales Insights', 'Case_Study_Other_Video'];
+    const specialFields = ["Themes", "Validations", "Objections", "Challenges", 'Sales Insights', 'Case_Study_Other_Video', 'Video Type'];
     const reportSections = [
         {
             title: "Challenge Report",
@@ -221,6 +221,7 @@ const Modal = ({ data, onClose }) => {
             "Case Study Video Short_Video Link": "Video Link",
             "Case Study Video Short_Copy and Paste Text": "Copy and Paste Text",
             "Case Study Video Short_Link To Document": "Link To Document",
+            "Video Type": "Content Type",
 
 
         };
@@ -271,7 +272,7 @@ const Modal = ({ data, onClose }) => {
                 {entries.map((entry, index) => {
                     // Determine the type of entry (theme, validation, etc.)
                     const type = Object.keys(entry).find(k =>
-                        ['theme', 'validation', 'objection', 'challenges', 'insight'].includes(k)
+                        ['theme', 'validation', 'objection', 'challenges', 'insight', 'videoType'].includes(k)
                     );
 
                     return (
@@ -281,52 +282,141 @@ const Modal = ({ data, onClose }) => {
                             style={{ backgroundColor: appColors.primaryColor }}
                         >
                             <div className="grid grid-cols-1 gap-2">
-                                <p>
-                                    <span className="font-semibold">{type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Item'}: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {entry[type] || `No ${type} selected`}
-                                    </span>
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Match Rating (1-10): </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {entry.ranking || "N/A"}
-                                    </span>
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Rating Justification: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {entry.justification || "No justification available"}
-                                    </span>
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Perception to Address: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {entry.perceptionToAddress || "Not specified"}
-                                    </span>
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Why It Matters: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {entry.whyItMatters || "Not specified"}
-                                    </span>
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Deeper Insight: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {entry.deeperInsight || "Not specified"}
-                                    </span>
-                                </p>
-                                <p>
-                                    <span className="font-semibold">Supporting Quotes: </span>
-                                    <span className='text-gray-400 text-sm'>
-                                        {entry.supportingQuotes || "None provided"}
-                                    </span>
-                                </p>
+                                {type === 'videoType' ? (
+                                    <div className="space-y-3">
+                                        {/* Handle both string and object formats */}
+                                        {typeof entry === 'string' ? (
+                                            <p>
+                                                <span className="font-semibold">Content Type: </span>
+                                                <span className='text-gray-600'>{entry}</span>
+                                            </p>
+                                        ) : (
+                                            <>
+                                                {/* Content Type */}
+                                                <p>
+                                                    <span className="font-semibold">Content Type: </span>
+                                                    <span className='text-gray-600'>{entry.videoType || entry.video_type || 'N/A'}</span>
+                                                </p>
+
+                                                {/* Show individual fields if they exist */}
+                                                {entry.video_title && (
+                                                    <p>
+                                                        <span className="font-semibold">Video Title: </span>
+                                                        <span className='text-gray-600'>{entry.video_title}</span>
+                                                    </p>
+                                                )}
+
+                                                {entry.video_length && (
+                                                    <p>
+                                                        <span className="font-semibold">Video Length: </span>
+                                                        <span className='text-gray-600'>{entry.video_length}</span>
+                                                    </p>
+                                                )}
+
+                                                {(entry.video_link || entry.link) && (
+                                                    <p>
+                                                        <span className="font-semibold">Video Link: </span>
+                                                        <span className='text-blue-500 hover:underline'>
+                                                            <a
+                                                                href={entry.video_link || entry.link}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                {entry.video_link || entry.link}
+                                                            </a>
+                                                        </span>
+                                                    </p>
+                                                )}
+
+                                                {entry.video_desc && (
+                                                    <p>
+                                                        <span className="font-semibold">Description: </span>
+                                                        <span className='text-gray-600'>{entry.video_desc}</span>
+                                                    </p>
+                                                )}
+
+                                                {/* Show nested videos if they exist */}
+                                                {entry.videos?.length > 0 && (
+                                                    <div className="mt-4">
+                                                        <p className="font-semibold mb-2">Included Videos:</p>
+                                                        <div className="space-y-4 pl-4 border-l-2 border-gray-200">
+                                                            {entry.videos.map((video, index) => (
+                                                                <div key={index} className="space-y-1">
+                                                                    {video.video_title && (
+                                                                        <p>
+                                                                            <span className="font-medium">Title: </span>
+                                                                            <span className='text-gray-600'>{video.video_title}</span>
+                                                                        </p>
+                                                                    )}
+                                                                    {video.video_length && (
+                                                                        <p>
+                                                                            <span className="font-medium">Length: </span>
+                                                                            <span className='text-gray-600'>{video.video_length}</span>
+                                                                        </p>
+                                                                    )}
+                                                                    {video.video_link && (
+                                                                        <p>
+                                                                            <span className="font-medium">Link: </span>
+                                                                            <span className='text-blue-500 hover:underline'>
+                                                                                <a href={video.video_link} target="_blank" rel="noopener noreferrer">
+                                                                                    {video.video_link}
+                                                                                </a>
+                                                                            </span>
+                                                                        </p>
+                                                                    )}
+                                                                    {video.video_desc && (
+                                                                        <p>
+                                                                            <span className="font-medium">Description: </span>
+                                                                            <span className='text-gray-600'>{video.video_desc}</span>
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p>
+                                            <span className="font-semibold">{type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Item'}: </span>
+                                            <span className='text-gray-400 text-sm'>
+                                                {entry[type] || `No ${type} selected`}
+                                            </span>
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">Match Rating (1-10): </span>
+                                            <span className='text-gray-400 text-sm'>{entry.ranking || "N/A"}</span>
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">Rating Justification: </span>
+                                            <span className='text-gray-400 text-sm'>{entry.justification || "No justification available"}</span>
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">Perception to Address: </span>
+                                            <span className='text-gray-400 text-sm'>{entry.perceptionToAddress || "Not specified"}</span>
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">Why It Matters: </span>
+                                            <span className='text-gray-400 text-sm'>{entry.whyItMatters || "Not specified"}</span>
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">Deeper Insight: </span>
+                                            <span className='text-gray-400 text-sm'>{entry.deeperInsight || "Not specified"}</span>
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">Supporting Quotes: </span>
+                                            <span className='text-gray-400 text-sm'>{entry.supportingQuotes || "None provided"}</span>
+                                        </p>
+                                    </>
+                                )}
                             </div>
                         </div>
                     );
                 })}
+
             </div>
         );
     };
@@ -340,59 +430,59 @@ const Modal = ({ data, onClose }) => {
         if (specialFields.includes(key)) {
             return renderSpecialField(key, value);
         }
-  // Handle Mentioned Quotes specifically
-  if (key === "Mentioned_Quotes") {
-    // Clean and normalize the quotes data
-    let quotesArray = [];
-    
-    if (Array.isArray(value)) {
-        quotesArray = value.map(q => String(q).replace(/^"+|"+$/g, '').trim());
-    } else if (typeof value === 'string') {
-        try {
-            const parsed = JSON.parse(value);
-            quotesArray = Array.isArray(parsed) 
-                ? parsed.map(q => String(q).replace(/^"+|"+$/g, '').trim())
-                : [String(value).replace(/^"+|"+$/g, '').trim()];
-        } catch {
-            quotesArray = [String(value).replace(/^"+|"+$/g, '').trim()];
+        // Handle Mentioned Quotes specifically
+        if (key === "Mentioned_Quotes") {
+            // Clean and normalize the quotes data
+            let quotesArray = [];
+
+            if (Array.isArray(value)) {
+                quotesArray = value.map(q => String(q).replace(/^"+|"+$/g, '').trim());
+            } else if (typeof value === 'string') {
+                try {
+                    const parsed = JSON.parse(value);
+                    quotesArray = Array.isArray(parsed)
+                        ? parsed.map(q => String(q).replace(/^"+|"+$/g, '').trim())
+                        : [String(value).replace(/^"+|"+$/g, '').trim()];
+                } catch {
+                    quotesArray = [String(value).replace(/^"+|"+$/g, '').trim()];
+                }
+            } else if (value) {
+                quotesArray = [String(value).replace(/^"+|"+$/g, '').trim()];
+            }
+
+            // Filter out empty quotes
+            quotesArray = quotesArray.filter(q => q && q !== '""' && q !== "''");
+
+            const isExpanded = expandedFields[key];
+            const visibleQuotes = isExpanded ? quotesArray : quotesArray.slice(0, 3);
+            const hasMoreQuotes = quotesArray.length > 3 && !isExpanded;
+
+            return (
+                <div className="space-y-1">
+                    {visibleQuotes.length > 0 ? (
+                        visibleQuotes.map((quote, index) => (
+                            <div
+                                key={index}
+                                className="inline-block bg-[#E5E7EB] dark:bg-gray-700 text-black px-2 py-1 rounded-md text-sm mr-2 mb-2"
+                            >
+                                {quote}
+                            </div>
+                        ))
+                    ) : (
+                        <span className="text-gray-400 text-sm">No quotes available</span>
+                    )}
+                    {hasMoreQuotes && (
+                        <button
+                            onClick={() => toggleExpand(key)}
+                            className="text-blue-500 hover:text-blue-700 text-sm flex items-center gap-1"
+                        >
+                            {isExpanded ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+                            {isExpanded ? 'Show less' : `Show ${quotesArray.length - 3} more`}
+                        </button>
+                    )}
+                </div>
+            );
         }
-    } else if (value) {
-        quotesArray = [String(value).replace(/^"+|"+$/g, '').trim()];
-    }
-
-    // Filter out empty quotes
-    quotesArray = quotesArray.filter(q => q && q !== '""' && q !== "''");
-
-    const isExpanded = expandedFields[key];
-    const visibleQuotes = isExpanded ? quotesArray : quotesArray.slice(0, 3);
-    const hasMoreQuotes = quotesArray.length > 3 && !isExpanded;
-
-    return (
-        <div className="space-y-1">
-            {visibleQuotes.length > 0 ? (
-                visibleQuotes.map((quote, index) => (
-                    <div 
-                        key={index} 
-                        className="inline-block bg-[#E5E7EB] dark:bg-gray-700 text-black px-2 py-1 rounded-md text-sm mr-2 mb-2"
-                    >
-                        {quote}
-                    </div>
-                ))
-            ) : (
-                <span className="text-gray-400 text-sm">No quotes available</span>
-            )}
-            {hasMoreQuotes && (
-                <button
-                    onClick={() => toggleExpand(key)}
-                    className="text-blue-500 hover:text-blue-700 text-sm flex items-center gap-1"
-                >
-                    {isExpanded ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
-                    {isExpanded ? 'Show less' : `Show ${quotesArray.length - 3} more`}
-                </button>
-            )}
-        </div>
-    );
-}
         // Handle array fields
         if (arrayFields.includes(key) && Array.isArray(value)) {
             const isExpanded = expandedFields[key];

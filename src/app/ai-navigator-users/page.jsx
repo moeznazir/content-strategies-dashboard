@@ -176,7 +176,7 @@ const AiNavigatorUserManagement = () => {
   const handleShareSignupLink = async () => {
     try {
       const slug = await fetchUserCompanySlug();
-      const url = `${window.location.origin}/${slug}/signup`;
+      const url = `${window.location.origin}/${slug}/sign-up`;
 
       await navigator.clipboard.writeText(url);
       ShowCustomToast("Signup Url copied to clipboard!", 'success', 2000);
