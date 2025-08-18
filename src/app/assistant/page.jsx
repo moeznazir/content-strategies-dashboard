@@ -8,7 +8,6 @@ import ContextModal from '../customComponents/ContextModal';
 import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
 // Initialize Supabase client
 const supabase = createClient(
     process.env.NEXT_PUBLIC_API_URL,
