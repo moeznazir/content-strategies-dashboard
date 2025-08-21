@@ -9,6 +9,86 @@ import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+
+const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
+    const guidelines = [
+        {
+            title: "Enhance Your Search with Library",
+            description: "Access pre-built prompts and templates to get started quickly with common tasks.",
+            button: "Open Library",
+            skip: "Skip"
+        },
+        {
+            title: "Optimize Your Query for Better Results",
+            description: "Get suggestions to improve your prompt and professionalize your query with one click.",
+            button: "Optimize Query",
+            skip: "Skip"
+        },
+        {
+            title: "Add Context for Better Responses",
+            description: "Include relevant documents to help the AI understand your business better.",
+            button: "Add Context",
+            skip: "Skip"
+        },
+        {
+            title: "Refine Results with Add-Ons",
+            description: "Customize the AI's output with specific parameters to get exactly what you need.",
+            button: "Apply Add-ons",
+            skip: "Finish"
+        }
+    ];
+
+    const currentGuideline = guidelines[step];
+
+    return (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
+            <div className="rounded-lg p-6 w-full max-w-md mx-4" style={{ backgroundColor: appColors.primaryColor }}>
+                <div className="flex justify-between items-center mb-4 -mt-2">
+                    <h2 className="text-xl font-bold ">Getting Started</h2>
+
+                    <button
+                        onClick={onClose}
+                        className=" hover:text-gray-500"
+                    >
+                        &times;
+                    </button>
+                </div>
+                <hr className='border-b -mx-6 -mt-2 mb-2' />
+                <div className="mb-6">
+                    <h3 className="text-lg font-semibold  mb-2">{currentGuideline.title}</h3>
+                    <p className="text-gray-500">{currentGuideline.description}</p>
+                </div>
+
+                <div className="flex justify-between items-center">
+                    <div className="flex space-x-1">
+                        {Array.from({ length: totalSteps }).map((_, i) => (
+                            <div
+                                key={i}
+                                className={`w-2 h-2 rounded-full ${i === step ? 'bg-blue-500' : 'bg-gray-300'}`}
+                            ></div>
+                        ))}
+                    </div>
+
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={onSkip}
+                            className="px-2 py-1 rounded-md  hover:text-gray-400 border"
+                        >
+                            {currentGuideline.skip}
+                        </button>
+                        <button
+                            onClick={onNext}
+                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            {currentGuideline.button}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Initialize Supabase client
 const supabase = createClient(
     process.env.NEXT_PUBLIC_API_URL,
@@ -57,6 +137,10 @@ const Assistant = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const chatContainerRef = useRef(null);
     const fileInputRef = useRef(null);
+    const [showGuideline, setShowGuideline] = useState(false);
+    const [currentGuidelineStep, setCurrentGuidelineStep] = useState(0);
+    const [pendingSubmit, setPendingSubmit] = useState(false); // Add this state
+    const totalGuidelineSteps = 4;
 
 
     useEffect(() => {
@@ -393,12 +477,37 @@ const Assistant = () => {
             return prev;
         });
     };
-
     const handleSubmit = async () => {
+        try {
+          // Check if this is the first search and show guidelines if needed
+          const hasSeenGuidelines = localStorage.getItem('hasSeenAssistantGuidelines');
+          
+          if (!hasSeenGuidelines) {
+            // Show guideline modal and set pending submit flag
+            setShowGuideline(true);
+            setPendingSubmit(true); // Mark that we have a pending submit
+            localStorage.setItem('hasSeenAssistantGuidelines', 'true');
+            return; // Exit early without submitting
+          }
+          
+          // If guidelines were already seen, proceed with normal submit
+          await executeSubmit();
+          
+        } catch (error) {
+          ShowCustomToast('Something went wrong, Please try again', 'info', 2000);
+          console.log('Error sending chat:', error);
+        }
+      };
+    const executeSubmit = async () => {
         try {
             setIsLoading(true);
             setHasSearched(true);
-
+            // Check if this is the first search and show guidelines if needed
+            const hasSeenGuidelines = localStorage.getItem('hasSeenAssistantGuidelines');
+            if (!hasSeenGuidelines) {
+                setShowGuideline(true);
+                localStorage.setItem('hasSeenAssistantGuidelines', 'true');
+            }
             const userId = localStorage.getItem('current_user_id');
             const isNewConversation = !selectedConversation;
             const conversationId = selectedConversation || `conv-${Date.now()}`;
@@ -511,7 +620,67 @@ const Assistant = () => {
             setIsLoading(false);
         }
     };
+    
+  const handleGuidelineAction = () => {
+    switch (currentGuidelineStep) {
+      case 0: // Library step
+        setShowLibraryDropdown(true);
+        setActiveTab('library');
+        setShowGuideline(false);
+        break;
+      case 1: // Optimization step
+        if (searchQuery.trim()) {
+          setShowOptimizationModal(true);
+          setShowGuideline(false);
+        } else {
+          setShowGuideline(false);
+          ShowCustomToast('Please enter a query first to optimize', 'info');
+          return;
+        }
+        break;
+      case 2: // Context step
+        setShowContextModal(true);
+        setActiveTab('context');
+        setShowGuideline(false);
+        break;
+      case 3: // Add-ons step
+        setShowAddonsModal(true);
+        setActiveTab('addons');
+        setShowGuideline(false);
+        break;
+      default:
+        break;
+    }
 
+    // Move to next step or close
+    if (currentGuidelineStep < totalGuidelineSteps - 1) {
+      setCurrentGuidelineStep(prev => prev + 1);
+    } else {
+      setShowGuideline(false);
+    }
+    
+    // Don't automatically execute submit - let user manually submit again
+    setPendingSubmit(false);
+  };
+
+  const handleGuidelineSkip = () => {
+    if (currentGuidelineStep < totalGuidelineSteps - 1) {
+      setCurrentGuidelineStep(prev => prev + 1);
+    } else {
+      setShowGuideline(false);
+    }
+    
+    // Don't automatically execute submit - let user manually submit again
+    setPendingSubmit(false);
+  };
+
+  const handleGuidelineClose = () => {
+    setShowGuideline(false);
+    
+    // Don't automatically execute submit - let user manually submit again
+    setPendingSubmit(false);
+  };
+    
     // Check if submit should be enabled
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
@@ -1139,6 +1308,17 @@ const Assistant = () => {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {/* Guideline Modal */}
+                {showGuideline && (
+                    <GuidelineModal
+                        step={currentGuidelineStep}
+                        onNext={handleGuidelineAction}
+                        onSkip={handleGuidelineSkip}
+                        onClose={handleGuidelineClose}
+                        totalSteps={totalGuidelineSteps}
+                    />
                 )}
             </div>
 
