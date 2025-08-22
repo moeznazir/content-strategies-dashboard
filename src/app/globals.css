@@ -28,8 +28,55 @@ html, body {
   height: 0;
   background: transparent; /* Remove white background in WebKit */
 }
+/* Smooth transitions for interactive elements */
+.react-markdown a, 
+.react-markdown tr {
+  transition: all 0.2s ease;
+}
 
+/* Custom scrollbar for code blocks */
+.react-markdown pre::-webkit-scrollbar {
+  height: 6px;
+  background-color: #2d3748;
+}
 
+.react-markdown pre::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
+  border-radius: 3px;
+}
+
+/* Fancy table row hover effect */
+.react-markdown tbody tr:hover td {
+  background-color: rgba(74, 85, 104, 0.3);
+}
+
+/* Responsive table cells */
+@media (max-width: 768px) {
+  .react-markdown td, 
+  .react-markdown th {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+.react-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.react-markdown th {
+  text-align: left;
+  padding: 0.5rem 1rem;
+  border-bottom: 2px solid #4a4a6a;
+}
+
+.react-markdown td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #4a4a6a;
+}
+
+.react-markdown tr:last-child td {
+  border-bottom: none;
+}
 
 @layer base {
   :root {

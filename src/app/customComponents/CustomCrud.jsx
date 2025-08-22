@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { createClient } from "@supabase/supabase-js";
@@ -213,8 +213,8 @@ const OPTIONS = {
         { value: "Competitive", label: "Competitive", count: 0 },
         { value: "Persona", label: "Persona", count: 0 },
         { value: "Individual", label: "Individual", count: 0 }
-      ],
-      "content_categories": [
+    ],
+    "content_categories": [
         { value: "Academic Publications and White Papers", label: "Academic Publications and White Papers", count: 0 },
         { value: "Articles", label: "Articles", count: 0 },
         { value: "Case Studies and Success Stories", label: "Case Studies and Success Stories", count: 0 },
@@ -238,12 +238,227 @@ const OPTIONS = {
         { value: "Social Media Posts", label: "Social Media Posts", count: 0 },
         { value: "Transcripts", label: "Transcripts", count: 0 },
         { value: "Video and Multimedia", label: "Video and Multimedia", count: 0 }
-      ]
+    ],
+    "Persona": [
+        { value: "Client", label: "Client" },
+        { value: "Prospect", label: "Prospect" },
+        { value: "Partner", label: "Partner" },
+        { value: "Thought Leader", label: "Thought Leader" },
+        { value: "VIP", label: "VIP" },
+        { value: "In-Pipeline", label: "In-Pipeline" },
+        { value: "Employee", label: "Employee" }
+    ],
 
 };
 
+// GUEST_FIELDS Section (Page 1 on step 1)
 
-// Updated ThemeEntry component to properly display theme data
+const GUEST_FIELDS = [
+    "Avatar",
+    "Persona",
+    "Industry Vertical",
+    "Guest",
+    "Guest Title",
+    "Guest Company",
+    "Guest Industry",
+    "Tracker",
+    "LinkedIn Profile",
+    "Dossier"
+];
+
+// PREP_CALLS_FIELDS Section (Page 2 on step 2)
+const PREP_CALLS_FIELDS = [
+    "Unedited Prep Call Video",
+    "Unedited Prep Call Transcript",
+    "Discussion Guide"
+];
+
+// Additional_Guest_Projects Section (Page 3 on step 3)
+const Additional_Guest_Projects = [
+    "Podcast",
+    "eBooks",
+    "Articles",
+    "Other"
+];
+
+// EMAIL_FIELDS Section (Page 4)
+const EMAIL_FIELDS = [
+    "Guest",
+    "Cold",
+    "Warm"
+];
+
+// EMAIL_FIELDS Section (Do not include in multistep form)
+const EMAIL_CATEGORIES = {
+    "Guest": "Delivery",
+    "Cold": "Sales",
+    "Warm": "Sales"
+};
+
+// Full Episode Section (Page 5 on step 4 )
+const DETAILS_FULL_EPISODES = [
+    "Episode ID",
+    "Episode Number",
+    "Episode Title",
+    "Date Recorded",
+    "Short and Long-Tail SEO Keywords",
+    "All Asset Folder"
+];
+const FULL_EPISODE_VIDEO = [
+    "Video File",
+    "Audio File",
+    "YouTube URL",
+    "Full Episode Details"
+];
+const FULL_EPISODE_EXTENDED_CONTENT = [
+    "Article URL",
+    "Article Text",
+    "YouTube Short Video File",
+    "YouTube Short URL",
+    "YouTube Short Transcript",
+    "LinkedIn Video File",
+    "LinkedIn Video Transcript",
+    "Extended Content LinkedIn Comments & Hashtags",
+    "Quote Card"
+];
+const FULL_EPISODE_HIGHLIGHT_VIDEO = [
+    "Video File",
+    "YouTube URL",
+    "Transcript",
+    "Highlights Video Details"
+];
+const FULL_EPISODE_INTRODUCTION_VIDEO = [
+    "Video File",
+    "YouTube URL",
+    "Transcript",
+    "Instruction Video Details"
+];
+const FULL_EPISODE_QA_VIDEOS = [
+    "QAV1 Video File",
+    "QAV1 YouTube URL",
+    "QAV1 Transcript",
+    "QAV1 QA Video Details",
+    "Extended Content Article URL",
+    "Extended Content Article Text",
+    "Extended Content YouTube Short Video File",
+    "Extended Content YouTube Short URL",
+    "Extended Content YouTube Short Transcript",
+    "Extended Content LinkedIn Video File",
+    "Extended Content LinkedIn Video Transcript",
+    "QA Video LinkedIn Comments & Hashtags",
+    "Quote Card"
+]
+
+const FULL_EPISODE_PODBOOK = [
+    "Interactive Experience",
+    "Website URL",
+    "Embed Code",
+    "Loom Folder"
+];
+
+const FULL_EPISODE_FULL_CASE_STUDY = [
+    "Interactive Experience",
+    "Case Study Text",
+    "Sales Email",
+    "Problem Section Video",
+    "Problem Section Video Length",
+    "Problem Section Video Transcript",
+    "Solutions Section Video",
+    "Solutions Section Video Length",
+    "Solutions Section Video Transcript",
+    "Results Section Video",
+    "Results Section Video Length",
+    "Results Section Video Transcript"
+];
+
+const FULL_EPISODE_ONE_PAGE_CASE_STUDY = [
+    "Interactive Experience",
+    "One Page Text",
+    "Sales Email",
+    "One Page Video",
+    "Length",
+    "Transcript"
+];
+
+const FULL_EPISODE_OTHER_CASE_STUDY = [
+    "Other Case Study Interactive Experience",
+    "Case Study Text",
+    "Sales Email",
+    "Other Case Study Video",
+    "Other Case Study Video Length",
+    "Other Case Study Video Transcript"
+];
+
+const FULL_EPISODE_ICP_ADVICE = [
+    "Post-Podcast Video",
+    "Unedited Post-Podcast Video Length",
+    "Unedited Post-Podcast Transcript",
+    "Post-Podcast Insights Report",
+    "Post-Podcast Vision Report"
+];
+
+const FULL_EPISODE_CHALLENGE_QUESTIONS = [
+    "Unedited Challenge Question Video",
+    "Unedited Challenge Question Video Length",
+    "Unedited Challenge Question Transcript",
+    "Challenge Report"
+];
+
+
+// Updated component to properly display data
+const VideoTypeEntry = ({ videoType, videos, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 text-black" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <p className="font-semibold mb-2">
+                        Content Type: <span className="text-gray-500 text-[15px]">{videoType || "No type selected"}</span>
+                    </p>
+
+                    {videos && videos.length > 0 ? (
+                        <div className="space-y-3" >
+                            {videos.map((video, idx) => (
+                                <div
+                                    key={`video-${idx}-${video.video_title || 'untitled'}`}
+                                    className="pl-4 border-l-2 border-gray-300 bg-gray-50 p-3 rounded"
+                                    style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}
+                                >
+                                    <p><span className="font-medium text-[15px]">Title:</span> <span className='text-gray-400 text-sm'>{video.video_title || "N/A"}</span></p>
+                                    <p><span className="font-medium text-[15px]">Length:</span> <span className='text-gray-400 text-sm'>{video.video_length || "N/A"}</span></p>
+                                    <p><span className="font-medium text-[15px]">Link:</span> <span className='text-gray-400 text-sm'>{video.video_link || "N/A"}</span></p>
+                                    {video.video_desc && (
+                                        <p><span className="font-medium text-[15px]">Description:</span> <span className='text-gray-400 text-sm'>{video.video_desc}</span></p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-gray-500">No videos added for this type.</p>
+                    )}
+                </div>
+
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => onEdit(index)}
+                        className="text-blue-500 hover:text-blue-700"
+                        title="Edit Video Group"
+                    >
+                        <PencilIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                        onClick={() => onRemove(index)}
+                        className="text-red-500 hover:text-red-700"
+                        title="Remove Video Group"
+                    >
+                        <TrashIcon className="h-5 w-5" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 const ThemeEntry = ({ theme, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -348,16 +563,7 @@ const SalesInsightsEntry = ({ insight, ranking, justification, perception, whyIt
     );
 };
 
-
-const CaseStudyVideoEntry = ({
-    video_title,
-    video_link,
-    copy_and_paste_text,
-    link_to_document,
-    onEdit,
-    onRemove,
-    index,
-}) => {
+const CaseStudyVideoEntry = ({ video_title, video_link, copy_and_paste_text, link_to_document, onEdit, onRemove, index }) => {
     return (
         <div
             className="border rounded-lg p-3 mb-3"
@@ -411,7 +617,6 @@ const CaseStudyVideoEntry = ({
     );
 };
 
-
 const ValidationEntry = ({ validation, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -437,10 +642,933 @@ const ValidationEntry = ({ validation, ranking, justification, perception, whyIt
         </div>
     );
 };
+const GuestEntry = ({ guest, onEdit, onRemove, index }) => {
+    // Define color classes for different personas
+    const personaColors = {
+        "Client": "bg-blue-100 text-blue-800",
+        "Prospect": "bg-purple-100 text-purple-800",
+        "Partner": "bg-green-100 text-green-800",
+        "Thought Leader": "bg-yellow-100 text-yellow-800",
+        "VIP": "bg-red-100 text-red-800",
+        "In-Pipeline": "bg-indigo-100 text-indigo-800",
+        "Employee": "bg-gray-100 text-gray-800"
+    };
+
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            {/* Edit and Delete buttons - fixed in top-right corner */}
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Guest"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Guest"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="flex items-start gap-4 pr-8"> {/* Added pr-8 to prevent overlap with buttons */}
+                <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {guest.Avatar ? (
+                        <img
+                            src={guest.Avatar}
+                            alt="Guest Avatar"
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <span className="text-white text-xs">No Image</span>
+                    )}
+                </div>
+                <div className="flex-1 min-w-0">
+                    {/* Scrollable Persona container */}
+                    <div className="flex items-start gap-2 mb-1">
+                        <span className="font-medium text-[15px] whitespace-nowrap">Persona:</span>
+                        <div className="flex-1 overflow-x-auto pb-1"> {/* Added overflow for scrolling */}
+                            <div className="flex flex-wrap gap-1">
+                                {guest["Persona"] ? (
+                                    Array.isArray(guest["Persona"]) ? (
+                                        guest["Persona"].map(persona => (
+                                            <span
+                                                key={persona}
+                                                className={`text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap ${personaColors[persona] || 'bg-gray-100 text-gray-800'}`}
+                                            >
+                                                {persona}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap ${personaColors[guest["Persona"]] || 'bg-gray-100 text-gray-800'}`}>
+                                            {guest["Persona"]}
+                                        </span>
+                                    )
+                                ) : (
+                                    <span className="text-gray-400 text-sm">N/A</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Rest of the guest info */}
+                    <p className="truncate"><span className="font-medium text-[15px]">Industry Vertical:</span> <span className='text-gray-400 text-sm'>{guest["Industry Vertical"] || "N/A"}</span></p>
+                    <p className="truncate"><span className="font-medium text-[15px]">Name:</span> <span className='text-gray-400 text-sm'>{guest["Guest"] || "N/A"}</span></p>
+                    <p className="truncate"><span className="font-medium text-[15px]">Title:</span> <span className='text-gray-400 text-sm'>{guest["Guest Title"] || "N/A"}</span></p>
+                    <p className="truncate"><span className="font-medium text-[15px]">Company:</span> <span className='text-gray-400 text-sm'>{guest["Guest Company"] || "N/A"}</span></p>
+                    <p className="truncate"><span className="font-medium text-[15px]">Industry:</span> <span className='text-gray-400 text-sm'>{guest["Guest Industry"] || "N/A"}</span></p>
+                    <p className="truncate">
+                        <span className="font-medium text-[15px]">Tracker:</span>
+                        {guest["Tracker"] ? (
+                            <a href={guest["Tracker"]} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-sm ml-1 truncate inline-block max-w-[180px]">
+                                {guest["Tracker"].length > 30 ? `${guest["Tracker"].substring(0, 30)}...` : guest["Tracker"]}
+                            </a>
+                        ) : (
+                            <span className='text-gray-400 text-sm'>N/A</span>
+                        )}
+                    </p>
+                    <p className="truncate">
+                        <span className="font-medium text-[15px]">LinkedIn:</span>
+                        {guest["LinkedIn Profile"] ? (
+                            <a href={guest["LinkedIn Profile"]} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-sm ml-1 truncate inline-block max-w-[180px]">
+                                {guest["LinkedIn Profile"].length > 30 ? `${guest["LinkedIn Profile"].substring(0, 30)}...` : guest["LinkedIn Profile"]}
+                            </a>
+                        ) : (
+                            <span className='text-gray-400 text-sm'>N/A</span>
+                        )}
+                    </p>
+                    <p className="truncate">
+                        <span className="font-medium text-[15px]">Dossier:</span>
+                        {guest["Dossier"] ? (
+                            <a href={guest["Dossier"]} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-sm ml-1 truncate inline-block max-w-[180px]">
+                                {guest["Dossier"].length > 30 ? `${guest["Dossier"].substring(0, 30)}...` : guest["Dossier"]}
+                            </a>
+                        ) : (
+                            <span className='text-gray-400 text-sm'>N/A</span>
+                        )}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const PrepCallEntry = ({ prepCall, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            {/* Edit and Delete buttons - fixed in top-right corner */}
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Prep Call"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Prep Call"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                <p className="truncate">
+                    <span className="font-medium text-[15px]">Unedited Prep Call Video:</span>
+                    {prepCall["Unedited Prep Call Video"] ? (
+                        <a
+                            href={prepCall["Unedited Prep Call Video"]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 text-sm ml-1"
+                        >
+                            {prepCall["Unedited Prep Call Video"].length > 30
+                                ? `${prepCall["Unedited Prep Call Video"].substring(0, 30)}...`
+                                : prepCall["Unedited Prep Call Video"]}
+                        </a>
+                    ) : (
+                        <span className='text-gray-400 text-sm'>N/A</span>
+                    )}
+                </p>
+
+                <p className="truncate">
+                    <span className="font-medium text-[15px]">Unedited Prep Call Transcript:</span>
+                    {prepCall["Unedited Prep Call Transcript"] ? (
+                        <a
+                            href={prepCall["Unedited Prep Call Transcript"]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 text-sm ml-1"
+                        >
+                            {prepCall["Unedited Prep Call Transcript"].length > 30
+                                ? `${prepCall["Unedited Prep Call Transcript"].substring(0, 30)}...`
+                                : prepCall["Unedited Prep Call Transcript"]}
+                        </a>
+                    ) : (
+                        <span className='text-gray-400 text-sm'>N/A</span>
+                    )}
+                </p>
+
+                <p className="truncate">
+                    <span className="font-medium text-[15px]">Discussion Guide:</span>
+                    {prepCall["Discussion Guide"] ? (
+                        <a
+                            href={prepCall["Discussion Guide"]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 text-sm ml-1"
+                        >
+                            {prepCall["Discussion Guide"].length > 30
+                                ? `${prepCall["Discussion Guide"].substring(0, 30)}...`
+                                : prepCall["Discussion Guide"]}
+                        </a>
+                    ) : (
+                        <span className='text-gray-400 text-sm'>N/A</span>
+                    )}
+                </p>
+            </div>
+        </div>
+    );
+};
+
+const AdditionalProjectEntry = ({ project, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            {/* Edit and Delete buttons - fixed in top-right corner */}
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Project"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Project"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                <p className="truncate">
+                    <span className="font-medium text-[15px]">Podcast:</span>
+                    {project["Podcast"] ? (
+                        <a
+                            href={project["Podcast"]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 text-sm ml-1"
+                        >
+                            {project["Podcast"].length > 30
+                                ? `${project["Podcast"].substring(0, 30)}...`
+                                : project["Podcast"]}
+                        </a>
+                    ) : (
+                        <span className='text-gray-400 text-sm'>N/A</span>
+                    )}
+                </p>
+
+                <p className="truncate">
+                    <span className="font-medium text-[15px]">eBooks:</span>
+                    {project["eBooks"] ? (
+                        <a
+                            href={project["eBooks"]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 text-sm ml-1"
+                        >
+                            {project["eBooks"].length > 30
+                                ? `${project["eBooks"].substring(0, 30)}...`
+                                : project["eBooks"]}
+                        </a>
+                    ) : (
+                        <span className='text-gray-400 text-sm'>N/A</span>
+                    )}
+                </p>
+
+                <p className="truncate">
+                    <span className="font-medium text-[15px]">Articles:</span>
+                    {project["Articles"] ? (
+                        <a
+                            href={project["Articles"]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 text-sm ml-1"
+                        >
+                            {project["Articles"].length > 30
+                                ? `${project["Articles"].substring(0, 30)}...`
+                                : project["Articles"]}
+                        </a>
+                    ) : (
+                        <span className='text-gray-400 text-sm'>N/A</span>
+                    )}
+                </p>
+
+                <p className="truncate">
+                    <span className="font-medium text-[15px]">Other:</span>
+                    {project["Other"] ? (
+                        <a
+                            href={project["Other"]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 text-sm ml-1"
+                        >
+                            {project["Other"].length > 30
+                                ? `${project["Other"].substring(0, 30)}...`
+                                : project["Other"]}
+                        </a>
+                    ) : (
+                        <span className='text-gray-400 text-sm'>N/A</span>
+                    )}
+                </p>
+            </div>
+        </div>
+    );
+};
+
+const EmailEntry = ({ email, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            {/* Edit and Delete buttons - fixed in top-right corner */}
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Email"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Email"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {/* Display email fields */}
+                {Object.entries(email).map(([key, value]) => (
+                    key !== 'category' && value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            <a
+                                href={`mailto:${value}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-400 text-sm ml-1"
+                            >
+                                {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                            </a>
+                        </p>
+                    )
+                ))}
+
+            </div>
+        </div>
+    );
+};
+
+
+// Entry components for all episode-related fields
+const FullEpisodeDetailsEntry = ({ details, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Full Episode Details"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Full Episode Details"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(details).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('Folder') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeVideoEntry = ({ video, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Full Episode Video"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Full Episode Video"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(video).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeExtendedContentEntry = ({ content, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Extended Content"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Extended Content"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(content).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeHighlightVideoEntry = ({ video, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Highlight Video"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Highlight Video"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(video).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeIntroductionVideoEntry = ({ video, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Introduction Video"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Introduction Video"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(video).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeQAVideosEntry = ({ qaVideos, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit QA Videos"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove QA Videos"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(qaVideos).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodePodbookEntry = ({ podbook, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Podbook"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Podbook"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(podbook).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('Folder') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeFullCaseStudyEntry = ({ caseStudy, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Full Case Study"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Full Case Study"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(caseStudy).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') || key.includes('Video') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeOnePageCaseStudyEntry = ({ caseStudy, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit One Page Case Study"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove One Page Case Study"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(caseStudy).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') || key.includes('Video') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeOtherCaseStudyEntry = ({ caseStudy, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Other Case Study"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Other Case Study"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(caseStudy).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') || key.includes('Video') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeICPAdviceEntry = ({ advice, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit ICP Advice"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove ICP Advice"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(advice).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') || key.includes('Video') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const FullEpisodeChallengeQuestionsEntry = ({ challenge, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Challenge Questions"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Challenge Questions"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(challenge).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') || key.includes('Video') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank, prefilledData = null, tableName, createRecord, updateRecord, isDashboardForm, isFilesData }) => {
     const [loading, setLoading] = useState(false);
 
+    // Video Type
+    const [currentVideoType, setCurrentVideoType] = useState("");
+    const [currentVideoTitle, setCurrentVideoTitle] = useState("");
+    const [currentVideoLength, setCurrentVideoLength] = useState("");
+    const [currentVideoLink, setCurrentVideoLink] = useState("");
+    const [currentVideoDesc, setCurrentVideoDesc] = useState("");
+    const [currentVideos, setCurrentVideos] = useState([]);
+    const [videoTypeEntries, setVideoTypeEntries] = useState([]);
+    const [videoTypeEditIndex, setVideoTypeEditIndex] = useState(null);
+    const [editingVideoIndex, setEditingVideoIndex] = useState(null);
+
+
     // Themes
+
     const [currentTheme, setCurrentTheme] = useState("");
     const [currentRanking, setCurrentRanking] = useState("");
     const [currentJustification, setCurrentJustification] = useState("");
@@ -448,7 +1576,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [currentWhyItMatters, setCurrentWhyItMatters] = useState("");
     const [currentDeeperInsight, setCurrentDeeperInsight] = useState("");
     const [currentSupportingQuotes, setCurrentSupportingQuotes] = useState("");
-
     const [themeEntries, setThemeEntries] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
 
@@ -497,13 +1624,288 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const [salesInsightsEditIndex, setSalesInsightsEditIndex] = useState(null);
 
     // Case Study Other Video
-    const [currentVideoTitle, setCurrentVideoTitle] = useState("");
-    const [currentVideoLink, setCurrentVideoLink] = useState("");
+    // const [currentVideoTitle, setCurrentVideoTitle] = useState("");
+    // const [currentVideoLink, setCurrentVideoLink] = useState("");
     const [currentCopyAndPasteText, setCurrentCopyAndPasteText] = useState("");
     const [currentLinkToDocument, setCurrentLinkToDocument] = useState("");
     const [caseStudyVideoEntries, setCaseStudyVideoEntries] = useState([]);
     const [caseStudyVideoEditIndex, setCaseStudyVideoEditIndex] = useState(null);
 
+
+    // Mentioned Quotes fileds
+    const [currentMentionedQuote, setCurrentMentionedQuote] = useState("");
+    const [mentionedQuotes, setMentionedQuotes] = useState([]);
+
+    // Guest 
+    const [guestEntries, setGuestEntries] = useState([]);
+    const [currentGuest, setCurrentGuest] = useState({
+        "Avatar": "",
+        "Persona": "",
+        "Industry Vertical": "",
+        "Guest": "",
+        "Guest Title": "",
+        "Guest Company": "",
+        "Guest Industry": "",
+        "Tracker": "",
+        "LinkedIn Profile": "",
+        "Dossier": ""
+    });
+    const [guestEditIndex, setGuestEditIndex] = useState(null);
+
+    // Prep Callas
+    const [prepCallEntries, setPrepCallEntries] = useState([]);
+    const [currentPrepCall, setCurrentPrepCall] = useState({
+        "Unedited Prep Call Video": "",
+        "Unedited Prep Call Transcript": "",
+        "Discussion Guide": ""
+    });
+    const [prepCallEditIndex, setPrepCallEditIndex] = useState(null);
+
+    // Additional Guest Projects
+    const [additionalProjectEntries, setAdditionalProjectEntries] = useState([]);
+    const [currentAdditionalProject, setCurrentAdditionalProject] = useState({
+        "Podcast": "",
+        "eBooks": "",
+        "Articles": "",
+        "Other": ""
+    });
+    const [additionalProjectEditIndex, setAdditionalProjectEditIndex] = useState(null);
+
+
+    // Add to your existing state declarations
+    const [emailEntries, setEmailEntries] = useState([]);
+    const [currentEmail, setCurrentEmail] = useState({
+        "Guest": "",
+        "Cold": "",
+        "Warm": ""
+    });
+    const [emailEditIndex, setEmailEditIndex] = useState(null);
+
+
+    // Full Episode Details
+    const [fullEpisodeDetailsEntries, setFullEpisodeDetailsEntries] = useState([]);
+    const [currentFullEpisodeDetails, setCurrentFullEpisodeDetails] = useState({
+        "Episode ID": "",
+        "Episode Number": "",
+        "Episode Title": "",
+        "Date Recorded": "",
+        "Short and Long-Tail SEO Keywords": "",
+        "All Asset Folder": ""
+    });
+    const [fullEpisodeDetailsEditIndex, setFullEpisodeDetailsEditIndex] = useState(null);
+
+    // Full Episode Video
+    const [fullEpisodeVideoEntries, setFullEpisodeVideoEntries] = useState([]);
+    const [currentFullEpisodeVideo, setCurrentFullEpisodeVideo] = useState({
+        "Video File": "",
+        "Audio File": "",
+        "YouTube URL": "",
+        "Full Episode Details": ""
+    });
+    const [fullEpisodeVideoEditIndex, setFullEpisodeVideoEditIndex] = useState(null);
+
+    // Full Episode Extended Content
+    const [fullEpisodeExtendedContentEntries, setFullEpisodeExtendedContentEntries] = useState([]);
+    const [currentFullEpisodeExtendedContent, setCurrentFullEpisodeExtendedContent] = useState({
+        "Article URL": "",
+        "Article Text": "",
+        "YouTube Short Video File": "",
+        "YouTube Short URL": "",
+        "YouTube Short Transcript": "",
+        "LinkedIn Video File": "",
+        "LinkedIn Video Transcript": "",
+        "Extended Content LinkedIn Comments & Hashtags": "",
+        "Quote Card": ""
+    });
+    const [fullEpisodeExtendedContentEditIndex, setFullEpisodeExtendedContentEditIndex] = useState(null);
+
+    // Full Episode Highlight Video
+    const [fullEpisodeHighlightVideoEntries, setFullEpisodeHighlightVideoEntries] = useState([]);
+    const [currentFullEpisodeHighlightVideo, setCurrentFullEpisodeHighlightVideo] = useState({
+        "Video File": "",
+        "YouTube URL": "",
+        "Transcript": "",
+        "Highlights Video Details": ""
+    });
+    const [fullEpisodeHighlightVideoEditIndex, setFullEpisodeHighlightVideoEditIndex] = useState(null);
+
+    // Full Episode Introduction Video
+    const [fullEpisodeIntroductionVideoEntries, setFullEpisodeIntroductionVideoEntries] = useState([]);
+    const [currentFullEpisodeIntroductionVideo, setCurrentFullEpisodeIntroductionVideo] = useState({
+        "Video File": "",
+        "YouTube URL": "",
+        "Transcript": "",
+        "Instruction Video Details": ""
+    });
+    const [fullEpisodeIntroductionVideoEditIndex, setFullEpisodeIntroductionVideoEditIndex] = useState(null);
+
+    // Full Episode QA Videos
+    const [fullEpisodeQAVideosEntries, setFullEpisodeQAVideosEntries] = useState([]);
+    const [currentFullEpisodeQAVideos, setCurrentFullEpisodeQAVideos] = useState({
+        "QAV1 Video File": "",
+        "QAV1 YouTube URL": "",
+        "QAV1 Transcript": "",
+        "QAV1 QA Video Details": "",
+        "Extended Content Article URL": "",
+        "Extended Content Article Text": "",
+        "Extended Content YouTube Short Video File": "",
+        "Extended Content YouTube Short URL": "",
+        "Extended Content YouTube Short Transcript": "",
+        "Extended Content LinkedIn Video File": "",
+        "Extended Content LinkedIn Video Transcript": "",
+        "QA Video LinkedIn Comments & Hashtags": "",
+        "Quote Card": ""
+    });
+    const [fullEpisodeQAVideosEditIndex, setFullEpisodeQAVideosEditIndex] = useState(null);
+
+    // Full Episode Podbook
+    const [fullEpisodePodbookEntries, setFullEpisodePodbookEntries] = useState([]);
+    const [currentFullEpisodePodbook, setCurrentFullEpisodePodbook] = useState({
+        "Interactive Experience": "",
+        "Website URL": "",
+        "Embed Code": "",
+        "Loom Folder": ""
+    });
+    const [fullEpisodePodbookEditIndex, setFullEpisodePodbookEditIndex] = useState(null);
+
+    // Full Episode Full Case Study
+    const [fullEpisodeFullCaseStudyEntries, setFullEpisodeFullCaseStudyEntries] = useState([]);
+    const [currentFullEpisodeFullCaseStudy, setCurrentFullEpisodeFullCaseStudy] = useState({
+        "Interactive Experience": "",
+        "Case Study Text": "",
+        "Sales Email": "",
+        "Problem Section Video": "",
+        "Problem Section Video Length": "",
+        "Problem Section Video Transcript": "",
+        "Solutions Section Video": "",
+        "Solutions Section Video Length": "",
+        "Solutions Section Video Transcript": "",
+        "Results Section Video": "",
+        "Results Section Video Length": "",
+        "Results Section Video Transcript": ""
+    });
+    const [fullEpisodeFullCaseStudyEditIndex, setFullEpisodeFullCaseStudyEditIndex] = useState(null);
+
+    // Full Episode One Page Case Study
+    const [fullEpisodeOnePageCaseStudyEntries, setFullEpisodeOnePageCaseStudyEntries] = useState([]);
+    const [currentFullEpisodeOnePageCaseStudy, setCurrentFullEpisodeOnePageCaseStudy] = useState({
+        "Interactive Experience": "",
+        "One Page Text": "",
+        "Sales Email": "",
+        "One Page Video": "",
+        "Length": "",
+        "Transcript": ""
+    });
+    const [fullEpisodeOnePageCaseStudyEditIndex, setFullEpisodeOnePageCaseStudyEditIndex] = useState(null);
+
+    // Full Episode Other Case Study
+    const [fullEpisodeOtherCaseStudyEntries, setFullEpisodeOtherCaseStudyEntries] = useState([]);
+    const [currentFullEpisodeOtherCaseStudy, setCurrentFullEpisodeOtherCaseStudy] = useState({
+        "Other Case Study Interactive Experience": "",
+        "Case Study Text": "",
+        "Sales Email": "",
+        "Other Case Study Video": "",
+        "Other Case Study Video Length": "",
+        "Other Case Study Video Transcript": ""
+    });
+    const [fullEpisodeOtherCaseStudyEditIndex, setFullEpisodeOtherCaseStudyEditIndex] = useState(null);
+
+    // Full Episode ICP Advice
+    const [fullEpisodeICPAdviceEntries, setFullEpisodeICPAdviceEntries] = useState([]);
+    const [currentFullEpisodeICPAdvice, setCurrentFullEpisodeICPAdvice] = useState({
+        "Post-Podcast Video": "",
+        "Unedited Post-Podcast Video Length": "",
+        "Unedited Post-Podcast Transcript": "",
+        "Post-Podcast Insights Report": "",
+        "Post-Podcast Vision Report": ""
+    });
+    const [fullEpisodeICPAdviceEditIndex, setFullEpisodeICPAdviceEditIndex] = useState(null);
+
+    // Full Episode Challenge Questions
+    const [fullEpisodeChallengeQuestionsEntries, setFullEpisodeChallengeQuestionsEntries] = useState([]);
+    const [currentFullEpisodeChallengeQuestions, setCurrentFullEpisodeChallengeQuestions] = useState({
+        "Unedited Challenge Question Video": "",
+        "Unedited Challenge Question Video Length": "",
+        "Unedited Challenge Question Transcript": "",
+        "Challenge Report": ""
+    });
+    const [fullEpisodeChallengeQuestionsEditIndex, setFullEpisodeChallengeQuestionsEditIndex] = useState(null);
+
+    const avatarInputRef = useRef(null);
+    const [currentStep, setCurrentStep] = useState(1);
+    const totalSteps = 4;
+    const nextStep = () => {
+        if (currentStep < totalSteps) {
+            setCurrentStep(currentStep + 1);
+        }
+    };
+
+    const prevStep = () => {
+        if (currentStep > 1) {
+            setCurrentStep(currentStep - 1);
+        }
+    };
+
+    const normalizeVideoType = (data) => {
+        if (!data) return [];
+
+        // Handle string case (legacy format)
+        if (typeof data === 'string') {
+            try {
+                // Try to parse as JSON
+                const parsed = JSON.parse(data);
+                return normalizeVideoType(parsed); // Recursively handle parsed data
+            } catch {
+                // If it's a simple string
+                return [{
+                    videoType: data,
+                    videos: []
+                }];
+            }
+        }
+
+        // Handle array case
+        if (Array.isArray(data)) {
+            return data.map(item => {
+                // Handle object format
+                if (typeof item === 'object') {
+                    return {
+                        videoType: item.videoType || item.video_type || "",
+                        videos: Array.isArray(item.videos)
+                            ? item.videos.map(v => ({
+                                video_title: v.video_title || "",
+                                video_length: v.video_length || "",
+                                video_link: v.video_link || "",
+                                video_desc: v.video_desc || ""
+                            }))
+                            : []
+                    };
+                }
+                // Handle string in array
+                return {
+                    videoType: item,
+                    videos: []
+                };
+            });
+        }
+
+        // Handle single object case
+        if (typeof data === 'object') {
+            return [{
+                videoType: data.videoType || data.video_type || "",
+                videos: Array.isArray(data.videos)
+                    ? data.videos.map(v => ({
+                        video_title: v.video_title || "",
+                        video_length: v.video_length || "",
+                        video_link: v.video_link || "",
+                        video_desc: v.video_desc || ""
+                    }))
+                    : []
+            }];
+        }
+
+        return [];
+    };
 
     function normalizeThemes(data) {
         if (!Array.isArray(data)) return [];
@@ -603,10 +2005,818 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         });
     }
 
+    function normalizeGuestData(data, entityData) {
+        if (!data) return [];
+
+        // Handle empty string case
+        if (typeof data === 'string' && data.trim() === '') return [];
+
+        // Handle string format (could be JSON string or single guest name)
+        if (typeof data === 'string') {
+            try {
+                // First try to parse as JSON
+                const parsed = JSON.parse(data);
+                if (Array.isArray(parsed)) {
+                    return parsed.map(guest => ({
+                        "Avatar": guest.Avatar || "",
+                        "Persona": guest["Persona"] || "",
+                        "Industry Vertical": guest["Industry Vertical"] || "",
+                        "Guest": guest.Guest || "",
+                        "Guest Title": guest["Guest Title"] || "",
+                        "Guest Company": guest["Guest Company"] || "",
+                        "Guest Industry": guest["Guest Industry"] || "",
+                        "Tracker": guest["Tracker"] || "",
+                        "LinkedIn Profile": guest["LinkedIn Profile"] || "",
+                        "Dossier": guest["Dossier"] || "",
+                    }));
+                }
+
+                // If it's a single guest object
+                return [{
+                    "Avatar": parsed.Avatar || "",
+                    "Persona": parsed["Persona"] || "",
+                    "Industry Vertical": parsed["Industry Vertical"] || "",
+                    "Guest": parsed.Guest || "",
+                    "Guest Title": parsed["Guest Title"] || "",
+                    "Guest Company": parsed["Guest Company"] || "",
+                    "Guest Industry": parsed["Guest Industry"] || "",
+                    "Tracker": parsed["Tracker"] || "",
+                    "LinkedIn Profile": parsed["LinkedIn Profile"] || "",
+                    "Dossier": parsed["Dossier"] || "",
+                }];
+            } catch (e) {
+                // If parsing fails, treat as a single guest name
+                return [{
+                    "Avatar": "",
+                    "Persona": entityData["Persona"] || "",
+                    "Industry Vertical": entityData["Industry Vertical"] || "",
+                    "Guest": data,
+                    "Guest Title": entityData['Guest Title'],
+                    "Guest Company": entityData['Guest Company'],
+                    "Guest Industry": entityData['Guest Industry'],
+                    "Tracker": entityData['Tracker'],
+                    "LinkedIn Profile": entityData['LinkedIn Profile'],
+                    "Dossier": entityData['Dossier'],
+                }];
+            }
+        }
+        console.log("guest datata", data);
+        // Handle array format
+        if (Array.isArray(data)) {
+            return data.map(guest => ({
+                "Avatar": guest.Avatar || "",
+                "Persona": guest["Persona"] || "",
+                "Industry Vertical": guest["Industry Vertical"] || "",
+                "Guest": guest.Guest || "",
+                "Guest Title": guest["Guest Title"] || "",
+                "Guest Company": guest["Guest Company"] || "",
+                "Guest Industry": guest["Guest Industry"] || "",
+                "Tracker": guest["Tracker"] || "",
+                "LinkedIn Profile": guest["LinkedIn Profile"] || "",
+                "Dossier": guest["Dossier"] || "",
+            }));
+        }
+
+        // Handle single guest object
+        return [{
+            "Avatar": data.Avatar || "",
+            "Persona": data["Persona"] || "",
+            "Industry Vertical": data["Industry Vertical"] || "",
+            "Guest": data.Guest || "",
+            "Guest Title": data["Guest Title"] || "",
+            "Guest Company": data["Guest Company"] || "",
+            "Guest Industry": data["Guest Industry"] || "",
+            "Tracker": data["Tracker"] || "",
+            "LinkedIn Profile": data["LinkedIn Profile"] || "",
+            "Dossier": data["Dossier"] || "",
+
+        }];
+
+    }
+
+    function normalizePrepCalls(data) {
+        if (!data) return [];
+
+        // Handle string case (could be JSON string)
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizePrepCalls(parsed); // Recursively handle parsed data
+            } catch {
+                return [];
+            }
+        }
+
+        // Handle array case
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Unedited Prep Call Video": item["Unedited Prep Call Video"] || "",
+                "Unedited Prep Call Transcript": item["Unedited Prep Call Transcript"] || "",
+                "Discussion Guide": item["Discussion Guide"] || ""
+            }));
+        }
+
+        // Handle single object case
+        if (typeof data === 'object') {
+            return [{
+                "Unedited Prep Call Video": data["Unedited Prep Call Video"] || "",
+                "Unedited Prep Call Transcript": data["Unedited Prep Call Transcript"] || "",
+                "Discussion Guide": data["Discussion Guide"] || ""
+            }];
+        }
+
+        return [];
+    }
+
+    function normalizeAdditionalProjects(data) {
+        if (!data) return [];
+
+        // Handle string case (could be JSON string)
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeAdditionalProjects(parsed); // Recursively handle parsed data
+            } catch {
+                return [];
+            }
+        }
+
+        // Handle array case
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Podcast": item["Podcast"] || "",
+                "eBooks": item["eBooks"] || "",
+                "Articles": item["Articles"] || "",
+                "Other": item["Other"] || ""
+            }));
+        }
+
+        // Handle single object case
+        if (typeof data === 'object') {
+            return [{
+                "Podcast": data["Podcast"] || "",
+                "eBooks": data["eBooks"] || "",
+                "Articles": data["Articles"] || "",
+                "Other": data["Other"] || ""
+            }];
+        }
+
+        return [];
+    }
+
+    function normalizeEmails(data) {
+        if (!data) return [];
+
+        // Handle string case (could be JSON string)
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeEmails(parsed); // Recursively handle parsed data
+            } catch {
+                return [];
+            }
+        }
+
+        // Handle array case
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Guest": item["Guest"] || "",
+                "Cold": item["Cold"] || "",
+                "Warm": item["Warm"] || "",
+                "category": item["category"] || ""
+            }));
+        }
+
+        // Handle single object case
+        if (typeof data === 'object') {
+            return [{
+                "Guest": data["Guest"] || "",
+                "Cold": data["Cold"] || "",
+                "Warm": data["Warm"] || "",
+                "category": data["category"] || ""
+            }];
+        }
+
+        return [];
+    }
+
+    // Normalization functions for all episode-related fields
+    function normalizeFullEpisodeDetails(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeDetails(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Episode ID": item["Episode ID"] || "",
+                "Episode Number": item["Episode Number"] || "",
+                "Episode Title": item["Episode Title"] || "",
+                "Date Recorded": item["Date Recorded"] || "",
+                "Short and Long-Tail SEO Keywords": item["Short and Long-Tail SEO Keywords"] || "",
+                "All Asset Folder": item["All Asset Folder"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Episode ID": data["Episode ID"] || "",
+                "Episode Number": data["Episode Number"] || "",
+                "Episode Title": data["Episode Title"] || "",
+                "Date Recorded": data["Date Recorded"] || "",
+                "Short and Long-Tail SEO Keywords": data["Short and Long-Tail SEO Keywords"] || "",
+                "All Asset Folder": data["All Asset Folder"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeVideo(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeVideo(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Video File": item["Video File"] || "",
+                "Audio File": item["Audio File"] || "",
+                "YouTube URL": item["YouTube URL"] || "",
+                "Full Episode Details": item["Full Episode Details"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Video File": data["Video File"] || "",
+                "Audio File": data["Audio File"] || "",
+                "YouTube URL": data["YouTube URL"] || "",
+                "Full Episode Details": data["Full Episode Details"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeExtendedContent(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeExtendedContent(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Article URL": item["Article URL"] || "",
+                "Article Text": item["Article Text"] || "",
+                "YouTube Short Video File": item["YouTube Short Video File"] || "",
+                "YouTube Short URL": item["YouTube Short URL"] || "",
+                "YouTube Short Transcript": item["YouTube Short Transcript"] || "",
+                "LinkedIn Video File": item["LinkedIn Video File"] || "",
+                "LinkedIn Video Transcript": item["LinkedIn Video Transcript"] || "",
+                "Extended Content LinkedIn Comments & Hashtags": item["Extended Content LinkedIn Comments & Hashtags"] || "",
+                "Quote Card": item["Quote Card"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Article URL": data["Article URL"] || "",
+                "Article Text": data["Article Text"] || "",
+                "YouTube Short Video File": data["YouTube Short Video File"] || "",
+                "YouTube Short URL": data["YouTube Short URL"] || "",
+                "YouTube Short Transcript": data["YouTube Short Transcript"] || "",
+                "LinkedIn Video File": data["LinkedIn Video File"] || "",
+                "LinkedIn Video Transcript": data["LinkedIn Video Transcript"] || "",
+                "Extended Content LinkedIn Comments & Hashtags": data["Extended Content LinkedIn Comments & Hashtags"] || "",
+                "Quote Card": data["Quote Card"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeHighlightVideo(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeHighlightVideo(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Video File": item["Video File"] || "",
+                "YouTube URL": item["YouTube URL"] || "",
+                "Transcript": item["Transcript"] || "",
+                "Highlights Video Details": item["Highlights Video Details"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Video File": data["Video File"] || "",
+                "YouTube URL": data["YouTube URL"] || "",
+                "Transcript": data["Transcript"] || "",
+                "Highlights Video Details": data["Highlights Video Details"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeIntroductionVideo(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeIntroductionVideo(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Video File": item["Video File"] || "",
+                "YouTube URL": item["YouTube URL"] || "",
+                "Transcript": item["Transcript"] || "",
+                "Instruction Video Details": item["Instruction Video Details"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Video File": data["Video File"] || "",
+                "YouTube URL": data["YouTube URL"] || "",
+                "Transcript": data["Transcript"] || "",
+                "Instruction Video Details": data["Instruction Video Details"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeQAVideos(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeQAVideos(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "QAV1 Video File": item["QAV1 Video File"] || "",
+                "QAV1 YouTube URL": item["QAV1 YouTube URL"] || "",
+                "QAV1 Transcript": item["QAV1 Transcript"] || "",
+                "QAV1 QA Video Details": item["QAV1 QA Video Details"] || "",
+                "Extended Content Article URL": item["Extended Content Article URL"] || "",
+                "Extended Content Article Text": item["Extended Content Article Text"] || "",
+                "Extended Content YouTube Short Video File": item["Extended Content YouTube Short Video File"] || "",
+                "Extended Content YouTube Short URL": item["Extended Content YouTube Short URL"] || "",
+                "Extended Content YouTube Short Transcript": item["Extended Content YouTube Short Transcript"] || "",
+                "Extended Content LinkedIn Video File": item["Extended Content LinkedIn Video File"] || "",
+                "Extended Content LinkedIn Video Transcript": item["Extended Content LinkedIn Video Transcript"] || "",
+                "QA Video LinkedIn Comments & Hashtags": item["QA Video LinkedIn Comments & Hashtags"] || "",
+                "Quote Card": item["Quote Card"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "QAV1 Video File": data["QAV1 Video File"] || "",
+                "QAV1 YouTube URL": data["QAV1 YouTube URL"] || "",
+                "QAV1 Transcript": data["QAV1 Transcript"] || "",
+                "QAV1 QA Video Details": data["QAV1 QA Video Details"] || "",
+                "Extended Content Article URL": data["Extended Content Article URL"] || "",
+                "Extended Content Article Text": data["Extended Content Article Text"] || "",
+                "Extended Content YouTube Short Video File": data["Extended Content YouTube Short Video File"] || "",
+                "Extended Content YouTube Short URL": data["Extended Content YouTube Short URL"] || "",
+                "Extended Content YouTube Short Transcript": data["Extended Content YouTube Short Transcript"] || "",
+                "Extended Content LinkedIn Video File": data["Extended Content LinkedIn Video File"] || "",
+                "Extended Content LinkedIn Video Transcript": data["Extended Content LinkedIn Video Transcript"] || "",
+                "QA Video LinkedIn Comments & Hashtags": data["QA Video LinkedIn Comments & Hashtags"] || "",
+                "Quote Card": data["Quote Card"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodePodbook(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodePodbook(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Interactive Experience": item["Interactive Experience"] || "",
+                "Website URL": item["Website URL"] || "",
+                "Embed Code": item["Embed Code"] || "",
+                "Loom Folder": item["Loom Folder"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Interactive Experience": data["Interactive Experience"] || "",
+                "Website URL": data["Website URL"] || "",
+                "Embed Code": data["Embed Code"] || "",
+                "Loom Folder": data["Loom Folder"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeFullCaseStudy(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeFullCaseStudy(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Interactive Experience": item["Interactive Experience"] || "",
+                "Case Study Text": item["Case Study Text"] || "",
+                "Sales Email": item["Sales Email"] || "",
+                "Problem Section Video": item["Problem Section Video"] || "",
+                "Problem Section Video Length": item["Problem Section Video Length"] || "",
+                "Problem Section Video Transcript": item["Problem Section Video Transcript"] || "",
+                "Solutions Section Video": item["Solutions Section Video"] || "",
+                "Solutions Section Video Length": item["Solutions Section Video Length"] || "",
+                "Solutions Section Video Transcript": item["Solutions Section Video Transcript"] || "",
+                "Results Section Video": item["Results Section Video"] || "",
+                "Results Section Video Length": item["Results Section Video Length"] || "",
+                "Results Section Video Transcript": item["Results Section Video Transcript"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Interactive Experience": data["Interactive Experience"] || "",
+                "Case Study Text": data["Case Study Text"] || "",
+                "Sales Email": data["Sales Email"] || "",
+                "Problem Section Video": data["Problem Section Video"] || "",
+                "Problem Section Video Length": data["Problem Section Video Length"] || "",
+                "Problem Section Video Transcript": data["Problem Section Video Transcript"] || "",
+                "Solutions Section Video": data["Solutions Section Video"] || "",
+                "Solutions Section Video Length": data["Solutions Section Video Length"] || "",
+                "Solutions Section Video Transcript": data["Solutions Section Video Transcript"] || "",
+                "Results Section Video": data["Results Section Video"] || "",
+                "Results Section Video Length": data["Results Section Video Length"] || "",
+                "Results Section Video Transcript": data["Results Section Video Transcript"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeOnePageCaseStudy(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeOnePageCaseStudy(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Interactive Experience": item["Interactive Experience"] || "",
+                "One Page Text": item["One Page Text"] || "",
+                "Sales Email": item["Sales Email"] || "",
+                "One Page Video": item["One Page Video"] || "",
+                "Length": item["Length"] || "",
+                "Transcript": item["Transcript"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Interactive Experience": data["Interactive Experience"] || "",
+                "One Page Text": data["One Page Text"] || "",
+                "Sales Email": data["Sales Email"] || "",
+                "One Page Video": data["One Page Video"] || "",
+                "Length": data["Length"] || "",
+                "Transcript": data["Transcript"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeOtherCaseStudy(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeOtherCaseStudy(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Other Case Study Interactive Experience": item["Other Case Study Interactive Experience"] || "",
+                "Case Study Text": item["Case Study Text"] || "",
+                "Sales Email": item["Sales Email"] || "",
+                "Other Case Study Video": item["Other Case Study Video"] || "",
+                "Other Case Study Video Length": item["Other Case Study Video Length"] || "",
+                "Other Case Study Video Transcript": item["Other Case Study Video Transcript"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Other Case Study Interactive Experience": data["Other Case Study Interactive Experience"] || "",
+                "Case Study Text": data["Case Study Text"] || "",
+                "Sales Email": data["Sales Email"] || "",
+                "Other Case Study Video": data["Other Case Study Video"] || "",
+                "Other Case Study Video Length": data["Other Case Study Video Length"] || "",
+                "Other Case Study Video Transcript": data["Other Case Study Video Transcript"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeICPAdvice(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeICPAdvice(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Post-Podcast Video": item["Post-Podcast Video"] || "",
+                "Unedited Post-Podcast Video Length": item["Unedited Post-Podcast Video Length"] || "",
+                "Unedited Post-Podcast Transcript": item["Unedited Post-Podcast Transcript"] || "",
+                "Post-Podcast Insights Report": item["Post-Podcast Insights Report"] || "",
+                "Post-Podcast Vision Report": item["Post-Podcast Vision Report"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Post-Podcast Video": data["Post-Podcast Video"] || "",
+                "Unedited Post-Podcast Video Length": data["Unedited Post-Podcast Video Length"] || "",
+                "Unedited Post-Podcast Transcript": data["Unedited Post-Podcast Transcript"] || "",
+                "Post-Podcast Insights Report": data["Post-Podcast Insights Report"] || "",
+                "Post-Podcast Vision Report": data["Post-Podcast Vision Report"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeFullEpisodeChallengeQuestions(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeFullEpisodeChallengeQuestions(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Unedited Challenge Question Video": item["Unedited Challenge Question Video"] || "",
+                "Unedited Challenge Question Video Length": item["Unedited Challenge Question Video Length"] || "",
+                "Unedited Challenge Question Transcript": item["Unedited Challenge Question Transcript"] || "",
+                "Challenge Report": item["Challenge Report"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Unedited Challenge Question Video": data["Unedited Challenge Question Video"] || "",
+                "Unedited Challenge Question Video Length": data["Unedited Challenge Question Video Length"] || "",
+                "Unedited Challenge Question Transcript": data["Unedited Challenge Question Transcript"] || "",
+                "Challenge Report": data["Challenge Report"] || ""
+            }];
+        }
+        return [];
+    }
 
     useEffect(() => {
         if (entityData?.id) {
-            const matchedData = themesRank?.find(item => item.id === entityData.id);
+            const matchedData = themesRank?.find(item => item.id == entityData.id);
+
+
+            const emailData = matchedData?.Emails;
+            if (emailData) {
+                try {
+                    setEmailEntries(normalizeEmails(emailData));
+                } catch (e) {
+                    console.error("Error parsing email data:", e);
+                    setEmailEntries([]);
+                }
+            } else {
+                setEmailEntries([]);
+            }
+
+            // Full Episode Details
+            const fullEpisodeDetailsData = matchedData?.DETAILS_FULL_EPISODES;
+            if (fullEpisodeDetailsData) {
+                try {
+                    setFullEpisodeDetailsEntries(normalizeFullEpisodeDetails(fullEpisodeDetailsData));
+                } catch (e) {
+                    console.error("Error parsing full episode details data:", e);
+                    setFullEpisodeDetailsEntries([]);
+                }
+            } else {
+                setFullEpisodeDetailsEntries([]);
+            }
+
+            // Full Episode Video
+            const fullEpisodeVideoData = matchedData?.FULL_EPISODE_VIDEO;
+            if (fullEpisodeVideoData) {
+                try {
+                    setFullEpisodeVideoEntries(normalizeFullEpisodeVideo(fullEpisodeVideoData));
+                } catch (e) {
+                    console.error("Error parsing full episode video data:", e);
+                    setFullEpisodeVideoEntries([]);
+                }
+            } else {
+                setFullEpisodeVideoEntries([]);
+            }
+
+            // Full Episode Extended Content
+            const fullEpisodeExtendedContentData = matchedData?.FULL_EPISODE_EXTENDED_CONTENT;
+            if (fullEpisodeExtendedContentData) {
+                try {
+                    setFullEpisodeExtendedContentEntries(normalizeFullEpisodeExtendedContent(fullEpisodeExtendedContentData));
+                } catch (e) {
+                    console.error("Error parsing full episode extended content data:", e);
+                    setFullEpisodeExtendedContentEntries([]);
+                }
+            } else {
+                setFullEpisodeExtendedContentEntries([]);
+            }
+
+            // Full Episode Highlight Video
+            const fullEpisodeHighlightVideoData = matchedData?.FULL_EPISODE_HIGHLIGHT_VIDEO;
+            if (fullEpisodeHighlightVideoData) {
+                try {
+                    setFullEpisodeHighlightVideoEntries(normalizeFullEpisodeHighlightVideo(fullEpisodeHighlightVideoData));
+                } catch (e) {
+                    console.error("Error parsing full episode highlight video data:", e);
+                    setFullEpisodeHighlightVideoEntries([]);
+                }
+            } else {
+                setFullEpisodeHighlightVideoEntries([]);
+            }
+
+            // Full Episode Introduction Video
+            const fullEpisodeIntroductionVideoData = matchedData?.FULL_EPISODE_INTRODUCTION_VIDEO;
+            if (fullEpisodeIntroductionVideoData) {
+                try {
+                    setFullEpisodeIntroductionVideoEntries(normalizeFullEpisodeIntroductionVideo(fullEpisodeIntroductionVideoData));
+                } catch (e) {
+                    console.error("Error parsing full episode introduction video data:", e);
+                    setFullEpisodeIntroductionVideoEntries([]);
+                }
+            } else {
+                setFullEpisodeIntroductionVideoEntries([]);
+            }
+
+            // Full Episode QA Videos
+            const fullEpisodeQAVideosData = matchedData?.FULL_EPISODE_QA_VIDEOS;
+            if (fullEpisodeQAVideosData) {
+                try {
+                    setFullEpisodeQAVideosEntries(normalizeFullEpisodeQAVideos(fullEpisodeQAVideosData));
+                } catch (e) {
+                    console.error("Error parsing full episode QA videos data:", e);
+                    setFullEpisodeQAVideosEntries([]);
+                }
+            } else {
+                setFullEpisodeQAVideosEntries([]);
+            }
+
+            // Full Episode Podbook
+            const fullEpisodePodbookData = matchedData?.FULL_EPISODE_PODBOOK;
+            if (fullEpisodePodbookData) {
+                try {
+                    setFullEpisodePodbookEntries(normalizeFullEpisodePodbook(fullEpisodePodbookData));
+                } catch (e) {
+                    console.error("Error parsing full episode podbook data:", e);
+                    setFullEpisodePodbookEntries([]);
+                }
+            } else {
+                setFullEpisodePodbookEntries([]);
+            }
+
+            // Full Episode Full Case Study
+            const fullEpisodeFullCaseStudyData = matchedData?.FULL_EPISODE_FULL_CASE_STUDY;
+            if (fullEpisodeFullCaseStudyData) {
+                try {
+                    setFullEpisodeFullCaseStudyEntries(normalizeFullEpisodeFullCaseStudy(fullEpisodeFullCaseStudyData));
+                } catch (e) {
+                    console.error("Error parsing full episode full case study data:", e);
+                    setFullEpisodeFullCaseStudyEntries([]);
+                }
+            } else {
+                setFullEpisodeFullCaseStudyEntries([]);
+            }
+
+            // Full Episode One Page Case Study
+            const fullEpisodeOnePageCaseStudyData = matchedData?.FULL_EPISODE_ONE_PAGE_CASE_STUDY;
+            if (fullEpisodeOnePageCaseStudyData) {
+                try {
+                    setFullEpisodeOnePageCaseStudyEntries(normalizeFullEpisodeOnePageCaseStudy(fullEpisodeOnePageCaseStudyData));
+                } catch (e) {
+                    console.error("Error parsing full episode one page case study data:", e);
+                    setFullEpisodeOnePageCaseStudyEntries([]);
+                }
+            } else {
+                setFullEpisodeOnePageCaseStudyEntries([]);
+            }
+
+            // Full Episode Other Case Study
+            const fullEpisodeOtherCaseStudyData = matchedData?.FULL_EPISODE_OTHER_CASE_STUDY;
+            if (fullEpisodeOtherCaseStudyData) {
+                try {
+                    setFullEpisodeOtherCaseStudyEntries(normalizeFullEpisodeOtherCaseStudy(fullEpisodeOtherCaseStudyData));
+                } catch (e) {
+                    console.error("Error parsing full episode other case study data:", e);
+                    setFullEpisodeOtherCaseStudyEntries([]);
+                }
+            } else {
+                setFullEpisodeOtherCaseStudyEntries([]);
+            }
+
+            // Full Episode ICP Advice
+            const fullEpisodeICPAdviceData = matchedData?.FULL_EPISODE_ICP_ADVICE;
+            if (fullEpisodeICPAdviceData) {
+                try {
+                    setFullEpisodeICPAdviceEntries(normalizeFullEpisodeICPAdvice(fullEpisodeICPAdviceData));
+                } catch (e) {
+                    console.error("Error parsing full episode ICP advice data:", e);
+                    setFullEpisodeICPAdviceEntries([]);
+                }
+            } else {
+                setFullEpisodeICPAdviceEntries([]);
+            }
+
+            // Full Episode Challenge Questions
+            const fullEpisodeChallengeQuestionsData = matchedData?.FULL_EPISODE_CHALLENGE_QUESTIONS;
+            if (fullEpisodeChallengeQuestionsData) {
+                try {
+                    setFullEpisodeChallengeQuestionsEntries(normalizeFullEpisodeChallengeQuestions(fullEpisodeChallengeQuestionsData));
+                } catch (e) {
+                    console.error("Error parsing full episode challenge questions data:", e);
+                    setFullEpisodeChallengeQuestionsEntries([]);
+                }
+            } else {
+                setFullEpisodeChallengeQuestionsEntries([]);
+            }
+
+            const additionalGuestProjectData = matchedData?.Additional_Guest_Projects;
+
+            // Handle Additional Guest Projects
+            if (additionalGuestProjectData) {
+                try {
+                    setAdditionalProjectEntries(normalizeAdditionalProjects(additionalGuestProjectData));
+                } catch (e) {
+                    console.error("Error parsing prep call data:", e);
+                    setAdditionalProjectEntries([]);
+                }
+            } else {
+                setAdditionalProjectEntries([]);
+            }
+            const prepCallData = matchedData?.Prep_Call;
+            // Handle Prep Calls
+            if (prepCallData) {
+                try {
+                    setPrepCallEntries(normalizePrepCalls(prepCallData));
+                } catch (e) {
+                    console.error("Error parsing prep call data:", e);
+                    setPrepCallEntries([]);
+                }
+            } else {
+                setPrepCallEntries([]);
+            }
+            // Handle Video Types
+            const videoData = matchedData?.["Video Type"];
+            if (videoData) {
+                try {
+                    setVideoTypeEntries(normalizeVideoType(videoData));
+                } catch (e) {
+                    console.log("Error parsing video types:", e);
+                    setVideoTypeEntries([]);
+                }
+            } else {
+                setVideoTypeEntries([]);
+            }
 
             // --- Handle Themes
             const themeData = matchedData?.Themes;
@@ -691,6 +2901,64 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 setCaseStudyVideoEntries([]);
             }
 
+            // --- Mentioned Details 
+            if (entityData?.Mentioned_Quotes) {
+                try {
+                    const parsed = Array.isArray(entityData.Mentioned_Quotes)
+                        ? entityData.Mentioned_Quotes
+                        : JSON.parse(entityData.Mentioned_Quotes);
+                    setMentionedQuotes(parsed || []);
+                } catch (e) {
+                    setMentionedQuotes([]);
+                }
+            } else {
+                setMentionedQuotes([]);
+            }
+
+            // Guest Details
+            if (entityData?.Guest) {
+                try {
+                    setGuestEntries(normalizeGuestData(entityData.Guest, entityData));
+                } catch (e) {
+                    console.error("Error parsing guest data:", e);
+                    setGuestEntries([]);
+                }
+            } else {
+                setGuestEntries([]);
+            }
+            // Handle Avatar data (if it's a string array)
+            if (entityData?.Avatar) {
+                try {
+                    let avatarUrls = [];
+                    if (typeof entityData.Avatar === 'string') {
+                        // Try to parse as JSON array first
+                        try {
+                            avatarUrls = JSON.parse(entityData.Avatar);
+                            if (!Array.isArray(avatarUrls)) {
+                                // If not an array, treat as single URL
+                                avatarUrls = [entityData.Avatar];
+                            }
+                        } catch (e) {
+                            // If parsing fails, treat as single URL
+                            avatarUrls = [entityData.Avatar];
+                        }
+                    } else if (Array.isArray(entityData.Avatar)) {
+                        avatarUrls = entityData.Avatar;
+                    }
+
+                    // Update guest entries with avatar URLs
+                    setGuestEntries(prev => prev.map((guest, index) => ({
+                        ...guest,
+                        Avatar: avatarUrls[index] || ""
+                    })));
+                } catch (e) {
+                    console.error("Error parsing avatar data:", e);
+                }
+            }
+
+
+
+
         } else {
             // Clear on new entry
             setThemeEntries([]);
@@ -698,13 +2966,15 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setObjectionEntries([]);
             setChallengesEntries([]);
             setSalesInsightsEntries([]);
+            setGuestEntries([]);
+            setPrepCallEntries([]);
         }
     }, [entityData, themesRank]);
 
 
     const validationSchema = Yup.object(
         displayFields.reduce((schema, field) => {
-            if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key == "Challenges" || field.key == "Sales Insights") {
+            if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" || field.key == "Challenges" || field.key == "Sales Insights", field.key == 'Video Type') {
                 schema[field.key] = Yup.array().of(
                     Yup.object().shape({
                         [field.key.toLowerCase().slice(0, -1)]: Yup.string().required(`${field.key.slice(0, -1)} is required`),
@@ -782,7 +3052,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const initialValues = {};
     displayFields.forEach(field => {
         if (field.key === "Themes" || field.key === "Objections" || field.key === "Validations" ||
-            field.key === "Challenges" || field.key == "Sales Insights" || field.key == 'Case_Study_Other_Video') {
+            field.key === "Challenges" || field.key == "Sales Insights" || field.key == 'Case_Study_Other_Video' || field.key == 'Video Type') {
             initialValues[field.key] = normalizeThemes(entityData?.[field.key] || []);
         } else if (!["ranking", "Ranking Justification"].includes(field.key)) {
             // Handle file_type and category as arrays
@@ -823,21 +3093,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             }
         }
     });
-    // Add this useEffect to sync themeEntries with Formik values
-  
-
-    // Do the same for other entry types (objections, validations, etc.)
-    useEffect(() => {
-        console.log("Entity data on edit:", entityData);
-        console.log("Initial values:", initialValues);
-    }, [entityData]);
-    console.log("Initial values after transformation:", {
-        category: initialValues.category,
-        file_type: initialValues.file_type
-    });
 
     const formik = useFormik({
         initialValues,
+
         // validationSchema,
         onSubmit: async (values) => {
             try {
@@ -853,8 +3112,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
-
-                console.log('THEMEE DATATATATA', themesData);
                 let objectionData = null;
                 if (objectionEntries.length > 0) {
                     objectionData = objectionEntries.map(entry => ({
@@ -879,7 +3136,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
-
                 let challengesData = null;
                 if (challengesEntries.length > 0) {
                     challengesData = challengesEntries.map(entry => ({
@@ -892,7 +3148,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         supportingQuotes: String(entry.supportingQuotes || "")
                     }));
                 }
-
                 let salesInsightsData = null;
                 if (salesInsightsEntries.length > 0) {
                     salesInsightsData = salesInsightsEntries.map(entry => ({
@@ -906,28 +3161,52 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     }));
                 }
 
-
                 // Create the payload with properly formatted values
                 const formattedValuesDashboard = {
                     ...values,
-                    Themes: themeEntries.length > 0 ? themeEntries : null,
-                    Objections: objectionEntries.length > 0 ? objectionEntries : null,
-                    Validations: validationEntries.length > 0 ? validationEntries : null,
-                    Challenges: challengesEntries.length > 0 ? challengesEntries : null,
-                    "Sales Insights": salesInsightsEntries.length > 0 ? salesInsightsEntries : null,
-                    Case_Study_Other_Video: caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null,
                     company_id: localStorage.getItem('company_id'),
                     template_id: values.template_id?.value || values.template_id || null,
                     department_id: values.department_id?.value || values.department_id || null,
+                    Guest: values.Guest ? JSON.stringify(values.Guest) : null,
+                    Avatar: values.Avatar ? JSON.stringify(values.Avatar) : null,
                     dynamic_fields: formik.values.dynamic_fields ||
                         (formik.values.dynamic_fields_description ?
                             extractFieldsFromTemplate(formik.values.dynamic_fields_description) :
-                            null)
+                            null),
 
+                    // Only include these fields if they exist in your schema
+                    ...(videoTypeEntries.length > 0 && { video_type: videoTypeEntries }),
+                    ...(themeEntries.length > 0 && { themes: themeEntries }),
+                    ...(objectionEntries.length > 0 && { objections: objectionEntries }),
+                    ...(validationEntries.length > 0 && { validations: validationEntries }),
+                    ...(challengesEntries.length > 0 && { challenges: challengesEntries }),
+                    ...(salesInsightsEntries.length > 0 && { sales_insights: salesInsightsEntries }),
+                    ...(caseStudyVideoEntries.length > 0 && { case_study_other_video: caseStudyVideoEntries }),
+                    ...(additionalProjectEntries.length > 0 && { additional_guest_projects: additionalProjectEntries }),
+                    ...(emailEntries.length > 0 && { emails: emailEntries }),
+                    ...(fullEpisodeDetailsEntries.length > 0 && { details_full_episodes: fullEpisodeDetailsEntries }),
+                    ...(fullEpisodeVideoEntries.length > 0 && { full_episode_video: fullEpisodeVideoEntries }),
+                    ...(fullEpisodeExtendedContentEntries.length > 0 && { full_episode_extended_content: fullEpisodeExtendedContentEntries }),
+                    ...(fullEpisodeHighlightVideoEntries.length > 0 && { full_episode_highlight_video: fullEpisodeHighlightVideoEntries }),
+                    ...(fullEpisodeIntroductionVideoEntries.length > 0 && { full_episode_introduction_video: fullEpisodeIntroductionVideoEntries }),
+                    ...(fullEpisodeQAVideosEntries.length > 0 && { full_episode_qa_videos: fullEpisodeQAVideosEntries }),
+                    ...(fullEpisodePodbookEntries.length > 0 && { full_episode_podbook: fullEpisodePodbookEntries }),
+                    ...(fullEpisodeFullCaseStudyEntries.length > 0 && { full_episode_full_case_study: fullEpisodeFullCaseStudyEntries }),
+                    ...(fullEpisodeOnePageCaseStudyEntries.length > 0 && { full_episode_one_page_case_study: fullEpisodeOnePageCaseStudyEntries }),
+                    ...(fullEpisodeOtherCaseStudyEntries.length > 0 && { full_episode_other_case_study: fullEpisodeOtherCaseStudyEntries }),
+                    ...(fullEpisodeICPAdviceEntries.length > 0 && { full_episode_icp_advice: fullEpisodeICPAdviceEntries }),
+                    ...(fullEpisodeChallengeQuestionsEntries.length > 0 && { full_episode_challenge_questions: fullEpisodeChallengeQuestionsEntries })
                 };
 
-                const formattedValues = isDashboardForm ? formattedValuesDashboard : { company_id: localStorage.getItem('company_id'), ...values };
+                const formattedValue = isDashboardForm ? formattedValuesDashboard : {
+                    company_id: localStorage.getItem('company_id'),
+                    ...values
+                };
 
+                // Remove any undefined or null values from the final payload
+                const formattedValues = Object.fromEntries(
+                    Object.entries(formattedValue).filter(([_, v]) => v !== null && v !== undefined)
+                );
                 console.log("forrr", formattedValues);
 
 
@@ -1007,19 +3286,80 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     // Non-file fields
                     formattedValues[field.key] = fieldValue;
                 }
-                // After your big loop:
+
+                //For template_id and department_id:
                 if (formattedValues.template_id) {
                     formattedValues.template_id = formik.values?.template_id?.value || formik.values.template_id || null;
                 }
                 if (formattedValues.department_id) {
                     formattedValues.department_id = formik.values?.department_id?.value || formik.values.department_id || null;
                 }
+                if (formattedValues.Emails) {
+                    formattedValues.Emails = formik.values?.Emails?.value || formik.values.Emails || null;
+                }
+
+                if (formattedValues.Additional_Guest_Projects) {
+                    formattedValues.Additional_Guest_Projects = formik.values?.Additional_Guest_Projects?.value || formik.values.Additional_Guest_Projects || null;
+                }
+                if (formattedValues.DETAILS_FULL_EPISODES) {
+                    formattedValues.DETAILS_FULL_EPISODES = formik.values?.DETAILS_FULL_EPISODES?.value || formik.values.DETAILS_FULL_EPISODES || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_VIDEO) {
+                    formattedValues.FULL_EPISODE_VIDEO = formik.values?.FULL_EPISODE_VIDEO?.value || formik.values.FULL_EPISODE_VIDEO || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_EXTENDED_CONTENT) {
+                    formattedValues.FULL_EPISODE_EXTENDED_CONTENT = formik.values?.FULL_EPISODE_EXTENDED_CONTENT?.value || formik.values.FULL_EPISODE_EXTENDED_CONTENT || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_HIGHLIGHT_VIDEO) {
+                    formattedValues.FULL_EPISODE_HIGHLIGHT_VIDEO = formik.values?.FULL_EPISODE_HIGHLIGHT_VIDEO?.value || formik.values.FULL_EPISODE_HIGHLIGHT_VIDEO || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_INTRODUCTION_VIDEO) {
+                    formattedValues.FULL_EPISODE_INTRODUCTION_VIDEO = formik.values?.FULL_EPISODE_INTRODUCTION_VIDEO?.value || formik.values.FULL_EPISODE_INTRODUCTION_VIDEO || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_QA_VIDEOS) {
+                    formattedValues.FULL_EPISODE_QA_VIDEOS = formik.values?.FULL_EPISODE_QA_VIDEOS?.value || formik.values.FULL_EPISODE_QA_VIDEOS || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_PODBOOK) {
+                    formattedValues.FULL_EPISODE_PODBOOK = formik.values?.FULL_EPISODE_PODBOOK?.value || formik.values.FULL_EPISODE_PODBOOK || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_FULL_CASE_STUDY) {
+                    formattedValues.FULL_EPISODE_FULL_CASE_STUDY = formik.values?.FULL_EPISODE_FULL_CASE_STUDY?.value || formik.values.FULL_EPISODE_FULL_CASE_STUDY || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_ONE_PAGE_CASE_STUDY) {
+                    formattedValues.FULL_EPISODE_ONE_PAGE_CASE_STUDY = formik.values?.FULL_EPISODE_ONE_PAGE_CASE_STUDY?.value || formik.values.FULL_EPISODE_ONE_PAGE_CASE_STUDY || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_OTHER_CASE_STUDY) {
+                    formattedValues.FULL_EPISODE_OTHER_CASE_STUDY = formik.values?.FULL_EPISODE_OTHER_CASE_STUDY?.value || formik.values.FULL_EPISODE_OTHER_CASE_STUDY || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_ICP_ADVICE) {
+                    formattedValues.FULL_EPISODE_ICP_ADVICE = formik.values?.FULL_EPISODE_ICP_ADVICE?.value || formik.values.FULL_EPISODE_ICP_ADVICE || null;
+                }
+
+                if (formattedValues.FULL_EPISODE_CHALLENGE_QUESTIONS) {
+                    formattedValues.FULL_EPISODE_CHALLENGE_QUESTIONS = formik.values?.FULL_EPISODE_CHALLENGE_QUESTIONS?.value || formik.values.FULL_EPISODE_CHALLENGE_QUESTIONS || null;
+                }
+
+                // if (formattedValues.Guest || formattedValues.Avatar) {
+                //     formattedValues.Guest = guestEntries.length > 0 ? guestEntries : null;
+                //     formattedValues.Avatar = guestEntries.length > 0 ?
+                //         guestEntries.map(g => g.Avatar).filter(Boolean) : null;
+                // }
                 console.log("Final formatted values:", formattedValues);
 
                 let response;
                 // ✅ Force file_type, category, and tags into valid arrays for jsonb
                 if (isFilesData) {
-                    ['file_type', 'category', 'tags','market_categories','content_categories'].forEach((key) => {
+                    ['file_type', 'category', 'tags', 'market_categories', 'content_categories'].forEach((key) => {
                         if (!(key in formattedValues)) return;
                         const val = formattedValues[key];
 
@@ -1093,27 +3433,89 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             }
         },
     });
+    const handleAddMentionedQuote = () => {
+        if (!currentMentionedQuote.trim()) return;
+
+        setMentionedQuotes([...mentionedQuotes, currentMentionedQuote.trim()]);
+        setCurrentMentionedQuote("");
+    };
+
+    const handleRemoveMentionedQuote = (index) => {
+        setMentionedQuotes(mentionedQuotes.filter((_, i) => i !== index));
+    };
+
+    useEffect(() => {
+        if ('Mentioned_Quotes' in formik.values) {
+            formik.setFieldValue('Mentioned_Quotes', mentionedQuotes.length > 0 ? mentionedQuotes : null);
+        }
+    }, [mentionedQuotes, formik.values]);
     useEffect(() => {
         // Only set fields that exist in formik.values
+        if ('Video Type' in formik.values) {
+            formik.setFieldValue('Video Type', videoTypeEntries.length > 0 ? videoTypeEntries : null);
+        }
         if ('Themes' in formik.values) {
-          formik.setFieldValue('Themes', themeEntries.length > 0 ? themeEntries : null);
+            formik.setFieldValue('Themes', themeEntries.length > 0 ? themeEntries : null);
         }
         if ('Validations' in formik.values) {
-          formik.setFieldValue('Validations', validationEntries.length > 0 ? validationEntries : null);
+            formik.setFieldValue('Validations', validationEntries.length > 0 ? validationEntries : null);
         }
         if ('Challenges' in formik.values) {
-          formik.setFieldValue('Challenges', challengesEntries.length > 0 ? challengesEntries : null);
+            formik.setFieldValue('Challenges', challengesEntries.length > 0 ? challengesEntries : null);
         }
         if ('Sales Insights' in formik.values) {
-          formik.setFieldValue('Sales Insights', salesInsightsEntries.length > 0 ? salesInsightsEntries : null);
+            formik.setFieldValue('Sales Insights', salesInsightsEntries.length > 0 ? salesInsightsEntries : null);
         }
         if ('Case_Study_Other_Video' in formik.values) {
-          formik.setFieldValue('Case_Study_Other_Video', caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null);
+            formik.setFieldValue('Case_Study_Other_Video', caseStudyVideoEntries.length > 0 ? caseStudyVideoEntries : null);
         }
         if ('Objections' in formik.values) {
-          formik.setFieldValue('Objections', objectionEntries.length > 0 ? objectionEntries : null);
+            formik.setFieldValue('Objections', objectionEntries.length > 0 ? objectionEntries : null);
         }
-      }, [
+        if ('Additional_Guest_Projects' in formik.values) {
+            formik.setFieldValue('Additional_Guest_Projects', additionalProjectEntries.length > 0 ? additionalProjectEntries : null);
+        }
+        if ('Emails' in formik.values) {
+            formik.setFieldValue('Emails', emailEntries.length > 0 ? emailEntries : null);
+        }
+        if ('DETAILS_FULL_EPISODES' in formik.values) {
+            formik.setFieldValue('DETAILS_FULL_EPISODES', fullEpisodeDetailsEntries.length > 0 ? fullEpisodeDetailsEntries : null);
+        }
+        if ('FULL_EPISODE_VIDEO' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_VIDEO', fullEpisodeVideoEntries.length > 0 ? fullEpisodeVideoEntries : null);
+        }
+        if ('FULL_EPISODE_EXTENDED_CONTENT' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_EXTENDED_CONTENT', fullEpisodeExtendedContentEntries.length > 0 ? fullEpisodeExtendedContentEntries : null);
+        }
+        if ('FULL_EPISODE_HIGHLIGHT_VIDEO' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_HIGHLIGHT_VIDEO', fullEpisodeHighlightVideoEntries.length > 0 ? fullEpisodeHighlightVideoEntries : null);
+        }
+        if ('FULL_EPISODE_INTRODUCTION_VIDEO' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_INTRODUCTION_VIDEO', fullEpisodeIntroductionVideoEntries.length > 0 ? fullEpisodeIntroductionVideoEntries : null);
+        }
+        if ('FULL_EPISODE_QA_VIDEOS' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_QA_VIDEOS', fullEpisodeQAVideosEntries.length > 0 ? fullEpisodeQAVideosEntries : null);
+        }
+        if ('FULL_EPISODE_PODBOOK' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_PODBOOK', fullEpisodePodbookEntries.length > 0 ? fullEpisodePodbookEntries : null);
+        }
+        if ('FULL_EPISODE_FULL_CASE_STUDY' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_FULL_CASE_STUDY', fullEpisodeFullCaseStudyEntries.length > 0 ? fullEpisodeFullCaseStudyEntries : null);
+        }
+        if ('FULL_EPISODE_ONE_PAGE_CASE_STUDY' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_ONE_PAGE_CASE_STUDY', fullEpisodeOnePageCaseStudyEntries.length > 0 ? fullEpisodeOnePageCaseStudyEntries : null);
+        }
+        if ('FULL_EPISODE_OTHER_CASE_STUDY' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_OTHER_CASE_STUDY', fullEpisodeOtherCaseStudyEntries.length > 0 ? fullEpisodeOtherCaseStudyEntries : null);
+        }
+        if ('FULL_EPISODE_ICP_ADVICE' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_ICP_ADVICE', fullEpisodeICPAdviceEntries.length > 0 ? fullEpisodeICPAdviceEntries : null);
+        }
+        if ('FULL_EPISODE_CHALLENGE_QUESTIONS' in formik.values) {
+            formik.setFieldValue('FULL_EPISODE_CHALLENGE_QUESTIONS', fullEpisodeChallengeQuestionsEntries.length > 0 ? fullEpisodeChallengeQuestionsEntries : null);
+        }
+
+    }, [
         themeEntries,
         validationEntries,
         challengesEntries,
@@ -1121,7 +3523,89 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         caseStudyVideoEntries,
         objectionEntries,
         formik.values
-      ]);
+    ]);
+    // Video Type Handlers - Updated version
+
+    const handleAddVideo = () => {
+        const newVideo = {
+            video_title: currentVideoTitle,
+            video_length: currentVideoLength,
+            video_link: currentVideoLink,
+            video_desc: currentVideoDesc,
+        };
+
+        if (editingVideoIndex !== null) {
+            const updatedVideos = [...currentVideos];
+            updatedVideos[editingVideoIndex] = newVideo;
+            setCurrentVideos(updatedVideos);
+            setEditingVideoIndex(null);
+        } else {
+            setCurrentVideos([...currentVideos, newVideo]);
+        }
+
+        setCurrentVideoTitle('');
+        setCurrentVideoLength('');
+        setCurrentVideoLink('');
+        setCurrentVideoDesc('');
+    };
+
+    const handleEditVideo = (index) => {
+        const video = currentVideos[index];
+        setCurrentVideoTitle(video.video_title);
+        setCurrentVideoLength(video.video_length);
+        setCurrentVideoLink(video.video_link);
+        setCurrentVideoDesc(video.video_desc);
+        setEditingVideoIndex(index);
+    };
+    const handleSaveVideoGroup = () => {
+        const newGroup = {
+            videoType: currentVideoType,
+            videos: [...currentVideos],
+        };
+
+        if (videoTypeEditIndex !== null) {
+            // Update existing entry
+            const updated = [...videoTypeEntries];
+            updated[videoTypeEditIndex] = newGroup;
+            setVideoTypeEntries(updated);
+        } else {
+            // Add new entry
+            setVideoTypeEntries([...videoTypeEntries, newGroup]);
+        }
+
+        // Reset form
+        setCurrentVideoType("");
+        setCurrentVideos([]);
+        setVideoTypeEditIndex(null);
+    };
+
+    // Edit an existing video group
+    const handleEditVideoGroup = (index) => {
+        const group = videoTypeEntries[index];
+        if (!group) return;
+
+        setCurrentVideoType(group.videoType);
+        setCurrentVideos([...group.videos]);
+        setVideoTypeEditIndex(index);
+    };
+
+    // Remove an entire video group
+    const handleRemoveVideoGroup = (index) => {
+        const updated = [...videoTypeEntries];
+        updated.splice(index, 1);
+        setVideoTypeEntries(updated);
+
+        if (videoTypeEditIndex === index) {
+            // If editing the removed group, reset form
+            setCurrentVideoType("");
+            setCurrentVideos([]);
+            setVideoTypeEditIndex(null);
+        } else if (videoTypeEditIndex > index) {
+            // Adjust edit index if needed
+            setVideoTypeEditIndex(videoTypeEditIndex - 1);
+        }
+    };
+
     //Themes Handlers
     const handleAddTheme = () => {
         // if (!currentTheme || !currentRanking || !currentJustification) {
@@ -1502,6 +3986,1039 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
     };
 
+    // Handler for Guests
+    const handleAddGuest = async () => {
+        // Validate at least one field is filled
+        if (!currentGuest["Guest Title"] && !currentGuest["Guest Company"] && !currentGuest["Guest Industry"]) {
+            ShowCustomToast("Please fill guest details", "error");
+            return;
+        }
+
+        let avatarUrl = currentGuest.Avatar;
+
+        // If Avatar is a File object, upload it first
+        if (currentGuest.Avatar instanceof File) {
+            try {
+                const fileExt = currentGuest.Avatar.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                // Upload the file
+                const { error: uploadError } = await supabase
+                    .storage
+                    .from('images')
+                    .upload(filePath, currentGuest.Avatar);
+
+                if (uploadError) throw uploadError;
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase
+                    .storage
+                    .from('images')
+                    .getPublicUrl(filePath);
+
+                avatarUrl = publicUrl;
+            } catch (error) {
+                console.error("Avatar upload failed:", error);
+                ShowCustomToast("Failed to upload avatar", "error");
+                return;
+            }
+        }
+        if (avatarInputRef.current) {
+            avatarInputRef.current.value = "";
+        }
+        const newEntry = {
+            "Guest": currentGuest["Guest"],
+            "Persona": currentGuest["Persona"],
+            "Industry Vertical": currentGuest["Industry Vertical"],
+            "Guest Title": currentGuest["Guest Title"],
+            "Guest Company": currentGuest["Guest Company"],
+            "Guest Industry": currentGuest["Guest Industry"],
+            "Tracker": currentGuest['Tracker'],
+            "LinkedIn Profile": currentGuest['LinkedIn Profile'],
+            "Dossier": currentGuest['Dossier'],
+            "Avatar": avatarUrl || null
+        };
+
+        if (guestEditIndex !== null) {
+            const updated = [...guestEntries];
+            updated[guestEditIndex] = newEntry;
+            setGuestEntries(updated);
+            setGuestEditIndex(null);
+        } else {
+            setGuestEntries([...guestEntries, newEntry]);
+        }
+
+        setCurrentGuest({
+            "Avatar": "",
+            "Persona": "",
+            "Industry Vertical": "",
+            "Guest Title": "",
+            "Guest Company": "",
+            "Guest Industry": "",
+            "Tracker": "",
+            "LinkedIn Profile": "",
+            "Dossier": "",
+
+        });
+    };
+
+    const handleEditGuest = (index) => {
+        const entry = guestEntries[index];
+        setCurrentGuest({
+            ...entry,
+            Avatar: entry.Avatar // Keep the existing URL or File
+        });
+        setGuestEditIndex(index);
+    };
+
+
+    const handleRemoveGuest = (index) => {
+        const updated = guestEntries.filter((_, i) => i !== index);
+        setGuestEntries(updated);
+        if (guestEditIndex === index) {
+            setCurrentGuest({
+                "Avatar": "",
+                "Guest": "",
+                "Persona": "",
+                "Industry Vertical": "",
+                "Guest Title": "",
+                "Guest Company": "",
+                "Guest Industry": "",
+                "Tracker": "",
+                "LinkedIn Profile": "",
+                "Dossier": "",
+
+            });
+            setGuestEditIndex(null);
+        } else if (guestEditIndex > index) {
+            setGuestEditIndex(guestEditIndex - 1);
+        }
+    };
+
+    // Handler for Prep_Calls
+
+    const handleAddPrepCall = () => {
+        // Validate at least one field is filled
+        if (!currentPrepCall["Unedited Prep Call Video"] &&
+            !currentPrepCall["Unedited Prep Call Transcript"] &&
+            !currentPrepCall["Discussion Guide"]) {
+            ShowCustomToast("Please fill at least one prep call field", "error");
+            return;
+        }
+
+        const newEntry = {
+            "Unedited Prep Call Video": currentPrepCall["Unedited Prep Call Video"],
+            "Unedited Prep Call Transcript": currentPrepCall["Unedited Prep Call Transcript"],
+            "Discussion Guide": currentPrepCall["Discussion Guide"]
+        };
+
+        if (prepCallEditIndex !== null) {
+            // Update existing entry
+            const updated = [...prepCallEntries];
+            updated[prepCallEditIndex] = newEntry;
+            setPrepCallEntries(updated);
+            setPrepCallEditIndex(null);
+        } else {
+            // Add new entry
+            setPrepCallEntries([...prepCallEntries, newEntry]);
+        }
+
+        // Reset form
+        setCurrentPrepCall({
+            "Unedited Prep Call Video": "",
+            "Unedited Prep Call Transcript": "",
+            "Discussion Guide": ""
+        });
+    };
+
+    const handleEditPrepCall = (index) => {
+        const entry = prepCallEntries[index];
+        setCurrentPrepCall({
+            "Unedited Prep Call Video": entry["Unedited Prep Call Video"] || "",
+            "Unedited Prep Call Transcript": entry["Unedited Prep Call Transcript"] || "",
+            "Discussion Guide": entry["Discussion Guide"] || ""
+        });
+        setPrepCallEditIndex(index);
+    };
+
+    const handleRemovePrepCall = (index) => {
+        const updated = prepCallEntries.filter((_, i) => i !== index);
+        setPrepCallEntries(updated);
+        if (prepCallEditIndex === index) {
+            setCurrentPrepCall({
+                "Unedited Prep Call Video": "",
+                "Unedited Prep Call Transcript": "",
+                "Discussion Guide": ""
+            });
+            setPrepCallEditIndex(null);
+        } else if (prepCallEditIndex > index) {
+            setPrepCallEditIndex(prepCallEditIndex - 1);
+        }
+    };
+
+    // Handler fro Additionl Guest Details
+    const handleAddAdditionalProject = () => {
+        // Validate at least one field is filled
+        if (!currentAdditionalProject["Podcast"] &&
+            !currentAdditionalProject["eBooks"] &&
+            !currentAdditionalProject["Articles"] &&
+            !currentAdditionalProject["Other"]) {
+            ShowCustomToast("Please fill at least one project field", "error");
+            return;
+        }
+
+        const newEntry = {
+            "Podcast": currentAdditionalProject["Podcast"],
+            "eBooks": currentAdditionalProject["eBooks"],
+            "Articles": currentAdditionalProject["Articles"],
+            "Other": currentAdditionalProject["Other"]
+        };
+
+        if (additionalProjectEditIndex !== null) {
+            // Update existing entry
+            const updated = [...additionalProjectEntries];
+            updated[additionalProjectEditIndex] = newEntry;
+            setAdditionalProjectEntries(updated);
+            setAdditionalProjectEditIndex(null);
+        } else {
+            // Add new entry
+            setAdditionalProjectEntries([...additionalProjectEntries, newEntry]);
+        }
+
+        // Reset form
+        setCurrentAdditionalProject({
+            "Podcast": "",
+            "eBooks": "",
+            "Articles": "",
+            "Other": ""
+        });
+    };
+
+    // Add these edit/remove handlers
+    const handleEditAdditionalProject = (index) => {
+        const entry = additionalProjectEntries[index];
+        setCurrentAdditionalProject({
+            "Podcast": entry["Podcast"] || "",
+            "eBooks": entry["eBooks"] || "",
+            "Articles": entry["Articles"] || "",
+            "Other": entry["Other"] || ""
+        });
+        setAdditionalProjectEditIndex(index);
+    };
+
+    const handleRemoveAdditionalProject = (index) => {
+        const updated = additionalProjectEntries.filter((_, i) => i !== index);
+        setAdditionalProjectEntries(updated);
+        if (additionalProjectEditIndex === index) {
+            setCurrentAdditionalProject({
+                "Podcast": "",
+                "eBooks": "",
+                "Articles": "",
+                "Other": ""
+            });
+            setAdditionalProjectEditIndex(null);
+        } else if (additionalProjectEditIndex > index) {
+            setAdditionalProjectEditIndex(additionalProjectEditIndex - 1);
+        }
+    };
+
+    const handleAddEmail = () => {
+        // Validate at least one field is filled
+        if (!currentEmail["Guest"] && !currentEmail["Cold"] && !currentEmail["Warm"]) {
+            ShowCustomToast("Please fill at least one email field", "error");
+            return;
+        }
+
+        const newEntry = {
+            ...currentEmail,
+            category: EMAIL_CATEGORIES
+        };
+
+        if (emailEditIndex !== null) {
+            // Update existing entry
+            const updated = [...emailEntries];
+            updated[emailEditIndex] = newEntry;
+            setEmailEntries(updated);
+            setEmailEditIndex(null);
+        } else {
+            // Add new entry
+            setEmailEntries([...emailEntries, newEntry]);
+        }
+
+        // Reset form
+        setCurrentEmail({
+            "Guest": "",
+            "Cold": "",
+            "Warm": ""
+        });
+    };
+
+    const handleEditEmail = (index) => {
+        const entry = emailEntries[index];
+        setCurrentEmail({
+            "Guest": entry["Guest"] || "",
+            "Cold": entry["Cold"] || "",
+            "Warm": entry["Warm"] || ""
+        });
+        setEmailEditIndex(index);
+    };
+
+    const handleRemoveEmail = (index) => {
+        const updated = emailEntries.filter((_, i) => i !== index);
+        setEmailEntries(updated);
+        if (emailEditIndex === index) {
+            setCurrentEmail({
+                "Guest": "",
+                "Cold": "",
+                "Warm": ""
+            });
+            setEmailEditIndex(null);
+        } else if (emailEditIndex > index) {
+            setEmailEditIndex(emailEditIndex - 1);
+        }
+    };
+
+    // Full Episode Video Handlers
+
+    const handleAddFullEpisodeDetails = () => {
+        if (!currentFullEpisodeDetails["Episode ID"] &&
+            !currentFullEpisodeDetails["Episode Title"]) {
+            ShowCustomToast("Please fill at least Episode ID or Title", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeDetails };
+
+        if (fullEpisodeDetailsEditIndex !== null) {
+            const updated = [...fullEpisodeDetailsEntries];
+            updated[fullEpisodeDetailsEditIndex] = newEntry;
+            setFullEpisodeDetailsEntries(updated);
+            setFullEpisodeDetailsEditIndex(null);
+        } else {
+            setFullEpisodeDetailsEntries([...fullEpisodeDetailsEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeDetails({
+            "Episode ID": "",
+            "Episode Number": "",
+            "Episode Title": "",
+            "Date Recorded": "",
+            "Short and Long-Tail SEO Keywords": "",
+            "All Asset Folder": ""
+        });
+    };
+
+    const handleEditFullEpisodeDetails = (index) => {
+        const entry = fullEpisodeDetailsEntries[index];
+        setCurrentFullEpisodeDetails({
+            "Episode ID": entry["Episode ID"] || "",
+            "Episode Number": entry["Episode Number"] || "",
+            "Episode Title": entry["Episode Title"] || "",
+            "Date Recorded": entry["Date Recorded"] || "",
+            "Short and Long-Tail SEO Keywords": entry["Short and Long-Tail SEO Keywords"] || "",
+            "All Asset Folder": entry["All Asset Folder"] || ""
+        });
+        setFullEpisodeDetailsEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeDetails = (index) => {
+        const updated = fullEpisodeDetailsEntries.filter((_, i) => i !== index);
+        setFullEpisodeDetailsEntries(updated);
+        if (fullEpisodeDetailsEditIndex === index) {
+            setCurrentFullEpisodeDetails({
+                "Episode ID": "",
+                "Episode Number": "",
+                "Episode Title": "",
+                "Date Recorded": "",
+                "Short and Long-Tail SEO Keywords": "",
+                "All Asset Folder": ""
+            });
+            setFullEpisodeDetailsEditIndex(null);
+        } else if (fullEpisodeDetailsEditIndex > index) {
+            setFullEpisodeDetailsEditIndex(fullEpisodeDetailsEditIndex - 1);
+        }
+    };
+
+    //.................................
+
+    const handleAddFullEpisodeVideo = () => {
+        if (!currentFullEpisodeVideo["Video File"] && !currentFullEpisodeVideo["YouTube URL"]) {
+            ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeVideo };
+
+        if (fullEpisodeVideoEditIndex !== null) {
+            const updated = [...fullEpisodeVideoEntries];
+            updated[fullEpisodeVideoEditIndex] = newEntry;
+            setFullEpisodeVideoEntries(updated);
+            setFullEpisodeVideoEditIndex(null);
+        } else {
+            setFullEpisodeVideoEntries([...fullEpisodeVideoEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeVideo({
+            "Video File": "",
+            "Audio File": "",
+            "YouTube URL": "",
+            "Full Episode Details": ""
+        });
+    };
+
+    const handleEditFullEpisodeVideo = (index) => {
+        const entry = fullEpisodeVideoEntries[index];
+        setCurrentFullEpisodeVideo({
+            "Video File": entry["Video File"] || "",
+            "Audio File": entry["Audio File"] || "",
+            "YouTube URL": entry["YouTube URL"] || "",
+            "Full Episode Details": entry["Full Episode Details"] || ""
+        });
+        setFullEpisodeVideoEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeVideo = (index) => {
+        const updated = fullEpisodeVideoEntries.filter((_, i) => i !== index);
+        setFullEpisodeVideoEntries(updated);
+        if (fullEpisodeVideoEditIndex === index) {
+            setCurrentFullEpisodeVideo({
+                "Video File": "",
+                "Audio File": "",
+                "YouTube URL": "",
+                "Full Episode Details": ""
+            });
+            setFullEpisodeVideoEditIndex(null);
+        } else if (fullEpisodeVideoEditIndex > index) {
+            setFullEpisodeVideoEditIndex(fullEpisodeVideoEditIndex - 1);
+        }
+    };
+
+    //.................................
+
+    // Full Episode Extended Content Handlers
+    const handleAddFullEpisodeExtendedContent = () => {
+        if (!currentFullEpisodeExtendedContent["Article URL"] &&
+            !currentFullEpisodeExtendedContent["YouTube Short URL"]) {
+            ShowCustomToast("Please fill at least Article URL or YouTube Short URL", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeExtendedContent };
+
+        if (fullEpisodeExtendedContentEditIndex !== null) {
+            const updated = [...fullEpisodeExtendedContentEntries];
+            updated[fullEpisodeExtendedContentEditIndex] = newEntry;
+            setFullEpisodeExtendedContentEntries(updated);
+            setFullEpisodeExtendedContentEditIndex(null);
+        } else {
+            setFullEpisodeExtendedContentEntries([...fullEpisodeExtendedContentEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeExtendedContent({
+            "Article URL": "",
+            "Article Text": "",
+            "YouTube Short Video File": "",
+            "YouTube Short URL": "",
+            "YouTube Short Transcript": "",
+            "LinkedIn Video File": "",
+            "LinkedIn Video Transcript": "",
+            "Extended Content LinkedIn Comments & Hashtags": "",
+            "Quote Card": ""
+        });
+    };
+
+    const handleEditFullEpisodeExtendedContent = (index) => {
+        const entry = fullEpisodeExtendedContentEntries[index];
+        setCurrentFullEpisodeExtendedContent({
+            "Article URL": entry["Article URL"] || "",
+            "Article Text": entry["Article Text"] || "",
+            "YouTube Short Video File": entry["YouTube Short Video File"] || "",
+            "YouTube Short URL": entry["YouTube Short URL"] || "",
+            "YouTube Short Transcript": entry["YouTube Short Transcript"] || "",
+            "LinkedIn Video File": entry["LinkedIn Video File"] || "",
+            "LinkedIn Video Transcript": entry["LinkedIn Video Transcript"] || "",
+            "Extended Content LinkedIn Comments & Hashtags": entry["Extended Content LinkedIn Comments & Hashtags"] || "",
+            "Quote Card": entry["Quote Card"] || ""
+        });
+        setFullEpisodeExtendedContentEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeExtendedContent = (index) => {
+        const updated = fullEpisodeExtendedContentEntries.filter((_, i) => i !== index);
+        setFullEpisodeExtendedContentEntries(updated);
+        if (fullEpisodeExtendedContentEditIndex === index) {
+            setCurrentFullEpisodeExtendedContent({
+                "Article URL": "",
+                "Article Text": "",
+                "YouTube Short Video File": "",
+                "YouTube Short URL": "",
+                "YouTube Short Transcript": "",
+                "LinkedIn Video File": "",
+                "LinkedIn Video Transcript": "",
+                "Extended Content LinkedIn Comments & Hashtags": "",
+                "Quote Card": ""
+            });
+            setFullEpisodeExtendedContentEditIndex(null);
+        } else if (fullEpisodeExtendedContentEditIndex > index) {
+            setFullEpisodeExtendedContentEditIndex(fullEpisodeExtendedContentEditIndex - 1);
+        }
+    };
+
+    //.................................
+
+    // Full Episode Highlight Video Handlers
+    const handleAddFullEpisodeHighlightVideo = () => {
+        if (!currentFullEpisodeHighlightVideo["Video File"] &&
+            !currentFullEpisodeHighlightVideo["YouTube URL"]) {
+            ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeHighlightVideo };
+
+        if (fullEpisodeHighlightVideoEditIndex !== null) {
+            const updated = [...fullEpisodeHighlightVideoEntries];
+            updated[fullEpisodeHighlightVideoEditIndex] = newEntry;
+            setFullEpisodeHighlightVideoEntries(updated);
+            setFullEpisodeHighlightVideoEditIndex(null);
+        } else {
+            setFullEpisodeHighlightVideoEntries([...fullEpisodeHighlightVideoEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeHighlightVideo({
+            "Video File": "",
+            "YouTube URL": "",
+            "Transcript": "",
+            "Highlights Video Details": ""
+        });
+    };
+
+    const handleEditFullEpisodeHighlightVideo = (index) => {
+        const entry = fullEpisodeHighlightVideoEntries[index];
+        setCurrentFullEpisodeHighlightVideo({
+            "Video File": entry["Video File"] || "",
+            "YouTube URL": entry["YouTube URL"] || "",
+            "Transcript": entry["Transcript"] || "",
+            "Highlights Video Details": entry["Highlights Video Details"] || ""
+        });
+        setFullEpisodeHighlightVideoEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeHighlightVideo = (index) => {
+        const updated = fullEpisodeHighlightVideoEntries.filter((_, i) => i !== index);
+        setFullEpisodeHighlightVideoEntries(updated);
+        if (fullEpisodeHighlightVideoEditIndex === index) {
+            setCurrentFullEpisodeHighlightVideo({
+                "Video File": "",
+                "YouTube URL": "",
+                "Transcript": "",
+                "Highlights Video Details": ""
+            });
+            setFullEpisodeHighlightVideoEditIndex(null);
+        } else if (fullEpisodeHighlightVideoEditIndex > index) {
+            setFullEpisodeHighlightVideoEditIndex(fullEpisodeHighlightVideoEditIndex - 1);
+        }
+    };
+
+    // Full Episode Introduction Video Handlers
+    const handleAddFullEpisodeIntroductionVideo = () => {
+        if (!currentFullEpisodeIntroductionVideo["Video File"] &&
+            !currentFullEpisodeIntroductionVideo["YouTube URL"]) {
+            ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeIntroductionVideo };
+
+        if (fullEpisodeIntroductionVideoEditIndex !== null) {
+            const updated = [...fullEpisodeIntroductionVideoEntries];
+            updated[fullEpisodeIntroductionVideoEditIndex] = newEntry;
+            setFullEpisodeIntroductionVideoEntries(updated);
+            setFullEpisodeIntroductionVideoEditIndex(null);
+        } else {
+            setFullEpisodeIntroductionVideoEntries([...fullEpisodeIntroductionVideoEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeIntroductionVideo({
+            "Video File": "",
+            "YouTube URL": "",
+            "Transcript": "",
+            "Instruction Video Details": ""
+        });
+    };
+
+    const handleEditFullEpisodeIntroductionVideo = (index) => {
+        const entry = fullEpisodeIntroductionVideoEntries[index];
+        setCurrentFullEpisodeIntroductionVideo({
+            "Video File": entry["Video File"] || "",
+            "YouTube URL": entry["YouTube URL"] || "",
+            "Transcript": entry["Transcript"] || "",
+            "Instruction Video Details": entry["Instruction Video Details"] || ""
+        });
+        setFullEpisodeIntroductionVideoEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeIntroductionVideo = (index) => {
+        const updated = fullEpisodeIntroductionVideoEntries.filter((_, i) => i !== index);
+        setFullEpisodeIntroductionVideoEntries(updated);
+        if (fullEpisodeIntroductionVideoEditIndex === index) {
+            setCurrentFullEpisodeIntroductionVideo({
+                "Video File": "",
+                "YouTube URL": "",
+                "Transcript": "",
+                "Instruction Video Details": ""
+            });
+            setFullEpisodeIntroductionVideoEditIndex(null);
+        } else if (fullEpisodeIntroductionVideoEditIndex > index) {
+            setFullEpisodeIntroductionVideoEditIndex(fullEpisodeIntroductionVideoEditIndex - 1);
+        }
+    };
+
+    // Full Episode QA Videos Handlers
+    const handleAddFullEpisodeQAVideos = () => {
+        if (!currentFullEpisodeQAVideos["QAV1 Video File"] &&
+            !currentFullEpisodeQAVideos["QAV1 YouTube URL"]) {
+            ShowCustomToast("Please fill at least QAV1 Video File or QAV1 YouTube URL", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeQAVideos };
+
+        if (fullEpisodeQAVideosEditIndex !== null) {
+            const updated = [...fullEpisodeQAVideosEntries];
+            updated[fullEpisodeQAVideosEditIndex] = newEntry;
+            setFullEpisodeQAVideosEntries(updated);
+            setFullEpisodeQAVideosEditIndex(null);
+        } else {
+            setFullEpisodeQAVideosEntries([...fullEpisodeQAVideosEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeQAVideos({
+            "QAV1 Video File": "",
+            "QAV1 YouTube URL": "",
+            "QAV1 Transcript": "",
+            "QAV1 QA Video Details": "",
+            "Extended Content Article URL": "",
+            "Extended Content Article Text": "",
+            "Extended Content YouTube Short Video File": "",
+            "Extended Content YouTube Short URL": "",
+            "Extended Content YouTube Short Transcript": "",
+            "Extended Content LinkedIn Video File": "",
+            "Extended Content LinkedIn Video Transcript": "",
+            "QA Video LinkedIn Comments & Hashtags": "",
+            "Quote Card": ""
+        });
+    };
+
+    const handleEditFullEpisodeQAVideos = (index) => {
+        const entry = fullEpisodeQAVideosEntries[index];
+        setCurrentFullEpisodeQAVideos({
+            "QAV1 Video File": entry["QAV1 Video File"] || "",
+            "QAV1 YouTube URL": entry["QAV1 YouTube URL"] || "",
+            "QAV1 Transcript": entry["QAV1 Transcript"] || "",
+            "QAV1 QA Video Details": entry["QAV1 QA Video Details"] || "",
+            "Extended Content Article URL": entry["Extended Content Article URL"] || "",
+            "Extended Content Article Text": entry["Extended Content Article Text"] || "",
+            "Extended Content YouTube Short Video File": entry["Extended Content YouTube Short Video File"] || "",
+            "Extended Content YouTube Short URL": entry["Extended Content YouTube Short URL"] || "",
+            "Extended Content YouTube Short Transcript": entry["Extended Content YouTube Short Transcript"] || "",
+            "Extended Content LinkedIn Video File": entry["Extended Content LinkedIn Video File"] || "",
+            "Extended Content LinkedIn Video Transcript": entry["Extended Content LinkedIn Video Transcript"] || "",
+            "QA Video LinkedIn Comments & Hashtags": entry["QA Video LinkedIn Comments & Hashtags"] || "",
+            "Quote Card": entry["Quote Card"] || ""
+        });
+        setFullEpisodeQAVideosEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeQAVideos = (index) => {
+        const updated = fullEpisodeQAVideosEntries.filter((_, i) => i !== index);
+        setFullEpisodeQAVideosEntries(updated);
+        if (fullEpisodeQAVideosEditIndex === index) {
+            setCurrentFullEpisodeQAVideos({
+                "QAV1 Video File": "",
+                "QAV1 YouTube URL": "",
+                "QAV1 Transcript": "",
+                "QAV1 QA Video Details": "",
+                "Extended Content Article URL": "",
+                "Extended Content Article Text": "",
+                "Extended Content YouTube Short Video File": "",
+                "Extended Content YouTube Short URL": "",
+                "Extended Content YouTube Short Transcript": "",
+                "Extended Content LinkedIn Video File": "",
+                "Extended Content LinkedIn Video Transcript": "",
+                "QA Video LinkedIn Comments & Hashtags": "",
+                "Quote Card": ""
+            });
+            setFullEpisodeQAVideosEditIndex(null);
+        } else if (fullEpisodeQAVideosEditIndex > index) {
+            setFullEpisodeQAVideosEditIndex(fullEpisodeQAVideosEditIndex - 1);
+        }
+    };
+
+    // Full Episode Podbook Handlers
+    const handleAddFullEpisodePodbook = () => {
+        if (!currentFullEpisodePodbook["Interactive Experience"] &&
+            !currentFullEpisodePodbook["Website URL"]) {
+            ShowCustomToast("Please fill at least Interactive Experience or Website URL", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodePodbook };
+
+        if (fullEpisodePodbookEditIndex !== null) {
+            const updated = [...fullEpisodePodbookEntries];
+            updated[fullEpisodePodbookEditIndex] = newEntry;
+            setFullEpisodePodbookEntries(updated);
+            setFullEpisodePodbookEditIndex(null);
+        } else {
+            setFullEpisodePodbookEntries([...fullEpisodePodbookEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodePodbook({
+            "Interactive Experience": "",
+            "Website URL": "",
+            "Embed Code": "",
+            "Loom Folder": ""
+        });
+    };
+
+    const handleEditFullEpisodePodbook = (index) => {
+        const entry = fullEpisodePodbookEntries[index];
+        setCurrentFullEpisodePodbook({
+            "Interactive Experience": entry["Interactive Experience"] || "",
+            "Website URL": entry["Website URL"] || "",
+            "Embed Code": entry["Embed Code"] || "",
+            "Loom Folder": entry["Loom Folder"] || ""
+        });
+        setFullEpisodePodbookEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodePodbook = (index) => {
+        const updated = fullEpisodePodbookEntries.filter((_, i) => i !== index);
+        setFullEpisodePodbookEntries(updated);
+        if (fullEpisodePodbookEditIndex === index) {
+            setCurrentFullEpisodePodbook({
+                "Interactive Experience": "",
+                "Website URL": "",
+                "Embed Code": "",
+                "Loom Folder": ""
+            });
+            setFullEpisodePodbookEditIndex(null);
+        } else if (fullEpisodePodbookEditIndex > index) {
+            setFullEpisodePodbookEditIndex(fullEpisodePodbookEditIndex - 1);
+        }
+    };
+
+    // Full Episode Full Case Study Handlers
+    const handleAddFullEpisodeFullCaseStudy = () => {
+        if (!currentFullEpisodeFullCaseStudy["Interactive Experience"] &&
+            !currentFullEpisodeFullCaseStudy["Case Study Text"]) {
+            ShowCustomToast("Please fill at least Interactive Experience or Case Study Text", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeFullCaseStudy };
+
+        if (fullEpisodeFullCaseStudyEditIndex !== null) {
+            const updated = [...fullEpisodeFullCaseStudyEntries];
+            updated[fullEpisodeFullCaseStudyEditIndex] = newEntry;
+            setFullEpisodeFullCaseStudyEntries(updated);
+            setFullEpisodeFullCaseStudyEditIndex(null);
+        } else {
+            setFullEpisodeFullCaseStudyEntries([...fullEpisodeFullCaseStudyEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeFullCaseStudy({
+            "Interactive Experience": "",
+            "Case Study Text": "",
+            "Sales Email": "",
+            "Problem Section Video": "",
+            "Problem Section Video Length": "",
+            "Problem Section Video Transcript": "",
+            "Solutions Section Video": "",
+            "Solutions Section Video Length": "",
+            "Solutions Section Video Transcript": "",
+            "Results Section Video": "",
+            "Results Section Video Length": "",
+            "Results Section Video Transcript": ""
+        });
+    };
+
+    const handleEditFullEpisodeFullCaseStudy = (index) => {
+        const entry = fullEpisodeFullCaseStudyEntries[index];
+        setCurrentFullEpisodeFullCaseStudy({
+            "Interactive Experience": entry["Interactive Experience"] || "",
+            "Case Study Text": entry["Case Study Text"] || "",
+            "Sales Email": entry["Sales Email"] || "",
+            "Problem Section Video": entry["Problem Section Video"] || "",
+            "Problem Section Video Length": entry["Problem Section Video Length"] || "",
+            "Problem Section Video Transcript": entry["Problem Section Video Transcript"] || "",
+            "Solutions Section Video": entry["Solutions Section Video"] || "",
+            "Solutions Section Video Length": entry["Solutions Section Video Length"] || "",
+            "Solutions Section Video Transcript": entry["Solutions Section Video Transcript"] || "",
+            "Results Section Video": entry["Results Section Video"] || "",
+            "Results Section Video Length": entry["Results Section Video Length"] || "",
+            "Results Section Video Transcript": entry["Results Section Video Transcript"] || ""
+        });
+        setFullEpisodeFullCaseStudyEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeFullCaseStudy = (index) => {
+        const updated = fullEpisodeFullCaseStudyEntries.filter((_, i) => i !== index);
+        setFullEpisodeFullCaseStudyEntries(updated);
+        if (fullEpisodeFullCaseStudyEditIndex === index) {
+            setCurrentFullEpisodeFullCaseStudy({
+                "Interactive Experience": "",
+                "Case Study Text": "",
+                "Sales Email": "",
+                "Problem Section Video": "",
+                "Problem Section Video Length": "",
+                "Problem Section Video Transcript": "",
+                "Solutions Section Video": "",
+                "Solutions Section Video Length": "",
+                "Solutions Section Video Transcript": "",
+                "Results Section Video": "",
+                "Results Section Video Length": "",
+                "Results Section Video Transcript": ""
+            });
+            setFullEpisodeFullCaseStudyEditIndex(null);
+        } else if (fullEpisodeFullCaseStudyEditIndex > index) {
+            setFullEpisodeFullCaseStudyEditIndex(fullEpisodeFullCaseStudyEditIndex - 1);
+        }
+    };
+
+    // Full Episode One Page Case Study Handlers
+    const handleAddFullEpisodeOnePageCaseStudy = () => {
+        if (!currentFullEpisodeOnePageCaseStudy["Interactive Experience"] &&
+            !currentFullEpisodeOnePageCaseStudy["One Page Text"]) {
+            ShowCustomToast("Please fill at least Interactive Experience or One Page Text", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeOnePageCaseStudy };
+
+        if (fullEpisodeOnePageCaseStudyEditIndex !== null) {
+            const updated = [...fullEpisodeOnePageCaseStudyEntries];
+            updated[fullEpisodeOnePageCaseStudyEditIndex] = newEntry;
+            setFullEpisodeOnePageCaseStudyEntries(updated);
+            setFullEpisodeOnePageCaseStudyEditIndex(null);
+        } else {
+            setFullEpisodeOnePageCaseStudyEntries([...fullEpisodeOnePageCaseStudyEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeOnePageCaseStudy({
+            "Interactive Experience": "",
+            "One Page Text": "",
+            "Sales Email": "",
+            "One Page Video": "",
+            "Length": "",
+            "Transcript": ""
+        });
+    };
+
+    const handleEditFullEpisodeOnePageCaseStudy = (index) => {
+        const entry = fullEpisodeOnePageCaseStudyEntries[index];
+        setCurrentFullEpisodeOnePageCaseStudy({
+            "Interactive Experience": entry["Interactive Experience"] || "",
+            "One Page Text": entry["One Page Text"] || "",
+            "Sales Email": entry["Sales Email"] || "",
+            "One Page Video": entry["One Page Video"] || "",
+            "Length": entry["Length"] || "",
+            "Transcript": entry["Transcript"] || ""
+        });
+        setFullEpisodeOnePageCaseStudyEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeOnePageCaseStudy = (index) => {
+        const updated = fullEpisodeOnePageCaseStudyEntries.filter((_, i) => i !== index);
+        setFullEpisodeOnePageCaseStudyEntries(updated);
+        if (fullEpisodeOnePageCaseStudyEditIndex === index) {
+            setCurrentFullEpisodeOnePageCaseStudy({
+                "Interactive Experience": "",
+                "One Page Text": "",
+                "Sales Email": "",
+                "One Page Video": "",
+                "Length": "",
+                "Transcript": ""
+            });
+            setFullEpisodeOnePageCaseStudyEditIndex(null);
+        } else if (fullEpisodeOnePageCaseStudyEditIndex > index) {
+            setFullEpisodeOnePageCaseStudyEditIndex(fullEpisodeOnePageCaseStudyEditIndex - 1);
+        }
+    };
+
+    // Full Episode Other Case Study Handlers
+    const handleAddFullEpisodeOtherCaseStudy = () => {
+        if (!currentFullEpisodeOtherCaseStudy["Other Case Study Interactive Experience"] &&
+            !currentFullEpisodeOtherCaseStudy["Case Study Text"]) {
+            ShowCustomToast("Please fill at least Interactive Experience or Case Study Text", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeOtherCaseStudy };
+
+        if (fullEpisodeOtherCaseStudyEditIndex !== null) {
+            const updated = [...fullEpisodeOtherCaseStudyEntries];
+            updated[fullEpisodeOtherCaseStudyEditIndex] = newEntry;
+            setFullEpisodeOtherCaseStudyEntries(updated);
+            setFullEpisodeOtherCaseStudyEditIndex(null);
+        } else {
+            setFullEpisodeOtherCaseStudyEntries([...fullEpisodeOtherCaseStudyEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeOtherCaseStudy({
+            "Other Case Study Interactive Experience": "",
+            "Case Study Text": "",
+            "Sales Email": "",
+            "Other Case Study Video": "",
+            "Other Case Study Video Length": "",
+            "Other Case Study Video Transcript": ""
+        });
+    };
+
+    const handleEditFullEpisodeOtherCaseStudy = (index) => {
+        const entry = fullEpisodeOtherCaseStudyEntries[index];
+        setCurrentFullEpisodeOtherCaseStudy({
+            "Other Case Study Interactive Experience": entry["Other Case Study Interactive Experience"] || "",
+            "Case Study Text": entry["Case Study Text"] || "",
+            "Sales Email": entry["Sales Email"] || "",
+            "Other Case Study Video": entry["Other Case Study Video"] || "",
+            "Other Case Study Video Length": entry["Other Case Study Video Length"] || "",
+            "Other Case Study Video Transcript": entry["Other Case Study Video Transcript"] || ""
+        });
+        setFullEpisodeOtherCaseStudyEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeOtherCaseStudy = (index) => {
+        const updated = fullEpisodeOtherCaseStudyEntries.filter((_, i) => i !== index);
+        setFullEpisodeOtherCaseStudyEntries(updated);
+        if (fullEpisodeOtherCaseStudyEditIndex === index) {
+            setCurrentFullEpisodeOtherCaseStudy({
+                "Other Case Study Interactive Experience": "",
+                "Case Study Text": "",
+                "Sales Email": "",
+                "Other Case Study Video": "",
+                "Other Case Study Video Length": "",
+                "Other Case Study Video Transcript": ""
+            });
+            setFullEpisodeOtherCaseStudyEditIndex(null);
+        } else if (fullEpisodeOtherCaseStudyEditIndex > index) {
+            setFullEpisodeOtherCaseStudyEditIndex(fullEpisodeOtherCaseStudyEditIndex - 1);
+        }
+    };
+
+    // Full Episode ICP Advice Handlers
+    const handleAddFullEpisodeICPAdvice = () => {
+        if (!currentFullEpisodeICPAdvice["Post-Podcast Video"] &&
+            !currentFullEpisodeICPAdvice["Post-Podcast Insights Report"]) {
+            ShowCustomToast("Please fill at least Post-Podcast Video or Insights Report", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeICPAdvice };
+
+        if (fullEpisodeICPAdviceEditIndex !== null) {
+            const updated = [...fullEpisodeICPAdviceEntries];
+            updated[fullEpisodeICPAdviceEditIndex] = newEntry;
+            setFullEpisodeICPAdviceEntries(updated);
+            setFullEpisodeICPAdviceEditIndex(null);
+        } else {
+            setFullEpisodeICPAdviceEntries([...fullEpisodeICPAdviceEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeICPAdvice({
+            "Post-Podcast Video": "",
+            "Unedited Post-Podcast Video Length": "",
+            "Unedited Post-Podcast Transcript": "",
+            "Post-Podcast Insights Report": "",
+            "Post-Podcast Vision Report": ""
+        });
+    };
+
+    const handleEditFullEpisodeICPAdvice = (index) => {
+        const entry = fullEpisodeICPAdviceEntries[index];
+        setCurrentFullEpisodeICPAdvice({
+            "Post-Podcast Video": entry["Post-Podcast Video"] || "",
+            "Unedited Post-Podcast Video Length": entry["Unedited Post-Podcast Video Length"] || "",
+            "Unedited Post-Podcast Transcript": entry["Unedited Post-Podcast Transcript"] || "",
+            "Post-Podcast Insights Report": entry["Post-Podcast Insights Report"] || "",
+            "Post-Podcast Vision Report": entry["Post-Podcast Vision Report"] || ""
+        });
+        setFullEpisodeICPAdviceEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeICPAdvice = (index) => {
+        const updated = fullEpisodeICPAdviceEntries.filter((_, i) => i !== index);
+        setFullEpisodeICPAdviceEntries(updated);
+        if (fullEpisodeICPAdviceEditIndex === index) {
+            setCurrentFullEpisodeICPAdvice({
+                "Post-Podcast Video": "",
+                "Unedited Post-Podcast Video Length": "",
+                "Unedited Post-Podcast Transcript": "",
+                "Post-Podcast Insights Report": "",
+                "Post-Podcast Vision Report": ""
+            });
+            setFullEpisodeICPAdviceEditIndex(null);
+        } else if (fullEpisodeICPAdviceEditIndex > index) {
+            setFullEpisodeICPAdviceEditIndex(fullEpisodeICPAdviceEditIndex - 1);
+        }
+    };
+
+    // Full Episode Challenge Questions Handlers
+    const handleAddFullEpisodeChallengeQuestions = () => {
+        if (!currentFullEpisodeChallengeQuestions["Unedited Challenge Question Video"] &&
+            !currentFullEpisodeChallengeQuestions["Challenge Report"]) {
+            ShowCustomToast("Please fill at least Challenge Question Video or Challenge Report", "error");
+            return;
+        }
+
+        const newEntry = { ...currentFullEpisodeChallengeQuestions };
+
+        if (fullEpisodeChallengeQuestionsEditIndex !== null) {
+            const updated = [...fullEpisodeChallengeQuestionsEntries];
+            updated[fullEpisodeChallengeQuestionsEditIndex] = newEntry;
+            setFullEpisodeChallengeQuestionsEntries(updated);
+            setFullEpisodeChallengeQuestionsEditIndex(null);
+        } else {
+            setFullEpisodeChallengeQuestionsEntries([...fullEpisodeChallengeQuestionsEntries, newEntry]);
+        }
+
+        setCurrentFullEpisodeChallengeQuestions({
+            "Unedited Challenge Question Video": "",
+            "Unedited Challenge Question Video Length": "",
+            "Unedited Challenge Question Transcript": "",
+            "Challenge Report": ""
+        });
+    };
+
+    const handleEditFullEpisodeChallengeQuestions = (index) => {
+        const entry = fullEpisodeChallengeQuestionsEntries[index];
+        setCurrentFullEpisodeChallengeQuestions({
+            "Unedited Challenge Question Video": entry["Unedited Challenge Question Video"] || "",
+            "Unedited Challenge Question Video Length": entry["Unedited Challenge Question Video Length"] || "",
+            "Unedited Challenge Question Transcript": entry["Unedited Challenge Question Transcript"] || "",
+            "Challenge Report": entry["Challenge Report"] || ""
+        });
+        setFullEpisodeChallengeQuestionsEditIndex(index);
+    };
+
+    const handleRemoveFullEpisodeChallengeQuestions = (index) => {
+        const updated = fullEpisodeChallengeQuestionsEntries.filter((_, i) => i !== index);
+        setFullEpisodeChallengeQuestionsEntries(updated);
+        if (fullEpisodeChallengeQuestionsEditIndex === index) {
+            setCurrentFullEpisodeChallengeQuestions({
+                "Unedited Challenge Question Video": "",
+                "Unedited Challenge Question Video Length": "",
+                "Unedited Challenge Question Transcript": "",
+                "Challenge Report": ""
+            });
+            setFullEpisodeChallengeQuestionsEditIndex(null);
+        } else if (fullEpisodeChallengeQuestionsEditIndex > index) {
+            setFullEpisodeChallengeQuestionsEditIndex(fullEpisodeChallengeQuestionsEditIndex - 1);
+        }
+    };
+
     const handleFormSubmit = async () => {
         // Convert all rankings to numbers in theme entries
         const validatedThemeEntries = themeEntries.map(entry => ({
@@ -1534,13 +5051,48 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setSalesInsightsEntries(validatedSalesInsightsEntries);
 
         try {
+
+            const guestData = guestEntries.map(guest => ({
+                "Guest": guest["Guest"],
+                "Persona": guest["Persona"],
+                "Industry Vertical": guest["Industry Vertical"],
+                "Guest Title": guest["Guest Title"],
+                "Guest Company": guest["Guest Company"],
+                "Guest Industry": guest["Guest Industry"],
+                "Tracker": guest['Tracker'],
+                "LinkedIn Profile": guest['LinkedIn Profile'],
+                "Dossier": guest['Dossier'],
+            }));
+
+            const avatarUrls = guestEntries.map(guest => guest.Avatar).filter(Boolean);
             // If dynamic_fields_description exists but dynamic_fields doesn't, extract fields
             if (formik.values.dynamic_fields_description && !formik.values.dynamic_fields) {
                 const fields = extractFieldsFromTemplate(formik.values.dynamic_fields_description);
                 formik.setFieldValue('dynamic_fields', fields);
             }
+            formik.setValues({
+                ...formik.values,
+                Guest: guestData.length > 0 ? guestData : null,
+                Avatar: avatarUrls.length > 0 ? avatarUrls : null,
+                Prep_Call: prepCallEntries.length > 0 ? prepCallEntries : null,
+                Additional_Guest_Projects: additionalProjectEntries.length > 0 ? additionalProjectEntries : null,
+                Emails: emailEntries.length > 0 ? emailEntries : null,
+                DETAILS_FULL_EPISODES: fullEpisodeDetailsEntries.length > 0 ? fullEpisodeDetailsEntries : null,
+                FULL_EPISODE_VIDEO: fullEpisodeVideoEntries.length > 0 ? fullEpisodeVideoEntries : null,
+                FULL_EPISODE_EXTENDED_CONTENT: fullEpisodeExtendedContentEntries.length > 0 ? fullEpisodeExtendedContentEntries : null,
+                FULL_EPISODE_HIGHLIGHT_VIDEO: fullEpisodeHighlightVideoEntries.length > 0 ? fullEpisodeHighlightVideoEntries : null,
+                FULL_EPISODE_INTRODUCTION_VIDEO: fullEpisodeIntroductionVideoEntries.length > 0 ? fullEpisodeIntroductionVideoEntries : null,
+                FULL_EPISODE_QA_VIDEOS: fullEpisodeQAVideosEntries.length > 0 ? fullEpisodeQAVideosEntries : null,
+                FULL_EPISODE_PODBOOK: fullEpisodePodbookEntries.length > 0 ? fullEpisodePodbookEntries : null,
+                FULL_EPISODE_FULL_CASE_STUDY: fullEpisodeFullCaseStudyEntries.length > 0 ? fullEpisodeFullCaseStudyEntries : null,
+                FULL_EPISODE_ONE_PAGE_CASE_STUDY: fullEpisodeOnePageCaseStudyEntries.length > 0 ? fullEpisodeOnePageCaseStudyEntries : null,
+                FULL_EPISODE_OTHER_CASE_STUDY: fullEpisodeOtherCaseStudyEntries.length > 0 ? fullEpisodeOtherCaseStudyEntries : null,
+                FULL_EPISODE_ICP_ADVICE: fullEpisodeICPAdviceEntries.length > 0 ? fullEpisodeICPAdviceEntries : null,
+                FULL_EPISODE_CHALLENGE_QUESTIONS: fullEpisodeChallengeQuestionsEntries.length > 0 ? fullEpisodeChallengeQuestionsEntries : null,
+            });
 
-            // Rest of your submission logic...
+
+
             await formik.submitForm();
         } catch (error) {
             console.log("Form submission error:", error);
@@ -1555,24 +5107,1083 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         // }, 0);
 
     };
-    console.log('OPTIONS:', OPTIONS['Themes']);
-    console.log('Current Theme:', currentTheme);
-    console.log('Theme Entries:', themeEntries);
-    console.log("Vhalllll", displayFields);
+
+    const customPlaceholders = {
+        Tracker: "Enter Tracker Link",
+        "LinkedIn Profile": "Enter LinkedIn Profile Link",
+        Dossier: "Enter Dossier Link"
+    };
+
+
     return (
         <>
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50" onClick={onClose} />
             <div className="fixed inset-0 flex items-center justify-center z-50">
-                <div className="shadow-lg p-4 border border-gray-300 rounded-lg w-[40%]" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                    <h2 className="text-[20px] font-bold mt-[2px] p-0 w-full">
+                <div className="shadow-lg p-4 border border-gray-300 rounded-lg w-[50%]" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                    <h2 className="text-[20px] font-bold px-4 -mt-2 p-0 w-full">
                         {isEditMode ? updateRecord : createRecord}
-                        <hr className="border-t border-gray-300 mb-6 mt-[10px] -mx-4" />
+                        <hr className="border-t border-gray-300 mb-2 mt-[10px] -mx-8" />
                     </h2>
-                    <form onSubmit={formik.handleSubmit} className="border rounded-lg p-4 -mt-[10px]">
+
+                    <form onSubmit={formik.handleSubmit} className=" rounded-lg p-4 -mt-[10px]">
                         <div className="max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+                            {displayFields.some(field =>
+                                ['Guest', 'Prep_Call', 'Additional_Guest_Projects', 'Emails',
+                                    'FULL_EPISODE_VIDEO', 'FULL_EPISODE_HIGHLIGHT_VIDEO',
+                                    'FULL_EPISODE_INTRODUCTION_VIDEO', 'FULL_EPISODE_QA_VIDEOS',
+                                    'FULL_EPISODE_PODBOOK', 'FULL_EPISODE_FULL_CASE_STUDY',
+                                    'FULL_EPISODE_ONE_PAGE_CASE_STUDY', 'FULL_EPISODE_OTHER_CASE_STUDY',
+                                    'FULL_EPISODE_ICP_ADVICE', 'FULL_EPISODE_CHALLENGE_QUESTIONS'].includes(field.key)
+                            ) && (
+                                    <>
+                                        {/* Multi-step form container */}
+                                        <div className="space-y-6  ">
+                                            {/* Step indicator - moved outside and only shown once */}
+                                            <div className="flex justify-center sticky top-0 z-[9999]">
+                                                <div className="flex space-x-4 -mb-2">
+                                                    {[1, 2, 3, 4, 5].map((stepNumber) => (
+                                                        <button
+                                                            key={stepNumber}
+                                                            type="button"
+                                                            onClick={() => setCurrentStep(stepNumber)}
+                                                            className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium ${currentStep === stepNumber
+                                                                    ? 'bg-blue-600 text-white'
+                                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                                }`}
+                                                        >
+                                                            {stepNumber}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <hr className="border-t border-gray-300 -mx-2" />
+                                            {/* Step 1: Guest Information */}
+                                            {currentStep === 1 && (
+                                                <div>
+                                                    <h3 className="text-lg font-semibold mb-2 -mt-4">Guest:</h3>
+                                                    <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor }}>
+
+                                                        <div className="grid grid-cols-1 gap-4">
+                                                            {GUEST_FIELDS.map(fieldKey => (
+                                                                <div key={fieldKey}>
+                                                                    <label className="block font-semibold text-sm mb-1">
+                                                                        {fieldKey}:
+                                                                    </label>
+                                                                    {fieldKey === 'Avatar' ? (
+                                                                        <div>
+                                                                            <input
+                                                                                type="file"
+                                                                                accept="image/*"
+                                                                                ref={avatarInputRef}
+                                                                                onChange={(event) => {
+                                                                                    const file = event.target.files[0];
+                                                                                    if (file) {
+                                                                                        setCurrentGuest(prev => ({
+                                                                                            ...prev,
+                                                                                            Avatar: file
+                                                                                        }));
+                                                                                    }
+                                                                                }}
+                                                                                className="w-full p-2 border rounded"
+                                                                            />
+                                                                            {currentGuest.Avatar && typeof currentGuest.Avatar === 'string' && (
+                                                                                <img
+                                                                                    src={currentGuest.Avatar}
+                                                                                    alt="Current Avatar"
+                                                                                    className="mt-2 h-16 w-16 rounded-full object-cover"
+                                                                                />
+                                                                            )}
+                                                                            {/* {currentGuest.Avatar instanceof File && (
+                                                                            <div className="mt-2 text-sm text-gray-400">
+                                                                                {currentGuest.Avatar.name} (preview not available)
+                                                                            </div>
+                                                                        )} */}
+                                                                        </div>
+                                                                    ) : fieldKey === 'Persona' ? (  // Add this block for Persona
+                                                                        <CustomSelect
+                                                                            id="persona-select"
+                                                                            options={OPTIONS['Persona'] || []}
+                                                                            value={currentGuest[fieldKey] || ""}
+                                                                            isMulti={true}
+                                                                            onChange={(value) => setCurrentGuest(prev => ({
+                                                                                ...prev,
+                                                                                [fieldKey]: value
+                                                                            }))}
+                                                                            className="w-full"
+                                                                            placeholder="Select Persona..."
+                                                                        />
+                                                                    ) : (
+                                                                        <CustomInput
+                                                                            type="text"
+                                                                            value={currentGuest[fieldKey] || ""}
+                                                                            onChange={(e) => setCurrentGuest(prev => ({
+                                                                                ...prev,
+                                                                                [fieldKey]: e.target.value
+                                                                            }))}
+                                                                            className="w-full p-2 border rounded"
+                                                                            placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                            ))}
+
+                                                            <div className="flex justify-end">
+                                                                <CustomButton
+                                                                    type="button"
+                                                                    onClick={handleAddGuest}
+                                                                    className="flex items-center gap-1"
+                                                                >
+                                                                    <PlusIcon className="h-4 w-4" />
+                                                                    {guestEditIndex !== null ? "Update Guest" : "Add Guest"}
+                                                                </CustomButton>
+                                                            </div>
+                                                        </div>
+
+                                                        {guestEntries.length > 0 && (
+                                                            <div className="mt-4">
+                                                                <h4 className="font-medium text-sm mb-2">Added Guests:</h4>
+                                                                {guestEntries.map((entry, index) => (
+                                                                    <GuestEntry
+                                                                        key={index}
+                                                                        index={index}
+                                                                        guest={entry}
+                                                                        onEdit={handleEditGuest}
+                                                                        onRemove={handleRemoveGuest}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex justify-between -mt-4 -mb-4">
+                                                            <div></div>
+                                                            <div className="space-x-2">
+                                                                <CustomButton
+                                                                    type="button"
+                                                                    onClick={() => setCurrentStep(2)}
+                                                                    className=" text-white px-4 py-2 rounded"
+                                                                >
+                                                                    Next: Prep Call
+                                                                </CustomButton>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Step 2: Prep Call */}
+                                            {currentStep === 2 && (
+                                                <div>
+                                                    <h3 className="text-lg font-semibold mb-2 -mt-4">Prep Call:</h3>
+                                                    <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor }}>
+
+                                                        <div className="grid grid-cols-1 gap-4">
+                                                            {PREP_CALLS_FIELDS.map(fieldKey => (
+                                                                <div key={fieldKey}>
+                                                                    <label className="block font-semibold text-sm mb-1">
+                                                                        {fieldKey}:
+                                                                    </label>
+                                                                    <CustomInput
+                                                                        type={fieldKey.includes('Video') || fieldKey.includes('Guide') ? "url" : "text"}
+                                                                        value={currentPrepCall[fieldKey] || ""}
+                                                                        onChange={(e) => setCurrentPrepCall(prev => ({
+                                                                            ...prev,
+                                                                            [fieldKey]: e.target.value
+                                                                        }))}
+                                                                        className="w-full p-2 border rounded"
+                                                                        placeholder={`Enter ${fieldKey}`}
+                                                                    />
+                                                                </div>
+                                                            ))}
+
+                                                            {(prepCallEntries.length === 0 || prepCallEditIndex !== null) && (
+                                                                <div className="flex justify-end">
+                                                                    <CustomButton
+                                                                        type="button"
+                                                                        onClick={handleAddPrepCall}
+                                                                        className="flex items-center gap-1"
+                                                                    >
+                                                                        <PlusIcon className="h-4 w-4" />
+                                                                        {prepCallEditIndex !== null ? "Update Prep Call" : "Add Prep Call"}
+                                                                    </CustomButton>
+                                                                </div>
+                                                            )}
+
+                                                        </div>
+
+                                                        {prepCallEntries.length > 0 && (
+                                                            <div className="mt-4">
+                                                                <h4 className="font-medium text-sm mb-2">Added Prep Call:</h4>
+                                                                {prepCallEntries.map((entry, index) => (
+                                                                    <PrepCallEntry
+                                                                        key={index}
+                                                                        index={index}
+                                                                        prepCall={entry}
+                                                                        onEdit={handleEditPrepCall}
+                                                                        onRemove={handleRemovePrepCall}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex justify-end w-full gap-2 -mt-4 -mb-4">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={() => setCurrentStep(1)}
+                                                                className="w-40 bg-gray-500 hover:bg-gray-600  text-white px-4 py-2 rounded"
+                                                            >
+                                                                Back: Guest Details
+                                                            </CustomButton>
+                                                            <div className="space-x-2">
+                                                                <CustomButton
+                                                                    type="button"
+                                                                    onClick={() => setCurrentStep(3)}
+                                                                    className=" text-white px-4 py-2 rounded"
+                                                                >
+                                                                    Next: Full Episodes
+                                                                </CustomButton>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                            )}
+
+                                            {/* Step 3: Full Episodes */}
+                                            {currentStep === 3 && (
+                                                <div>
+                                                    <h3 className="text-lg font-semibold mb-2 -mt-4">Full Episode:</h3>
+                                                    <div className="border rounded-lg p-6 shadow-sm">
+
+                                                        {/* Episode Details */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-4">Episode Details:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {DETAILS_FULL_EPISODES.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            {fieldKey === 'Date Recorded' ? (
+                                                                                <CustomInput
+                                                                                    type="date"
+                                                                                    value={currentFullEpisodeDetails[fieldKey] || ''}
+                                                                                    onChange={(e) => setCurrentFullEpisodeDetails(prev => ({
+                                                                                        ...prev,
+                                                                                        [fieldKey]: e.target.value
+                                                                                    }))}
+                                                                                    className="w-full p-2 border rounded bg-white text-gray-800 [color-scheme:dark] cursor-pointer"
+                                                                                    onClick={(e) => e.target.showPicker()}
+                                                                                />
+
+                                                                            ) : (
+                                                                                <CustomInput
+                                                                                    type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                    value={currentFullEpisodeDetails[fieldKey] || ""}
+                                                                                    onChange={(e) => setCurrentFullEpisodeDetails(prev => ({
+                                                                                        ...prev,
+                                                                                        [fieldKey]: e.target.value
+                                                                                    }))}
+                                                                                    className="w-full p-2 border rounded"
+                                                                                    placeholder={`Enter ${fieldKey}`}
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeDetailsEntries.length === 0 || fullEpisodeDetailsEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeDetails}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeDetailsEditIndex !== null ? "Update Full Episode Details" : "Add Full Episode Details"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeDetailsEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Full Episode Details:</h4>
+                                                                        {fullEpisodeDetailsEntries.map((entry, index) => (
+                                                                            <FullEpisodeDetailsEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                details={entry}
+                                                                                onEdit={handleEditFullEpisodeDetails}
+                                                                                onRemove={handleRemoveFullEpisodeDetails}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_VIDEO */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Episode Video:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_VIDEO.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeVideo[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeVideo(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeVideoEntries.length === 0 || fullEpisodeVideoEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeVideo}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeVideoEditIndex !== null ? "Update Full Episode Video" : "Add Full Episode Video"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeVideoEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Full Episode Videos:</h4>
+                                                                        {fullEpisodeVideoEntries.map((entry, index) => (
+                                                                            <FullEpisodeVideoEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                video={entry}
+                                                                                onEdit={handleEditFullEpisodeVideo}
+                                                                                onRemove={handleRemoveFullEpisodeVideo}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_EXTENDED_CONTENT */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Extended Content:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_EXTENDED_CONTENT.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeExtendedContent[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeExtendedContent(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeExtendedContentEntries.length === 0 || fullEpisodeExtendedContentEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeExtendedContent}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeExtendedContentEditIndex !== null ? "Update Extended Content" : "Add Extended Content"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeExtendedContentEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Extended Content:</h4>
+                                                                        {fullEpisodeExtendedContentEntries.map((entry, index) => (
+                                                                            <FullEpisodeExtendedContentEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                content={entry}
+                                                                                onEdit={handleEditFullEpisodeExtendedContent}
+                                                                                onRemove={handleRemoveFullEpisodeExtendedContent}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_HIGHLIGHT_VIDEO */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Highlight Video:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_HIGHLIGHT_VIDEO.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeHighlightVideo[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeHighlightVideo(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeHighlightVideoEntries.length === 0 || fullEpisodeHighlightVideoEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeHighlightVideo}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeHighlightVideoEditIndex !== null ? "Update Highlight Video" : "Add Highlight Video"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeHighlightVideoEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Highlight Videos:</h4>
+                                                                        {fullEpisodeHighlightVideoEntries.map((entry, index) => (
+                                                                            <FullEpisodeHighlightVideoEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                video={entry}
+                                                                                onEdit={handleEditFullEpisodeHighlightVideo}
+                                                                                onRemove={handleRemoveFullEpisodeHighlightVideo}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_INTRODUCTION_VIDEO */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Introduction Video:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_INTRODUCTION_VIDEO.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeIntroductionVideo[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeIntroductionVideo(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeIntroductionVideoEntries.length === 0 || fullEpisodeIntroductionVideoEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeIntroductionVideo}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeIntroductionVideoEditIndex !== null ? "Update Introduction Video" : "Add Introduction Video"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeIntroductionVideoEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Introduction Videos:</h4>
+                                                                        {fullEpisodeIntroductionVideoEntries.map((entry, index) => (
+                                                                            <FullEpisodeIntroductionVideoEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                video={entry}
+                                                                                onEdit={handleEditFullEpisodeIntroductionVideo}
+                                                                                onRemove={handleRemoveFullEpisodeIntroductionVideo}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_QA_VIDEOS */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Q&A Videos:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_QA_VIDEOS.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeQAVideos[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeQAVideos(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {/* {(fullEpisodeQAVideosEntries.length === 0 || fullEpisodeQAVideosEditIndex !== null) && ( */}
+                                                                    <div className="flex justify-end">
+                                                                        <CustomButton
+                                                                            type="button"
+                                                                            onClick={handleAddFullEpisodeQAVideos}
+                                                                            className="flex items-center gap-1"
+                                                                        >
+                                                                            <PlusIcon className="h-4 w-4" />
+                                                                            {fullEpisodeQAVideosEditIndex !== null ? "Update QA Videos" : "Add QA Videos"}
+                                                                        </CustomButton>
+                                                                    </div>
+                                                                    {/* )} */}
+                                                                </div>
+
+                                                                {fullEpisodeQAVideosEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added QA Videos:</h4>
+                                                                        {fullEpisodeQAVideosEntries.map((entry, index) => (
+                                                                            <FullEpisodeQAVideosEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                qaVideos={entry}
+                                                                                onEdit={handleEditFullEpisodeQAVideos}
+                                                                                onRemove={handleRemoveFullEpisodeQAVideos}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_PODBOOK */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Podbook:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_PODBOOK.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodePodbook[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodePodbook(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodePodbookEntries.length === 0 || fullEpisodePodbookEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodePodbook}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodePodbookEditIndex !== null ? "Update Podbook" : "Add Podbook"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodePodbookEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Podbooks:</h4>
+                                                                        {fullEpisodePodbookEntries.map((entry, index) => (
+                                                                            <FullEpisodePodbookEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                podbook={entry}
+                                                                                onEdit={handleEditFullEpisodePodbook}
+                                                                                onRemove={handleRemoveFullEpisodePodbook}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_FULL_CASE_STUDY */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Full Case Study:</h2>
+
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_FULL_CASE_STUDY.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeFullCaseStudy[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeFullCaseStudy(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeFullCaseStudyEntries.length === 0 || fullEpisodeFullCaseStudyEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeFullCaseStudy}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeFullCaseStudyEditIndex !== null ? "Update Full Case Study" : "Add Full Case Study"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeFullCaseStudyEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Full Case Studies:</h4>
+                                                                        {fullEpisodeFullCaseStudyEntries.map((entry, index) => (
+                                                                            <FullEpisodeFullCaseStudyEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                caseStudy={entry}
+                                                                                onEdit={handleEditFullEpisodeFullCaseStudy}
+                                                                                onRemove={handleRemoveFullEpisodeFullCaseStudy}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_ONE_PAGE_CASE_STUDY */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">One Page Case Study:</h2>
+
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_ONE_PAGE_CASE_STUDY.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeOnePageCaseStudy[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeOnePageCaseStudy(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeOnePageCaseStudyEntries.length === 0 || fullEpisodeOnePageCaseStudyEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeOnePageCaseStudy}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeOnePageCaseStudyEditIndex !== null ? "Update One Page Case Study" : "Add One Page Case Study"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeOnePageCaseStudyEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added One Page Case Studies:</h4>
+                                                                        {fullEpisodeOnePageCaseStudyEntries.map((entry, index) => (
+                                                                            <FullEpisodeOnePageCaseStudyEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                caseStudy={entry}
+                                                                                onEdit={handleEditFullEpisodeOnePageCaseStudy}
+                                                                                onRemove={handleRemoveFullEpisodeOnePageCaseStudy}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_OTHER_CASE_STUDY */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Other Case Study:</h2>
+
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_OTHER_CASE_STUDY.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeOtherCaseStudy[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeOtherCaseStudy(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeOtherCaseStudyEntries.length === 0 || fullEpisodeOtherCaseStudyEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeOtherCaseStudy}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeOtherCaseStudyEditIndex !== null ? "Update Other Case Study" : "Add Other Case Study"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeOtherCaseStudyEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Other Case Studies:</h4>
+                                                                        {fullEpisodeOtherCaseStudyEntries.map((entry, index) => (
+                                                                            <FullEpisodeOtherCaseStudyEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                caseStudy={entry}
+                                                                                onEdit={handleEditFullEpisodeOtherCaseStudy}
+                                                                                onRemove={handleRemoveFullEpisodeOtherCaseStudy}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_ICP_ADVICE */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">ICP Advice:</h2>
+
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_ICP_ADVICE.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeICPAdvice[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeICPAdvice(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeICPAdviceEntries.length === 0 || fullEpisodeICPAdviceEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeICPAdvice}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeICPAdviceEditIndex !== null ? "Update ICP Advice" : "Add ICP Advice"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeICPAdviceEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added ICP Advice:</h4>
+                                                                        {fullEpisodeICPAdviceEntries.map((entry, index) => (
+                                                                            <FullEpisodeICPAdviceEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                advice={entry}
+                                                                                onEdit={handleEditFullEpisodeICPAdvice}
+                                                                                onRemove={handleRemoveFullEpisodeICPAdvice}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* FULL_EPISODE_CHALLENGE_QUESTIONS */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Challenge Questions:</h2>
+
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_CHALLENGE_QUESTIONS.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
+                                                                                value={currentFullEpisodeChallengeQuestions[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentFullEpisodeChallengeQuestions(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {(fullEpisodeChallengeQuestionsEntries.length === 0 || fullEpisodeChallengeQuestionsEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddFullEpisodeChallengeQuestions}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {fullEpisodeChallengeQuestionsEditIndex !== null ? "Update Challenge Questions" : "Add Challenge Questions"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {fullEpisodeChallengeQuestionsEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Challenge Questions:</h4>
+                                                                        {fullEpisodeChallengeQuestionsEntries.map((entry, index) => (
+                                                                            <FullEpisodeChallengeQuestionsEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                challenge={entry}
+                                                                                onEdit={handleEditFullEpisodeChallengeQuestions}
+                                                                                onRemove={handleRemoveFullEpisodeChallengeQuestions}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {/* Navigation */}
+                                                        <div className="flex justify-end w-full gap-2 -mt-4 -mb-6">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={() => setCurrentStep(2)}
+                                                                className="w-40 bg-gray-500 hover:bg-gray-600  text-white px-4 py-2 rounded"
+                                                            >
+                                                                Back: Prep Call
+                                                            </CustomButton>
+                                                            <div className="space-x-2">
+                                                                <CustomButton
+                                                                    type="button"
+                                                                    onClick={() => setCurrentStep(4)}
+                                                                    className=" text-white px-4 py-2 rounded"
+                                                                >
+                                                                    Next: Additional Projects
+                                                                </CustomButton>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Step 4: Additional Projects */}
+                                            {currentStep === 4 && (
+                                                <div>
+                                                    <h3 className="text-lg font-semibold mb-2 -mt-4">Additional Guest Project Details:</h3>
+                                                    <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                        <div className="grid grid-cols-1 gap-4">
+                                                            {Additional_Guest_Projects.map(fieldKey => (
+                                                                <div key={fieldKey}>
+                                                                    <label className="block font-semibold text-sm mb-1">
+                                                                        {fieldKey}:
+                                                                    </label>
+                                                                    <CustomInput
+                                                                        type="url"
+                                                                        value={currentAdditionalProject[fieldKey] || ""}
+                                                                        onChange={(e) => setCurrentAdditionalProject(prev => ({
+                                                                            ...prev,
+                                                                            [fieldKey]: e.target.value
+                                                                        }))}
+                                                                        className="w-full p-2 border rounded"
+                                                                        placeholder={`Enter ${fieldKey} URL`}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                            {(additionalProjectEntries.length === 0 || additionalProjectEditIndex !== null) && (
+                                                                <div className="flex justify-end">
+                                                                    <CustomButton
+                                                                        type="button"
+                                                                        onClick={handleAddAdditionalProject}
+                                                                        className="flex items-center gap-1"
+                                                                    >
+                                                                        <PlusIcon className="h-4 w-4" />
+                                                                        {additionalProjectEditIndex !== null ? "Update Additional Guest Project" : "Add Additional Guest Project"}
+                                                                    </CustomButton>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {additionalProjectEntries.length > 0 && (
+                                                            <div className="mt-4">
+                                                                <h4 className="font-medium text-sm mb-2">Added Additional Guest Project:</h4>
+                                                                {additionalProjectEntries.map((entry, index) => (
+                                                                    <AdditionalProjectEntry
+                                                                        key={index}
+                                                                        index={index}
+                                                                        project={entry}
+                                                                        onEdit={handleEditAdditionalProject}
+                                                                        onRemove={handleRemoveAdditionalProject}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        <div className="flex justify-end w-full gap-2 -mt-4 -mb-4">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={() => setCurrentStep(3)}
+                                                                className="w-40 bg-gray-500 hover:bg-gray-600  text-white px-4 py-2 rounded"
+                                                            >
+                                                                Back: Full Episodes
+                                                            </CustomButton>
+                                                            <div className="space-x-2">
+                                                                <CustomButton
+                                                                    type="button"
+                                                                    onClick={() => setCurrentStep(5)}
+                                                                    className=" text-white px-4 py-2 rounded"
+                                                                >
+                                                                    Next: Emails
+                                                                </CustomButton>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            )}
+
+                                            {/* Step 5: Emails */}
+                                            {currentStep === 5 && (
+                                                <div>
+                                                    <h3 className="text-lg font-semibold mb-2 -mt-4">Email Details:</h3>
+                                                    <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                        <div className="grid grid-cols-1 gap-4">
+                                                            {EMAIL_FIELDS.map(fieldKey => (
+                                                                <div key={fieldKey}>
+                                                                    <label className="block font-semibold text-sm mb-1">
+                                                                        {fieldKey} Email:
+                                                                    </label>
+                                                                    <CustomInput
+                                                                        type="email"
+                                                                        value={currentEmail[fieldKey] || ""}
+                                                                        onChange={(e) => setCurrentEmail(prev => ({
+                                                                            ...prev,
+                                                                            [fieldKey]: e.target.value
+                                                                        }))}
+                                                                        className="w-full p-2 border rounded"
+                                                                        placeholder={`Enter ${fieldKey} email`}
+                                                                    />
+                                                                </div>
+                                                            ))}
+
+                                                            {(emailEntries.length === 0 || emailEditIndex !== null) && (
+                                                                <div className="flex justify-end">
+                                                                    <CustomButton
+                                                                        type="button"
+                                                                        onClick={handleAddEmail}
+                                                                        className="flex items-center gap-1"
+                                                                    >
+                                                                        <PlusIcon className="h-4 w-4" />
+                                                                        {emailEditIndex !== null ? "Update Email" : "Add Email"}
+                                                                    </CustomButton>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {emailEntries.length > 0 && (
+                                                            <div className="mt-4">
+                                                                <h4 className="font-medium text-sm mb-2">Added Emails:</h4>
+                                                                {emailEntries.map((entry, index) => (
+                                                                    <EmailEntry
+                                                                        key={index}
+                                                                        index={index}
+                                                                        email={entry}
+                                                                        onEdit={handleEditEmail}
+                                                                        onRemove={handleRemoveEmail}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex justify-end w-full gap-2 -mt-4 -mb-4">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={() => setCurrentStep(4)}
+                                                                className="w-50 bg-gray-500 hover:bg-gray-600  text-white px-4 py-2 rounded"
+                                                            >
+                                                                Back: Additional Projects
+                                                            </CustomButton>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            )}
+                                        </div>
+                                    </>
+                                )}
                             {displayFields.map((field) => (
                                 <div key={field.key} className="mb-4">
                                     {![
+                                        'Video Type',
+                                        'Video Title',
+                                        'Video Length',
+                                        'Videos Link',
+                                        'Video Description',
                                         'Themes',
                                         'Objections',
                                         'Validations',
@@ -1609,7 +6220,14 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                         'Case Study Other Video_Video Link',
                                         'Case Study Other Video_Copy and Paste Text',
                                         'Case Study Other Video_Link To Document',
-                                        "file_link"
+                                        "file_link",
+                                        "Avatar", "Guest Title", "Guest Company", "Guest Industry",
+                                        'Guest', 'Prep_Call', 'Additional_Guest_Projects', 'Emails',
+                                        'FULL_EPISODE_VIDEO', 'FULL_EPISODE_HIGHLIGHT_VIDEO',
+                                        'FULL_EPISODE_INTRODUCTION_VIDEO', 'FULL_EPISODE_QA_VIDEOS',
+                                        'FULL_EPISODE_PODBOOK', 'FULL_EPISODE_FULL_CASE_STUDY',
+                                        'FULL_EPISODE_ONE_PAGE_CASE_STUDY', 'FULL_EPISODE_OTHER_CASE_STUDY',
+                                        'FULL_EPISODE_ICP_ADVICE', 'FULL_EPISODE_CHALLENGE_QUESTIONS', 'Video_ID', 'DETAILS_FULL_EPISODES', 'FULL_EPISODE_EXTENDED_CONTENT'
                                     ].includes(field.key) ? (
 
                                         !(
@@ -1633,7 +6251,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                     )}
                                                 </label>
 
-                                                {(field.key === 'file_type' || field.key === 'category' || field.key ==='content_categories'  || field.key === 'market_categories') ? (
+                                                {(field.key === 'file_type' || field.key === 'category' || field.key === 'content_categories' || field.key === 'market_categories') ? (
                                                     MULTISELECT_FIELDS.includes(field.key) ? (
                                                         <CustomSelect
                                                             key={`${field.key}-${JSON.stringify(formik.values[field.key])}`} // Force re-render
@@ -1715,7 +6333,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         </>
 
                                                     ) : null
-
                                                 ) : MULTISELECT_FIELDS.includes(field.key) ? (
                                                     <CustomSelect
                                                         id={field.key}
@@ -1766,76 +6383,315 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                         {/* <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                             {field.label}:
                                                         </label> */}
-                                                        <div className="w-full p-2 border rounded bg-gray-100"style={{ backgroundColor: appColors.primaryColor }}>
+                                                        <div className="w-full p-2 border rounded bg-gray-100" style={{ backgroundColor: appColors.primaryColor }}>
                                                             {field.value(formik.values)}
                                                         </div>
                                                     </div>
-                                                ) : field.type === "image" ? (
-                                                    <>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={(event) => {
-                                                                const file = event.currentTarget.files[0];
-                                                                formik.setFieldValue(field.key, file);
-                                                            }}
-                                                        />
-                                                        {formik.values[field.key] && typeof formik.values[field.key] === "string" && (
-                                                            <img src={formik.values[field.key]} alt="Uploaded Avatar" className="mt-2 h-16 rounded" />
-                                                        )}
-                                                    </>
-                                                ) : field.type === "file" ? (
-                                                    <div className="space-y-2">
-                                                        {/* Upload file */}
-                                                        <div>
-                                                            {/* <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Upload File:
-                                                            </label> */}
-                                                            <CustomInput
+                                                ) :
+                                                    field.type == "mentioned_quotes_filed" ? (
+                                                        <div className="mb-4" >
+
+                                                            <div className="flex items-center gap-2 mb-2" >
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    value={currentMentionedQuote}
+                                                                    onChange={(e) => setCurrentMentionedQuote(e.target.value)}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter' && currentMentionedQuote.trim()) {
+                                                                            handleAddMentionedQuote();
+                                                                        }
+                                                                    }}
+                                                                    className="flex-1 p-2 border rounded text-white"
+                                                                    placeholder={field.placeholder || "Enter quote..."}
+                                                                />
+                                                                {currentMentionedQuote && (
+                                                                    <>
+                                                                        <CustomButton
+                                                                            type="button"
+                                                                            title={"Add"}
+                                                                            onClick={handleAddMentionedQuote}
+                                                                            className="px-2 py-0 w-[50px] bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                                        />
+
+                                                                        <CustomButton
+                                                                            type="button"
+                                                                            title={"Cancel"}
+                                                                            onClick={() => setCurrentMentionedQuote("")}
+                                                                            className="px-2 py-0 bg-gray-500 w-[100px] text-white rounded hover:bg-gray-600"
+                                                                        />
+                                                                    </>
+                                                                )}
+                                                            </div>
+
+                                                            {mentionedQuotes.length > 0 && (
+                                                                <div
+                                                                    className="max-w-full overflow-x-auto whitespace-nowrap border border-gray-300 rounded p-2"
+                                                                    style={{
+                                                                        backgroundColor: appColors.primaryColor,
+                                                                        maxHeight: '160px'  // Adjust height as needed
+                                                                    }}
+                                                                >
+                                                                    <label className="font-bold block mb-2">Added Mentioned Quotes:</label>
+                                                                    <div className="flex space-x-2">
+                                                                        {mentionedQuotes.map((quote, index) => (
+                                                                            <div
+                                                                                key={index}
+                                                                                className="flex items-center justify-between px-2  rounded border border-gray-400 min-w-[100px]"
+                                                                                style={{
+                                                                                    backgroundColor: appColors.primaryColor,
+                                                                                    flex: '0 0 auto'  // Prevent flex items from shrinking
+                                                                                }}
+                                                                            >
+                                                                                <span className="mr-2 overflow-hidden text-ellipsis">{quote}</span>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => handleRemoveMentionedQuote(index)}
+                                                                                    className="text-red-500 hover:text-red-700 ml-2 flex-shrink-0"
+                                                                                    style={{ fontSize: '1.2rem' }}
+                                                                                >
+                                                                                    ×
+                                                                                </button>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : field.type === "image" ? (
+                                                        <>
+                                                            <input
                                                                 type="file"
-                                                                accept="*/*"
+                                                                accept="image/*"
                                                                 onChange={(event) => {
                                                                     const file = event.currentTarget.files[0];
                                                                     formik.setFieldValue(field.key, file);
-                                                                    formik.setFieldValue(`${field.key}_link`, ""); // clear link if file selected
                                                                 }}
                                                             />
-                                                        </div>
+                                                            {formik.values[field.key] && typeof formik.values[field.key] === "string" && (
+                                                                <img src={formik.values[field.key]} alt="Uploaded Avatar" className="mt-2 h-16 rounded" />
+                                                            )}
+                                                        </>
+                                                    ) : field.type === "file" ? (
+                                                        <div className="space-y-2">
+                                                            {/* Upload file */}
+                                                            <div>
+                                                                {/* <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                Upload File:
+                                                            </label> */}
+                                                                <CustomInput
+                                                                    type="file"
+                                                                    accept="*/*"
+                                                                    onChange={(event) => {
+                                                                        const file = event.currentTarget.files[0];
+                                                                        formik.setFieldValue(field.key, file);
+                                                                        formik.setFieldValue(`${field.key}_link`, ""); // clear link if file selected
+                                                                    }}
+                                                                />
+                                                            </div>
 
-                                                        {/* OR enter link */}
-                                                        <div>
-                                                            <label className="block font-semibold" style={{ color: appColors.textColor }}>
-                                                                Or Provide Google Doc / Link:
-                                                            </label>
-                                                            <CustomInput
-                                                                type="url"
-                                                                placeholder="https://docs.google.com/..."
-                                                                value={formik.values[`${field.key}_link`] || ""}
-                                                                onChange={(e) => {
-                                                                    formik.setFieldValue(`${field.key}_link`, e.target.value);
-                                                                    formik.setFieldValue(field.key, null); // clear file if link entered
-                                                                }}
-                                                            />
+                                                            {/* OR enter link */}
+                                                            <div>
+                                                                <label className="block font-semibold" style={{ color: appColors.textColor }}>
+                                                                    Or Provide Google Doc / Link:
+                                                                </label>
+                                                                <CustomInput
+                                                                    type="url"
+                                                                    placeholder="https://docs.google.com/..."
+                                                                    value={formik.values[`${field.key}_link`] || ""}
+                                                                    onChange={(e) => {
+                                                                        formik.setFieldValue(`${field.key}_link`, e.target.value);
+                                                                        formik.setFieldValue(field.key, null); // clear file if link entered
+                                                                    }}
+                                                                />
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ) : (
-                                                    <CustomInput
-                                                        type={field.type || "text"}
-                                                        name={field.key}
-                                                        value={formik.values[field.key] || ""}
-                                                        onChange={formik.handleChange}
-                                                        onBlur={formik.handleBlur}
-                                                        className="w-full p-2 border rounded"
-                                                        placeholder={field.placeholder || `Select ${field.label}...`}
-                                                    />
-                                                )}
+                                                    ) : (
+                                                        <CustomInput
+                                                            type={field.type || "text"}
+                                                            name={field.key}
+                                                            value={formik.values[field.key] || ""}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            className="w-full p-2 border rounded"
+                                                            placeholder={field.placeholder || `Select ${field.label}...`}
+                                                        />
+                                                    )}
 
                                                 {formik.errors[field.key] && (
                                                     <p className="text-red-500 text-sm">{formik.errors[field.key]}</p>
                                                 )}
 
                                             </>
-                                        )) : field.key === 'Themes' ? (
+                                        )) : field.key === 'Video Type' ? (
+                                            <div>
+                                                <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
+                                                    Content Type
+                                                </label>
+
+                                                <div
+                                                    className="border rounded-lg p-4 mb-4"
+                                                    style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}
+                                                >
+                                                    {/* Video Type Selection */}
+                                                    <div className="mb-4">
+                                                        <CustomSelect
+                                                            id="video-type-select"
+                                                            options={OPTIONS['Video Type'] || []}
+                                                            value={currentVideoType}
+                                                            isMulti={false}
+                                                            onChange={(value) => setCurrentVideoType(value)}
+                                                            placeholder="Select a content type..."
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+
+                                                    {/* Video Details Form */}
+                                                    {currentVideoType && (
+                                                        <div className="p-4 border rounded-lg mb-4 text-black" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                            <h4 className="font-medium border-b mb-4">Add New Video:</h4>
+
+                                                            <div className="grid grid-cols-2 gap-4 mb-3">
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    label="Video Title"
+                                                                    value={currentVideoTitle}
+                                                                    onChange={(e) => setCurrentVideoTitle(e.target.value)}
+                                                                    placeholder="Enter video title"
+                                                                    required
+                                                                />
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    label="Video Length"
+                                                                    value={currentVideoLength}
+                                                                    onChange={(e) => setCurrentVideoLength(e.target.value)}
+                                                                    placeholder="e.g. 3:45"
+                                                                    required
+                                                                />
+                                                            </div>
+
+                                                            <div className="mb-3">
+                                                                <CustomInput
+                                                                    type="url"
+                                                                    label="Video Link"
+                                                                    value={currentVideoLink}
+                                                                    onChange={(e) => setCurrentVideoLink(e.target.value)}
+                                                                    placeholder="Enter video URL"
+                                                                    required
+                                                                />
+                                                            </div>
+
+                                                            <div className="mb-4">
+                                                                <CustomInput
+                                                                    type="text"
+                                                                    label="Video Description"
+                                                                    value={currentVideoDesc}
+                                                                    onChange={(e) => setCurrentVideoDesc(e.target.value)}
+                                                                    placeholder="Enter video description"
+                                                                    as="textarea"
+                                                                    rows={3}
+                                                                />
+                                                            </div>
+
+                                                            <div className="flex justify-end">
+                                                                <CustomButton
+                                                                    type="button"
+                                                                    onClick={handleAddVideo}
+                                                                    disabled={!currentVideoTitle || !currentVideoLength || !currentVideoLink}
+                                                                    className="flex items-center gap-1"
+                                                                >
+                                                                    <PlusIcon className="h-4 w-4" />
+                                                                    {editingVideoIndex !== null ? 'Update Video' : 'Add Video'}
+                                                                </CustomButton>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Current Videos List */}
+                                                    {currentVideos.length > 0 && (
+                                                        <div className="border p-4 rounded-lg mb-4 text-black" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }} >
+                                                            <h4 className="font-medium mb-3">Added Videos: {currentVideoType?.label}</h4>
+                                                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                                                                {currentVideos.map((video, idx) => (
+                                                                    <div
+                                                                        key={`${video.video_title}-${idx}`}
+                                                                        className="border rounded p-3 shadow-sm hover:shadow-md transition"
+                                                                    >
+                                                                        <div className="flex justify-between items-start gap-4">
+                                                                            <div className="space-y-1 text-sm text-gray-800" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                                <p><strong>Title:</strong> {video.video_title}</p>
+                                                                                <p><strong>Length:</strong> {video.video_length}</p>
+                                                                                <p>
+                                                                                    <strong>Link:</strong>{' '}
+                                                                                    <a
+                                                                                        href={video.video_link}
+                                                                                        target="_blank"
+                                                                                        rel="noopener noreferrer"
+                                                                                        className="text-blue-600 underline break-all"
+                                                                                    >
+                                                                                        {video.video_link}
+                                                                                    </a>
+                                                                                </p>
+                                                                                {video.video_desc && (
+                                                                                    <p><strong>Description:</strong> {video.video_desc}</p>
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="flex space-x-2">
+                                                                                <button
+                                                                                    onClick={() => handleEditVideo(idx)}
+                                                                                    className="text-blue-500 hover:text-blue-700"
+                                                                                    title="Edit Video"
+                                                                                >
+                                                                                    <PencilIcon className="h-5 w-5" />
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => handleRemoveVideo(idx)}
+                                                                                    className="text-red-500 hover:text-red-700"
+                                                                                    title="Remove Video"
+                                                                                >
+                                                                                    <TrashIcon className="h-5 w-5" />
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Save/Update Button */}
+                                                    {currentVideoType && currentVideos.length > 0 && (
+                                                        <div className="flex justify-end">
+                                                            <CustomButton
+                                                                type="button"
+                                                                onClick={handleSaveVideoGroup}
+                                                            >
+                                                                {videoTypeEditIndex !== null ? 'Update Content Group' : 'Save Content Group'}
+                                                            </CustomButton>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Saved Video Groups */}
+                                                    {videoTypeEntries.length > 0 && (
+                                                        <div className="mt-6">
+                                                            <h4 className="font-medium mb-3">Saved Content Type:</h4>
+                                                            <div className="space-y-4" >
+                                                                {videoTypeEntries.map((group, index) => (
+                                                                    <VideoTypeEntry
+                                                                        key={index}
+                                                                        index={index}
+                                                                        videoType={group.videoType}
+                                                                        videos={group.videos}
+                                                                        onEdit={handleEditVideoGroup}
+                                                                        onRemove={handleRemoveVideoGroup}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )
+                                        : field.key === 'Themes' ? (
                                             <div>
                                                 <label className="block font-semibold mb-2" style={{ color: appColors.textColor }}>
                                                     Themes:
@@ -3053,8 +7909,14 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 </div>
                             ))}
                         </div>
-                        <hr className="border-t border-gray-300 mb-6 mt-[10px] -mx-4" />
-                        <div className="flex justify-end space-x-3 mt-4">
+                        <hr className="border-t border-gray-300 mb-6 mt-[10px] -mx-8" />
+                        <div className="flex justify-end space-x-3 -mt-2 -mb-6 p-1">
+                            <CustomButton
+                                type="button"
+                                title="Cancel"
+                                onClick={onClose}
+                                className="mb-0 w-[100px] -mt-2"
+                            />
                             <CustomButton
                                 type="submit"
                                 title={isEditMode ? "Update" : "Save"}
@@ -3063,12 +7925,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 onClick={handleFormSubmit}
                                 className="mb-0 w-[100px] -mt-2"
                             />
-                            <CustomButton
-                                type="button"
-                                title="Cancel"
-                                onClick={onClose}
-                                className="mb-0 w-[100px] -mt-2"
-                            />
+
                         </div>
                     </form>
                 </div>

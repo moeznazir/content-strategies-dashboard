@@ -30,14 +30,14 @@ export default function RootLayout({ children }) {
             (e.ctrlKey && e.shiftKey && e.key === 'J') ||
             (e.ctrlKey && e.key === 'U')) {
           e.preventDefault();
-          alert('Developer tools are disabled for this site');
+          alert('For Security Reasons Developer tools are disabled for this site');
         }
       };
 
       // Prevent right click
       const disableContextMenu = (e) => {
         e.preventDefault();
-        alert('Developer tools are disabled for this site');
+        alert('For Security Reasons  Developer tools are disabled for this site');
       };
 
       document.addEventListener('keydown', disableDevTools);
