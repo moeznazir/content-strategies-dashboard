@@ -1,13 +1,23 @@
 import { FaTimes, FaCopy, FaChevronDown, FaChevronUp, FaEye, FaDownload } from "react-icons/fa";
 import { appColors } from "@/lib/theme";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const GenericModal = ({ data, onClose }) => {
+const GenericModal = ({ data, onClose, appliedFilters }) => {
     const [copiedField, setCopiedField] = useState(null);
     const [collapsedSections, setCollapsedSections] = useState({});
     const [expandedFields, setExpandedFields] = useState({});
     const [previewUrl, setPreviewUrl] = useState(null);
     const [errorMessage, setErrorMessage] = useState(null);
+    const [filteredSections, setFilteredSections] = useState({});
+
+
+    console.log("appliedFilters", appliedFilters);
+    // List of fields to always show regardless of filters
+    const ALWAYS_SHOW_FIELDS = [
+        'Additional_Guest_Projects',
+        'Emails',
+        'Prep_Call'
+    ];
 
     // List of fields to hide as specified
     const HIDDEN_FIELDS = [
@@ -91,6 +101,26 @@ const GenericModal = ({ data, onClose }) => {
         'employee_count'
     ];
 
+    // Map content type filters to their corresponding data fields
+    const CONTENT_TYPE_MAPPING = {
+        'DETAILS_FULL_EPISODES': 'DETAILS_FULL_EPISODES',
+        'FULL_EPISODE_EXTENDED_CONTENT': 'FULL_EPISODE_EXTENDED_CONTENT',
+        'FULL_EPISODE_HIGHLIGHT_VIDEO': 'FULL_EPISODE_HIGHLIGHT_VIDEO',
+        'FULL_EPISODE_INTRODUCTION_VIDEO': 'FULL_EPISODE_INTRODUCTION_VIDEO',
+        'FULL_EPISODE_QA_VIDEOS': 'FULL_EPISODE_QA_VIDEOS',
+        'FULL_EPISODE_PODBOOK': 'FULL_EPISODE_PODBOOK',
+        'FULL_EPISODE_FULL_CASE_STUDY': 'FULL_EPISODE_FULL_CASE_STUDY',
+        'FULL_EPISODE_ONE_PAGE_CASE_STUDY': 'FULL_EPISODE_ONE_PAGE_CASE_STUDY',
+        'FULL_EPISODE_OTHER_CASE_STUDY': 'FULL_EPISODE_OTHER_CASE_STUDY',
+        'FULL_EPISODE_ICP_ADVICE': 'FULL_EPISODE_ICP_ADVICE',
+        'FULL_EPISODE_CHALLENGE_QUESTIONS': 'FULL_EPISODE_CHALLENGE_QUESTIONS',
+        'FULL_EPISODE_VIDEO': 'FULL_EPISODE_VIDEO'
+    };
+
+    useEffect(() => {
+        const sections = detectSections();
+        setFilteredSections(sections);
+    }, [data, appliedFilters]);
 
     const handlePreview = async (url) => {
         if (!url) return;
@@ -121,6 +151,7 @@ const GenericModal = ({ data, onClose }) => {
     // Automatically detect sections from data keys
     const detectSections = () => {
         const sections = {};
+        const videoTypeFilters = appliedFilters?.["Video Type"] || [];
 
         Object.keys(data).forEach(key => {
             // Skip hidden fields
@@ -128,10 +159,46 @@ const GenericModal = ({ data, onClose }) => {
                 return;
             }
 
+            // Always show these fields regardless of filters
+            if (ALWAYS_SHOW_FIELDS.includes(key)) {
+                // Check if the value is an array of objects
+                if (Array.isArray(data[key]) && data[key].length > 0 && typeof data[key][0] === 'object') {
+                    sections[key] = {
+                        title: formatLabel(key),
+                        data: data[key]
+                    };
+                }
+                // Check if the value is a single object
+                else if (typeof data[key] === 'object' && data[key] !== null && !Array.isArray(data[key])) {
+                    sections[key] = {
+                        title: formatLabel(key),
+                        data: [data[key]] // Wrap in array for consistent handling
+                    };
+                }
+                // Handle string values or empty arrays
+                else {
+                    sections[key] = {
+                        title: formatLabel(key),
+                        data: data[key] === null || data[key] === '' ? [] : [{ [key]: data[key] }]
+                    };
+                }
+                return;
+            }
+
             // Skip normalized fields that are handled separately
             if (['Themes', 'Validations', 'Objections', 'Challenges', 'Sales Insights',
                 'Case_Study_Other_Video', 'Video Type'].includes(key)) {
                 return;
+            }
+
+            // If video type filters are applied, only show the corresponding sections
+            if (videoTypeFilters.length > 0) {
+                const shouldShow = videoTypeFilters.some(filter => {
+                    const dataField = CONTENT_TYPE_MAPPING[filter];
+                    return dataField === key;
+                });
+
+                if (!shouldShow) return;
             }
 
             // Check if the value is an array of objects (like your structure)
@@ -159,8 +226,6 @@ const GenericModal = ({ data, onClose }) => {
 
         return sections;
     };
-
-    const sections = detectSections();
 
     const toggleSection = (sectionId) => {
         setCollapsedSections(prev => ({
@@ -194,8 +259,8 @@ const GenericModal = ({ data, onClose }) => {
         // Fields that should show preview icon based on your other modals
         const previewFields = [
             'transcript', 'details', 'text', 'email', 'report',
-             'comments', 'hashtags', 'guide', 'video details',
-            'insights', 'vision', 'challenge report','ebooks','cold','guest','warm','short and long-tail seo keywords'
+            'comments', 'hashtags', 'guide', 'video details',
+            'insights', 'vision', 'challenge report', 'ebooks', 'cold', 'guest', 'warm', 'short and long-tail seo keywords'
         ];
 
         return previewFields.some(field => key.toLowerCase().includes(field));
@@ -290,8 +355,8 @@ const GenericModal = ({ data, onClose }) => {
                                 if (!hasValidData(item)) return null;
 
                                 return (
-                                    <div 
-                                        key={index} 
+                                    <div
+                                        key={index}
                                         className="p-4 rounded-lg border border-gray-600 bg-gray-800/40 shadow-md hover:shadow-lg transition-shadow duration-200"
                                     >
                                         {Object.entries(item).map(([key, value]) => {
@@ -354,6 +419,7 @@ const GenericModal = ({ data, onClose }) => {
             </div>
         );
     };
+
     return (
         <>
             {/* Document Preview Modal */}
@@ -439,9 +505,30 @@ const GenericModal = ({ data, onClose }) => {
                     </div>
                     <hr className="border-b border-gray-600 -mx-6 mb-4" />
 
+                    {/* Filter Info */}
+                    {appliedFilters?.["Video Type"]?.length > 0 && (
+                        <div className="mb-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+                            <p className="text-blue-300 text-sm">
+                                Showing content for: <strong>
+                                    {appliedFilters["Video Type"]
+                                        .map(filter => {
+                                            // Format the filter text: remove underscores, capitalize first letter of each word
+                                            return filter
+                                                .replace(/_/g, ' ') // Replace underscores with spaces
+                                                .replace(/\w\S*/g, (txt) => {
+                                                    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                                                });
+                                        })
+                                        .join(", \u00A0\u00A0") // Add non-breaking spaces for tab-like spacing
+                                    }
+                                </strong>
+                            </p>
+                        </div>
+                    )}
+
                     {/* Main Content */}
                     <div className="space-y-4">
-                        {Object.entries(sections).map(([sectionId, sectionData]) =>
+                        {Object.entries(filteredSections).map(([sectionId, sectionData]) =>
                             renderSection(sectionId, sectionData)
                         )}
                     </div>

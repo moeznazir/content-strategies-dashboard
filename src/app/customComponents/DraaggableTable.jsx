@@ -3995,7 +3995,8 @@ const DraggableTable = ({
     alignRecord,
     loadingRecord,
     themesRank,
-    handleAddFromRow
+    handleAddFromRow,
+    appliedFilters
 }) => {
     const [columns, setColumns] = useState(initialColumns);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -6368,6 +6369,7 @@ const DraggableTable = ({
                 <GenericModal
                     data={selectedRow}
                     onClose={() => setSelectedRow(null)}
+                    appliedFilters={appliedFilters}
                 />
             )}
             {fileRow && (

@@ -61,14 +61,14 @@ const Dashboard = () => {
 
   const parseEpisodeDetails = (row) => {
     try {
-      return Array.isArray(row.DETAILS_FULL_EPISODES) 
-        ? row.DETAILS_FULL_EPISODES 
+      return Array.isArray(row.DETAILS_FULL_EPISODES)
+        ? row.DETAILS_FULL_EPISODES
         : JSON.parse(row.DETAILS_FULL_EPISODES || '[]');
     } catch (e) {
       return [];
     }
   };
-  
+
   const columns = [
     { label: "Avatar", id: "Avatar" },
     { label: "Likes", id: "Likes" },
@@ -86,11 +86,11 @@ const Dashboard = () => {
       id: "date_recorded",
       render: (row) => {
         const detailsData = parseEpisodeDetails(row);
-        const dateRecorded = detailsData.length > 0 
-          ? detailsData[0]["Date Recorded"] 
+        const dateRecorded = detailsData.length > 0
+          ? detailsData[0]["Date Recorded"]
           : null;
-        return dateRecorded 
-          ? new Date(dateRecorded).toLocaleDateString() 
+        return dateRecorded
+          ? new Date(dateRecorded).toLocaleDateString()
           : "-";
       }
     },
@@ -100,7 +100,7 @@ const Dashboard = () => {
     // { label: "Prep Call", id: "Prep_Call" },
     // { label: "Additional Guest Projects", id: "Additional_Guest_Projects" },
     // { label: "Emails", id: "Emails" },
-    
+
     // { label: "Episode Title", id: "FULL_EPISODE_VIDEO", render: (row) => {
     //   // These fields exist in the row directly
     //   const episodeTitle = row["Episode Title"];
@@ -109,7 +109,7 @@ const Dashboard = () => {
     //   return (
     //     <div>
     //       <div> {episodeTitle || "-"}</div>
-        
+
     //     </div>
     //   );
     // } },
@@ -321,20 +321,30 @@ const Dashboard = () => {
   });
 
   const filterOptions = {
+
     "Video Type": [
-      { value: "Summary Video", label: "Summary Video", count: 0 },
-      { value: "Full Episode", label: "Full Episode", count: 0 },
-      { value: "Highlights Video", label: "Highlights Video", count: 0 },
-      { value: "Case Study", label: "Case Study", count: 0 },
-      { value: "ICP Advice", label: "ICP Advice", count: 0 },
-      { value: "Post-Podcast Video", label: "Post-Podcast Video", count: 0 },
-      { value: "Guest Introduction", label: "Guest Introduction", count: 0 },
-      { value: "Post Podcast Insights", label: "Post Podcast Insights", count: 0 },
-      { value: "Challenge Questions", label: "Challenge Questions", count: 0 },
-      { value: "Challenge Video", label: "Challenge Video", count: 0 },
+      // Boolean filters (these will show the specific columns data when selected)
+      // Use original column names instead of filter parameter names
+      { value: "DETAILS_FULL_EPISODES", label: "Details Full Episodes", count: 0 },
+      { value: "FULL_EPISODE_EXTENDED_CONTENT", label: "Full Episode Extended Content", count: 0 },
+      { value: "FULL_EPISODE_HIGHLIGHT_VIDEO", label: "Full Episode Highlight Video", count: 0 },
+      { value: "FULL_EPISODE_INTRODUCTION_VIDEO", label: "Full Episode Introduction Video", count: 0 },
+      { value: "FULL_EPISODE_QA_VIDEOS", label: "Full Episode QA Videos", count: 0 },
+      { value: "FULL_EPISODE_PODBOOK", label: "Full Episode Podbook", count: 0 },
+      { value: "FULL_EPISODE_FULL_CASE_STUDY", label: "Full Episode Full Case Study", count: 0 },
+      { value: "FULL_EPISODE_ONE_PAGE_CASE_STUDY", label: "Full Episode One Page Case Study", count: 0 },
+      { value: "FULL_EPISODE_OTHER_CASE_STUDY", label: "Full Episode Other Case Study", count: 0 },
+      { value: "FULL_EPISODE_ICP_ADVICE", label: "Full Episode ICP Advice", count: 0 },
+      { value: "FULL_EPISODE_CHALLENGE_QUESTIONS", label: "Full Episode Challenge Questions", count: 0 },
+      { value: "FULL_EPISODE_VIDEO", label: "Full Episode Video", count: 0 },
+
+      // Regular video types
       { value: "My Liked", label: "My Liked", count: 0 },
       { value: "All Liked", label: "All Liked", count: 0 },
+      // Add other actual video types here if you have them
     ],
+    // ... other filter categories
+
     "Classifications": [
       // { value: "Mentioned", label: "Mentioned", count: 0 },
       { value: "Client", label: "Client", count: 0 },
@@ -435,9 +445,38 @@ const Dashboard = () => {
       const fromDateISO = fromDate ? new Date(fromDate).toISOString() : null;
       const toDateISO = toDate ? new Date(toDate).toISOString() : null;
 
+      const videoTypes = selectedFilters["Video Type"] || [];
+
+      // Separate boolean filters from regular video types
+      const booleanFilterMap = {
+        "DETAILS_FULL_EPISODES": "details_full_episodes_filter",
+        "FULL_EPISODE_VIDEO": "full_episode_video_filter",
+        "FULL_EPISODE_EXTENDED_CONTENT": "full_episode_extended_content_filter",
+        "FULL_EPISODE_HIGHLIGHT_VIDEO": "full_episode_highlight_video_filter",
+        "FULL_EPISODE_INTRODUCTION_VIDEO": "full_episode_introduction_video_filter",
+        "FULL_EPISODE_QA_VIDEOS": "full_episode_qa_videos_filter",
+        "FULL_EPISODE_PODBOOK": "full_episode_podbook_filter",
+        "FULL_EPISODE_FULL_CASE_STUDY": "full_episode_full_case_study_filter",
+        "FULL_EPISODE_ONE_PAGE_CASE_STUDY": "full_episode_one_page_case_study_filter",
+        "FULL_EPISODE_OTHER_CASE_STUDY": "full_episode_other_case_study_filter",
+        "FULL_EPISODE_ICP_ADVICE": "full_episode_icp_advice_filter",
+        "FULL_EPISODE_CHALLENGE_QUESTIONS": "full_episode_challenge_questions_filter"
+      };
+
+
+      const booleanFilters = {};
+      Object.keys(booleanFilterMap).forEach(key => {
+        booleanFilters[booleanFilterMap[key]] = videoTypes.includes(key);
+      });
+
+      // Get regular video types (excluding boolean filters)
+      const regularVideoTypes = videoTypes.filter(type =>
+        !Object.keys(booleanFilterMap).includes(type)
+      );
+
       const { data, error } = await supabase.rpc('combined_search_duplicate', {
         search_term: searchText.trim() || null,
-        video_types_json: selectedFilters["Video Type"]?.length ? selectedFilters["Video Type"] : null,
+        video_types_json: regularVideoTypes.length ? regularVideoTypes : null,
         themes_json: selectedFilters["Themes"]?.length ? selectedFilters["Themes"] : null,
         objections_json: selectedFilters["Objections"]?.length ? selectedFilters["Objections"] : null,
         validations_json: selectedFilters["Validations"]?.length ? selectedFilters["Validations"] : null,
@@ -449,7 +488,20 @@ const Dashboard = () => {
         current_user_id: localStorage.getItem('current_user_id'),
         current_company_id: localStorage.getItem('company_id'),
         page_num: page,
-        page_size: ITEMS_PER_PAGE
+        page_size: ITEMS_PER_PAGE,
+        // Boolean filters
+        details_full_episodes_filter: booleanFilters.details_full_episodes_filter || null,
+        full_episode_extended_content_filter: booleanFilters.full_episode_extended_content_filter || null,
+        full_episode_highlight_video_filter: booleanFilters.full_episode_highlight_video_filter || null,
+        full_episode_introduction_video_filter: booleanFilters.full_episode_introduction_video_filter || null,
+        full_episode_qa_videos_filter: booleanFilters.full_episode_qa_videos_filter || null,
+        full_episode_podbook_filter: booleanFilters.full_episode_podbook_filter || null,
+        full_episode_full_case_study_filter: booleanFilters.full_episode_full_case_study_filter || null,
+        full_episode_one_page_case_study_filter: booleanFilters.full_episode_one_page_case_study_filter || null,
+        full_episode_other_case_study_filter: booleanFilters.full_episode_other_case_study_filter || null,
+        full_episode_icp_advice_filter: booleanFilters.full_episode_icp_advice_filter || null,
+        full_episode_challenge_questions_filter: booleanFilters.full_episode_challenge_questions_filter || null,
+        full_episode_video_filter: booleanFilters.full_episode_video_filter || null
       });
 
       if (error) throw error;
@@ -577,7 +629,33 @@ const Dashboard = () => {
       try {
         const fromDateISO = fromDate ? new Date(fromDate).toISOString() : null;
         const toDateISO = toDate ? new Date(toDate).toISOString() : null;
+        // Extract boolean filters from Video Type selection (same logic as above)
+        const videoTypes = selectedFilters["Video Type"] || [];
+        const booleanFilters = {};
 
+        const booleanFilterMap = {
+          "DETAILS_FULL_EPISODES": "details_full_episodes_filter",
+          "FULL_EPISODE_VIDEO": "full_episode_video_filter",
+          "FULL_EPISODE_EXTENDED_CONTENT": "full_episode_extended_content_filter",
+          "FULL_EPISODE_HIGHLIGHT_VIDEO": "full_episode_highlight_video_filter",
+          "FULL_EPISODE_INTRODUCTION_VIDEO": "full_episode_introduction_video_filter",
+          "FULL_EPISODE_QA_VIDEOS": "full_episode_qa_videos_filter",
+          "FULL_EPISODE_PODBOOK": "full_episode_podbook_filter",
+          "FULL_EPISODE_FULL_CASE_STUDY": "full_episode_full_case_study_filter",
+          "FULL_EPISODE_ONE_PAGE_CASE_STUDY": "full_episode_one_page_case_study_filter",
+          "FULL_EPISODE_OTHER_CASE_STUDY": "full_episode_other_case_study_filter",
+          "FULL_EPISODE_ICP_ADVICE": "full_episode_icp_advice_filter",
+          "FULL_EPISODE_CHALLENGE_QUESTIONS": "full_episode_challenge_questions_filter"
+        };
+
+
+        Object.keys(booleanFilterMap).forEach(key => {
+          booleanFilters[booleanFilterMap[key]] = videoTypes.includes(key);
+        });
+
+        const regularVideoTypes = videoTypes.filter(type =>
+          !Object.keys(booleanFilterMap).includes(type)
+        );
         const { data, error } = await supabase.rpc('combined_search_duplicate', {
           search_term: searchText.trim() || null,
           video_types_json: selectedFilters["Video Type"]?.length ? selectedFilters["Video Type"] : null,
@@ -592,7 +670,20 @@ const Dashboard = () => {
           current_user_id: localStorage.getItem('current_user_id'),
           current_company_id: localStorage.getItem('company_id'),
           page_num: nextPage,
-          page_size: ITEMS_PER_PAGE
+          page_size: ITEMS_PER_PAGE,
+          // Add the boolean filters
+          details_full_episodes_filter: booleanFilters.details_full_episodes_filter || null,
+          full_episode_extended_content_filter: booleanFilters.full_episode_extended_content_filter || null,
+          full_episode_highlight_video_filter: booleanFilters.full_episode_highlight_video_filter || null,
+          full_episode_introduction_video_filter: booleanFilters.full_episode_introduction_video_filter || null,
+          full_episode_qa_videos_filter: booleanFilters.full_episode_qa_videos_filter || null,
+          full_episode_podbook_filter: booleanFilters.full_episode_podbook_filter || null,
+          full_episode_full_case_study_filter: booleanFilters.full_episode_full_case_study_filter || null,
+          full_episode_one_page_case_study_filter: booleanFilters.full_episode_one_page_case_study_filter || null,
+          full_episode_other_case_study_filter: booleanFilters.full_episode_other_case_study_filter || null,
+          full_episode_icp_advice_filter: booleanFilters.full_episode_icp_advice_filter || null,
+          full_episode_challenge_questions_filter: booleanFilters.full_episode_challenge_questions_filter || null,
+          full_episode_video_filter: booleanFilters.full_episode_video_filter || null
         });
 
         if (error) throw error;
@@ -650,12 +741,12 @@ const Dashboard = () => {
         current_user_id: localStorage.getItem('current_user_id'),
         input_company_id: localStorage.getItem('company_id'),
       });
-
+  
       if (error) {
         console.log("Error fetching filter counts:", error);
         return;
       }
-
+  
       // Initialize counts object
       const counts = {
         "Video Type": {},
@@ -666,7 +757,7 @@ const Dashboard = () => {
         "Challenges": {},
         "Sales Insights": {}
       };
-
+  
       // Process the counts data
       data.forEach(({ category, value, count, avg_ranking }) => {
         if (counts[category]) {
@@ -676,24 +767,30 @@ const Dashboard = () => {
           };
         }
       });
-
+  
       setFilterCounts(counts);
-
+  
       // Update the filter options with counts
       const updatedOptions = { ...filterOptions };
       for (const filterType in updatedOptions) {
         updatedOptions[filterType] = updatedOptions[filterType].map(option => {
           const countData = counts[filterType]?.[option.value] || { count: 0 };
+          
+          // For Video Type, only show counts for "My Liked" and "All Liked"
+          // For other options, set count to null so it won't display
+          let displayCount = countData.count;
+          if (filterType === "Video Type" && !["My Liked", "All Liked"].includes(option.value)) {
+            displayCount = null; // This will prevent the count from being displayed
+          }
+          
           return {
             ...option,
-            count: countData.count,
+            count: displayCount,
             avg_ranking: ['Themes', 'Objections', 'Validations', 'Challenges', 'Sales Insights'].includes(filterType) ? countData.avg_ranking : null
-
           };
         });
       }
-
-
+  
       setFilterOptionsWithCounts(updatedOptions);
     } catch (err) {
       console.log("Error calculating filter counts:", err);
@@ -1048,6 +1145,7 @@ const Dashboard = () => {
               themesRank={themesRank}
               loadingRecord={true}
               handleAddFromRow={handleAddFromRow}
+              appliedFilters={selectedFilters} // Pass the applied filters
             />
           </div>
 
