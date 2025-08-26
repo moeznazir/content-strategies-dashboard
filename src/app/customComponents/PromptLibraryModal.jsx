@@ -12,7 +12,9 @@ const supabase = createClient(
 
 const ITEMS_PER_PAGE = 1000000000;
 
-const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSourceSelect, onLibraryDocsSelect, selectedLibraryDocs }) => {
+const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSourceSelect, onLibraryDocsSelect, selectedLibraryDocs, currentSteps, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery }) => {
+
+    console.log("searchQueryyyyyyyyyyy", searchQueries);
     // State for data from Supabase
     const [departmentTypes, setDepartmentTypes] = useState([]);
     const [templateLibraries, setTemplateLibraries] = useState({});
@@ -50,6 +52,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
     const [selectedDocuments, setSelectedDocuments] = useState([]);
     const [selectedLibraryStep1Documents, setSelectedLibraryStep1Documents] = useState([]);
     const [contentSource, setContentSource] = useState('select');
+    const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
     const [selectedFilters, setSelectedFilters] = useState({
         "Video Type": [],
         "Classifications": [],
@@ -57,6 +60,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
         "content_categories": [],
         "market_categories": []
     });
+
     // Sample data for filters
     const contentTypes = [
         { id: 'type1', name: 'Articles', count: 12 },
@@ -181,6 +185,26 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
         loadCategoryOptions();
     }, []);
 
+    // Check if search query exists when modal opens
+    useEffect(() => {
+        if (searchQueries.trim() !== '') {
+            setShowReplaceConfirmation(true);
+        } else {
+            setShowReplaceConfirmation(false);
+        }
+    }, [showLibraryDropdown, searchQueries, setSearchQueries]);
+
+    const handleReplace = () => {
+        // Clear the search query using the callback from parent
+        if (onClearSearchQuery) {
+            onClearSearchQuery();
+        }
+        setShowReplaceConfirmation(false);
+    };
+
+    const handleCancelReplace = () => {
+        setShowReplaceConfirmation(false);
+    };
 
     // Fetch data from Supabase
     useEffect(() => {
@@ -680,486 +704,539 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
         clearAllSelections();
         setShowLibraryDropdown(false);
     };
+
+    console.log("showReplaceConfirmation", showReplaceConfirmation);
     return (
         <div className="relative ml-[5%] mb-4 w-[220px] no-scrollbar">
             {showLibraryDropdown && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50 no-scrollbar">
-                    {/* Main Library Modal */}
-                    <div className="border w-[800px] max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl text-white px-6 py-5 relative font-sans no-scrollbar" style={{ backgroundColor: appColors.primaryColor }}>
-                        {/* Step Indicator */}
-                        <div className="flex justify-center -mt-2 items-center text-white">
-                            {steps.map((step, idx) => (
-                                <div key={step} className="flex flex-col items-center relative">
-                                    {/* Step Circle + Connector */}
-                                    <div className="flex items-center">
-                                        {/* Left connector (except for first step) */}
-                                        {idx !== 0 && (
-                                            <div className="w-8 h-[2px] bg-blue-500"></div>
-                                        )}
-
-                                        {/* Circle */}
-                                        <div
-                                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center font-bold ${step < currentStep
-                                                ? 'bg-blue-500 border-white'
-                                                : step === currentStep
-                                                    ? 'bg-blue-600 border-white'
-                                                    : 'bg-blue-500 border-white opacity-50'
-                                                }`}
-                                        >
-                                            {step}
-                                        </div>
-
-                                        {/* Right connector (except for last step) */}
-                                        {idx !== steps.length - 1 && (
-                                            <div className="w-6 h-[2px] bg-blue-500"></div>
-                                        )}
-                                    </div>
-
-                                    {/* Step label */}
-                                    <div className="mt-1 text-xs text-[10px] font-medium">
-                                        Step {step}
-                                    </div>
+                <>
+                    {/* Confirmation Modal */}
+                    {showReplaceConfirmation && (
+                        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 z-[9999]">
+                            <div className="border border-gray-300 rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: appColors.primaryColor }}>
+                                <h3 className="text-lg font-semibold mb-4 text-white">Replace Prompt?</h3>
+                                <p className="text-sm mb-6 text-gray-400">
+                                    Would you like to replace your current prompt with one from the library?
+                                </p>
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-sm text-gray-800 transition-colors"
+                                        onClick={handleCancelReplace}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm text-white transition-colors"
+                                        onClick={handleReplace}
+                                    >
+                                        Replace
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
-
-                        {/* Divider */}
-                        <div className="border-t my-2 -mx-6"></div>
-
-                        {/* Title */}
-                        <h2 className="text-xl font-semibold text-center mb-3">
-                            {currentStep === 1 ? 'Prompt Library' : currentStep === 2 ? 'Prompt Library' : 'Prompt Library'}
-                        </h2>
-                        <div className="border-t my-2 -mx-6"></div>
-
-                        {/* Selected Template Display */}
-                        <div className="w-full !mr-4 ml-4 mt-4 mb-2">
-                            <div className="flex justify-between items-center">
-                                <label className="text-sm font-medium leading-relaxed border p-2 py-1 rounded-md">
-                                    <span className="font-semibold text-[15px]">Selected Template: </span>
-                                    <span className='text-[12px]'>
-                                        {selectedTemplate ?
-                                            templateLibraries[selectedDepartment]?.find(t => t.id === selectedTemplate)?.name :
-                                            'None selected'}
-                                    </span>
-                                </label>
                             </div>
                         </div>
+                    )}
 
-                        {/* Step 1 Content - Template Selection */}
-                        {currentStep === 1 && (
-                            <>
-                                <div className="flex justify-center">
-                                    <div className="w-full mr-4 ml-4">
-                                        <div className="flex gap-4 mt-4">
-                                            {/* Left Filters */}
-                                            <div className="w-1/3 space-y-3 border rounded-md p-2">
-                                                {/* Department Filter */}
-                                                <div className="border border-white/20 rounded-md overflow-hidden">
-                                                    <button
-                                                        className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
-                                                        onClick={() => setDepartmentTypeOpen(!departmentTypeOpen)}
-                                                    >
-                                                        <span>Department</span>
-                                                        <span>{departmentTypeOpen ? '▼' : '◀'}</span>
-                                                    </button>
-                                                    {departmentTypeOpen && (
-                                                        <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20">
-                                                            {isLoadingData ? (
-                                                                <div className="flex justify-center items-center h-20">
-                                                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                                                                </div>
-                                                            ) : (
-                                                                departmentTypes.map((dept) => (
-                                                                    <label key={dept.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            name="department"
-                                                                            className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                            checked={selectedDepartment === dept.id}
-                                                                            onChange={() => handleDepartmentSelect(dept.id)}
-                                                                        />
-                                                                        {dept.name}
-                                                                    </label>
-                                                                ))
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
+                    <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50 no-scrollbar">
+                        {/* Main Library Modal */}
+                        <div className="border w-[800px] max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl text-white px-6 py-5 relative font-sans no-scrollbar" style={{ backgroundColor: appColors.primaryColor }}>
+                            {/* Step Indicator */}
+                            <div className="flex justify-center -mt-2 items-center text-white">
+                                {steps.map((step, idx) => (
+                                    <div key={step} className="flex flex-col items-center relative">
+                                        {/* Step Circle + Connector */}
+                                        <div className="flex items-center">
+                                            {/* Left connector (except for first step) */}
+                                            {idx !== 0 && (
+                                                <div className="w-8 h-[2px] bg-blue-500"></div>
+                                            )}
 
-                                                {/* Template Filter */}
-                                                {selectedDepartment && (
+                                            {/* Circle */}
+                                            <div
+                                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center font-bold ${step < currentStep
+                                                    ? 'bg-blue-500 border-white'
+                                                    : step === currentStep
+                                                        ? 'bg-blue-600 border-white'
+                                                        : 'bg-blue-500 border-white opacity-50'
+                                                    }`}
+                                            >
+                                                {step}
+                                            </div>
+
+                                            {/* Right connector (except for last step) */}
+                                            {idx !== steps.length - 1 && (
+                                                <div className="w-6 h-[2px] bg-blue-500"></div>
+                                            )}
+                                        </div>
+
+                                        {/* Step label */}
+                                        <div className="mt-1 text-xs text-[10px] font-medium">
+                                            Step {step}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Divider */}
+                            <div className="border-t my-2 -mx-6"></div>
+
+                            {/* Title */}
+                            <h2 className="text-xl font-semibold text-center mb-3">
+                                {currentStep === 1 ? 'Prompt Library' : currentStep === 2 ? 'Prompt Library' : 'Prompt Library'}
+                            </h2>
+                            <div className="border-t my-2 -mx-6"></div>
+
+                            {/* Selected Template Display */}
+                            <div className="w-full !mr-4 ml-4 mt-4 mb-2">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-sm font-medium leading-relaxed border p-2 py-1 rounded-md">
+                                        <span className="font-semibold text-[15px]">Selected Template: </span>
+                                        <span className='text-[12px]'>
+                                            {selectedTemplate ?
+                                                templateLibraries[selectedDepartment]?.find(t => t.id === selectedTemplate)?.name :
+                                                'None selected'}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Step 1 Content - Template Selection */}
+                            {currentStep === 1 && (
+                                <>
+                                    <div className="flex justify-center">
+                                        <div className="w-full mr-4 ml-4">
+                                            <div className="flex gap-4 mt-4">
+                                                {/* Left Filters */}
+                                                <div className="w-1/3 space-y-3 border rounded-md p-2">
+                                                    {/* Department Filter */}
                                                     <div className="border border-white/20 rounded-md overflow-hidden">
                                                         <button
                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
-                                                            onClick={() => setTemplateOpen(!templateOpen)}
+                                                            onClick={() => setDepartmentTypeOpen(!departmentTypeOpen)}
                                                         >
-                                                            <span>Templates</span>
-                                                            <span>{templateOpen ? '▼' : '◀'}</span>
+                                                            <span>Department</span>
+                                                            <span>{departmentTypeOpen ? '▼' : '◀'}</span>
                                                         </button>
-                                                        {templateOpen && (
+                                                        {departmentTypeOpen && (
                                                             <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20">
                                                                 {isLoadingData ? (
                                                                     <div className="flex justify-center items-center h-20">
                                                                         <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                                                                     </div>
                                                                 ) : (
-                                                                    templateLibraries[selectedDepartment]?.map((template) => (
-                                                                        <label key={template.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                    departmentTypes.map((dept) => (
+                                                                        <label key={dept.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
                                                                             <input
                                                                                 type="checkbox"
-                                                                                name="template"
+                                                                                name="department"
                                                                                 className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                checked={selectedTemplate === template.id}
-                                                                                onChange={() => handleTemplateSelect(template.id)}
+                                                                                checked={selectedDepartment === dept.id}
+                                                                                onChange={() => handleDepartmentSelect(dept.id)}
                                                                             />
-                                                                            {template.name}
+                                                                            {dept.name}
                                                                         </label>
                                                                     ))
                                                                 )}
                                                             </div>
                                                         )}
                                                     </div>
-                                                )}
-                                            </div>
 
-                                            {/* Right Results */}
-                                            <div className="w-2/3 rounded-md border border overflow-hidden p-2">
-                                                <div className="border border-white/20 rounded-md">
-                                                    <div className="p-2 border-b border-white/20">
-                                                        <div className="text-blue-300 font-medium text-xs">
-                                                            Prompts{selectedTemplate && ` (${getFilteredDocuments().length})`}
-                                                        </div>
-                                                    </div>
-                                                    <div className="h-[270px] max-h-[calc(80vh-100px)] overflow-y-auto">
-                                                        {isLoadingData ? (
-                                                            <div className="flex justify-center items-center h-full">
-                                                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
-                                                            </div>
-                                                        ) : selectedTemplate ? (
-                                                            <>
-                                                                {getFilteredDocuments().length > 0 ? (
-                                                                    getFilteredDocuments().map((doc) => (
-                                                                        <div key={doc.id} className="relative">
-                                                                            <div className="flex items-center bg-[#2b2b4b] p-2 mx-2 my-1 bg-[#3b3b5b] border hover:bg-white/10 border-white/20 rounded-md cursor-pointer"
-                                                                                onClick={() => handleLibraryDocumentClick(doc)} // Pass entire doc object
-                                                                            >
+                                                    {/* Template Filter */}
+                                                    {selectedDepartment && (
+                                                        <div className="border border-white/20 rounded-md overflow-hidden">
+                                                            <button
+                                                                className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
+                                                                onClick={() => setTemplateOpen(!templateOpen)}
+                                                            >
+                                                                <span>Templates</span>
+                                                                <span>{templateOpen ? '▼' : '◀'}</span>
+                                                            </button>
+                                                            {templateOpen && (
+                                                                <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20">
+                                                                    {isLoadingData ? (
+                                                                        <div className="flex justify-center items-center h-20">
+                                                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        templateLibraries[selectedDepartment]?.map((template) => (
+                                                                            <label key={template.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
                                                                                 <input
                                                                                     type="checkbox"
-                                                                                    className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                    checked={selectedLibraryStep1Documents.includes(doc.id)}
-                                                                                    onChange={(e) => {
-                                                                                        e.stopPropagation(); // Prevent the div's onClick from firing
-                                                                                        handleLibraryDocumentClick(doc); // Pass entire doc object
-                                                                                    }}
+                                                                                    name="template"
+                                                                                    className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                    checked={selectedTemplate === template.id}
+                                                                                    onChange={() => handleTemplateSelect(template.id)}
                                                                                 />
-                                                                                <div className="flex items-center justify-between flex-1 min-w-0">
-                                                                                    <span className="text-xs truncate">{doc.title}</span>
-                                                                                    <button
-                                                                                        onClick={(e) => {
-                                                                                            e.stopPropagation();
-                                                                                            toggleDocumentDescription(doc.id);
-                                                                                        }}
-                                                                                        className="ml-2 text-xs text-white/50 hover:text-white"
-                                                                                    >
-                                                                                        {/* {showDocumentDescription === doc.id ? '▼' : '◀'}  */}
-                                                                                    </button>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            {showDocumentDescription === doc.id && documentDescriptions[doc.id] && (
-                                                                                <div className="absolute z-10 top-full left-2 right-2 mt-1 p-2 bg-[#3b3b5b] border border-white/20 rounded-md shadow-lg">
-                                                                                    <p className="text-xs text-white/80 break-words">{documentDescriptions[doc.id]}</p>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    ))
-                                                                ) : (
-                                                                    <div className="text-center text-gray-400 text-xs p-4">No documents found for this template</div>
-                                                                )}
-                                                            </>
-                                                        ) : (
-                                                            <div className="text-center text-gray-400 text-xs p-4">Please select a template to view documents</div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Step 2 Content - Selected Template Review */}
-
-                        {currentStep === 2 && (
-                            <div className="p-4">
-                                <div className="p-6 rounded-lg border border-white/20">
-                                    {dynamicFields.length > 0 ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {dynamicFields.map((field, index) => (
-                                                <div key={`field_${index}`}>
-                                                    <label className="block text-gray-300 text-sm mb-1">
-                                                        {field.label}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={dynamicFieldValues[field.name] || ''}
-                                                        onChange={(e) => handleDynamicFieldChange(field.name, e.target.value)}
-                                                        className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white"
-                                                        placeholder={`Enter ${field.label.toLowerCase()}`}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center text-gray-400 py-4">
-                                            No fields to display for this template
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Step 3 Content - Source Document */}
-                        {currentStep === 3 && (
-                            <>
-                                {/* Source Document and Toggle */}
-                                <div className="mr-4 ml-4">
-                                    <div className="relative mb-4 min-h-[10px]">
-                                        {/* Toggle Button - Top Right */}
-                                        <div className="absolute top-[10px] right-0 flex items-center space-x-2 z-10">
-                                            <span className="text-xs text-gray-400">{showInfo ? "Hide" : "Show"}</span>
-                                            <button
-                                                onClick={() => setShowInfo(!showInfo)}
-                                                className="focus:outline-none"
-                                                aria-label={showInfo ? "Hide options" : "Show options"}
-                                            >
-                                                <div
-                                                    className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${showInfo ? 'bg-blue-600' : 'bg-gray-500'
-                                                        }`}
-                                                >
-                                                    <div
-                                                        className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${showInfo ? 'translate-x-4' : 'translate-x-0'
-                                                            }`}
-                                                    ></div>
-                                                </div>
-                                            </button>
-                                        </div>
-
-                                        {/* Content */}
-                                        {showInfo && (
-                                            <div className="pt-2 -mt-2">
-                                                <label className="text-sm font-medium leading-relaxed relative">
-                                                    <span className="font-semibold">Source Document:</span>{" "}
-                                                    <span className="text-[12px]">
-                                                        Please select a search method for desired document:
-                                                    </span>
-                                                    <span className="text-blue-400 text-[12px] cursor-pointer ml-2 relative group">
-                                                        Learn more about Search Type
-                                                        {/* Tooltip */}
-                                                        <div className="absolute left-1/3 top-8 transform -translate-x-1/4 w-[290px] z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                                            <div className="bg-[#3b3b5b] text-white text-[11px] p-3 rounded-lg shadow-lg">
-                                                                <p className="mb-1 mt-0">
-                                                                    <strong>AI Search:</strong> Output will come from Agents
-                                                                </p>
-                                                                <p>
-                                                                    <strong>Manual Search:</strong> Output will come from database
-                                                                </p>
-                                                            </div>
-                                                            <div className="absolute -top-[5px] left-6 w-5 h-5 transform rotate-45 bg-[#3b3b5b] z-0" />
-                                                        </div>
-                                                    </span>
-                                                </label>
-
-                                                <div className="mt-3 flex items-center gap-6">
-                                                    <label className="flex items-center gap-2 text-sm">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={searchMethod === 'ai'}
-                                                            onChange={() => setSearchMethod('ai')}
-                                                        />
-                                                        AI Search
-                                                    </label>
-                                                    <label className="flex items-center gap-2 text-sm">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={searchMethod === 'manual'}
-                                                            onChange={() => setSearchMethod('manual')}
-                                                        />
-                                                        Manual Search
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex justify-center">
-                                    <div className="w-full mr-4 ml-4">
-                                        {/* STEP 1 - AI Search */}
-                                        {searchMethod === 'ai' && (
-                                            <div className="mt-6">
-                                                <h3 className="text-lg text-center font-semibold mb-2">Search and select a Resource</h3>
-
-                                                {/* INPUT FIELD */}
-                                                <div className="flex items-center gap-2">
-                                                    <div className="relative w-full">
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Ask anything"
-                                                            value={searchQuery}
-                                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                                            className="w-full pt-3 pb-3 h-[45px] p-4 pr-36 rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                            style={{ backgroundColor: appColors.primaryColor }}
-                                                            onKeyDown={(e) => e.key === 'Enter' && isSubmitEnabled && handleSubmitAISearch()}
-                                                        />
-                                                        <div className="relative group">
-                                                            {!searchQuery && (
-                                                                <div className="absolute -top-0 -right-14 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                                    Please input text
+                                                                                {template.name}
+                                                                            </label>
+                                                                        ))
+                                                                    )}
                                                                 </div>
                                                             )}
-                                                            <button
-                                                                onClick={handleSubmitAISearch}
-                                                                disabled={isLoading || !isSubmitEnabled || !searchQuery}
-                                                                className="absolute right-2 -top-[40.5px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
-                                                            >
-                                                                {isLoading ? (
-                                                                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                                                                    </svg>
-                                                                ) : (
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 24 24"
-                                                                        stroke="currentColor"
-                                                                        className="w-5 h-5"
-                                                                    >
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                                                    </svg>
-                                                                )}
-                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Right Results */}
+                                                <div className="w-2/3 rounded-md border border overflow-hidden p-2">
+                                                    <div className="border border-white/20 rounded-md">
+                                                        <div className="p-2 border-b border-white/20">
+                                                            <div className="text-blue-300 font-medium text-xs">
+                                                                Prompts{selectedTemplate && ` (${getFilteredDocuments().length})`}
+                                                            </div>
+                                                        </div>
+                                                        <div className="h-[270px] max-h-[calc(80vh-100px)] overflow-y-auto">
+                                                            {isLoadingData ? (
+                                                                <div className="flex justify-center items-center h-full">
+                                                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                                                                </div>
+                                                            ) : selectedTemplate ? (
+                                                                <>
+                                                                    {getFilteredDocuments().length > 0 ? (
+                                                                        getFilteredDocuments().map((doc) => (
+                                                                            <div key={doc.id} className="relative">
+                                                                                <div className="flex items-center bg-[#2b2b4b] p-2 mx-2 my-1 bg-[#3b3b5b] border hover:bg-white/10 border-white/20 rounded-md cursor-pointer"
+                                                                                    onClick={() => handleLibraryDocumentClick(doc)} // Pass entire doc object
+                                                                                >
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                        checked={selectedLibraryStep1Documents.includes(doc.id)}
+                                                                                        onChange={(e) => {
+                                                                                            e.stopPropagation(); // Prevent the div's onClick from firing
+                                                                                            handleLibraryDocumentClick(doc); // Pass entire doc object
+                                                                                        }}
+                                                                                    />
+                                                                                    <div className="flex items-center justify-between flex-1 min-w-0">
+                                                                                        <span className="text-xs truncate">{doc.title}</span>
+                                                                                        <button
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                toggleDocumentDescription(doc.id);
+                                                                                            }}
+                                                                                            className="ml-2 text-xs text-white/50 hover:text-white"
+                                                                                        >
+                                                                                            {/* {showDocumentDescription === doc.id ? '▼' : '◀'}  */}
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {showDocumentDescription === doc.id && documentDescriptions[doc.id] && (
+                                                                                    <div className="absolute z-10 top-full left-2 right-2 mt-1 p-2 bg-[#3b3b5b] border border-white/20 rounded-md shadow-lg">
+                                                                                        <p className="text-xs text-white/80 break-words">{documentDescriptions[doc.id]}</p>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        ))
+                                                                    ) : (
+                                                                        <div className="text-center text-gray-400 text-xs p-4">No documents found for this template</div>
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                <div className="text-center text-gray-400 text-xs p-4">Please select a template to view documents</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
-                                                {/* Documents */}
-                                                {hasSearchedAISearch && (
-                                                    <div>
-                                                        <div
-                                                            className="flex items-center mb-2 mt-4 ml-4 cursor-pointer"
-                                                            onClick={() => setIsSearchResultsOpen(!isSearchResultsOpen)}
-                                                        >
-                                                            <span className="text-blue-700 text-sm">{isSearchResultsOpen ? '▼' : '▶'}</span>
-                                                            <h3 className="font-medium ml-2 text-sm text-blue-400">Source Documents</h3>
-                                                            <span className="ml-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                                                                {searchResults.length} docs
-                                                            </span>
-                                                        </div>
+                            {/* Step 2 Content - Selected Template Review */}
 
-                                                        {isSearchResultsOpen && (
-                                                            <div className="max-h-[170px] overflow-y-auto ml-4 mr-4 grid grid-cols-1 gap-1.5">
-                                                                {searchResults.map((doc) => (
-                                                                    <div
-                                                                        key={`search-result-${doc.id}-${doc.type}`}
-                                                                        className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
-                                                                        onClick={() => handleDocumentClick(doc)}
-                                                                    >
-                                                                        <svg width="20" height="20" viewBox="0 0 48 48">
-                                                                            <g transform="translate(10, 10)" fill="orange" fillOpacity="0.8">
-                                                                                <rect y="0" width="34" height="4" rx="1" />
-                                                                                <rect y="6" width="34" height="4" rx="1" />
-                                                                                <rect y="12" width="34" height="4" rx="1" />
-                                                                            </g>
-                                                                        </svg>
-                                                                        <div className="flex-1">
-                                                                            <div className="text-xs text-white/90">{doc.title}</div>
-                                                                            {doc.type && (
-                                                                                <div className="text-[10px] text-gray-400 mt-1">
-                                                                                    Type: {doc.type.toUpperCase()}
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                            {currentStep === 2 && (
+                                <div className="p-4">
+                                    <div className="p-6 rounded-lg border border-white/20">
+                                        {dynamicFields.length > 0 ? (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {dynamicFields.map((field, index) => (
+                                                    <div key={`field_${index}`}>
+                                                        <label className="block text-gray-300 text-sm mb-1">
+                                                            {field.label}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={dynamicFieldValues[field.name] || ''}
+                                                            onChange={(e) => handleDynamicFieldChange(field.name, e.target.value)}
+                                                            className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white"
+                                                            placeholder={`Enter ${field.label.toLowerCase()}`}
+                                                        />
                                                     </div>
-                                                )}
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center text-gray-400 py-4">
+                                                No fields to display for this template
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+                            )}
 
-
-                                        {/* STEP 2 - MANUAL SEARCH */}
-                                        {searchMethod === 'manual' && (
-                                            <div className="mt-4">
-                                                {/* Top Row - Source and Search */}
-                                                <div className="flex gap-4 mb-6 -mt-2">
-                                                    {/* Content Source Selector - Left */}
-                                                    <div className="w-1/3">
-                                                        {/* <label className="block text-sm font-medium -mb-3 -mt-2">Content Source</label> */}
-                                                        <div className="relative">
-                                                            <select
-                                                                value={contentSource}
-                                                                onChange={(e) => {
-                                                                    setContentSource(e.target.value);
-                                                                    setSelectedFilters({
-                                                                        "Video Type": [],
-                                                                        "Classifications": [],
-                                                                        "category": [],
-                                                                        "content_categories": [],
-                                                                        "market_categories": []
-                                                                    });
-                                                                }}
-                                                                className="w-full p-2 mt-2 rounded bg-white/10 border border-white/20 text-sm appearance-none pr-8" // Added appearance-none and pr-8
-                                                            >
-                                                                <option value="select" disabled hidden>
-                                                                    Select Content source
-                                                                </option>
-                                                                <option value="voc">Voice of Customer (VoC)</option>
-                                                                <option value="vob">Voice of Business (VoB)</option>
-                                                                <option value="vom">Voice of Market (VoM)</option>
-                                                            </select>
-                                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 mt-2">
-                                                                <svg
-                                                                    className="fill-current h-4 w-4"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    viewBox="0 0 20 20"
-                                                                >
-                                                                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                                                </svg>
-                                                            </div>
-                                                        </div>
-
+                            {/* Step 3 Content - Source Document */}
+                            {currentStep === 3 && (
+                                <>
+                                    {/* Source Document and Toggle */}
+                                    <div className="mr-4 ml-4">
+                                        <div className="relative mb-4 min-h-[10px]">
+                                            {/* Toggle Button - Top Right */}
+                                            <div className="absolute top-[10px] right-0 flex items-center space-x-2 z-10">
+                                                <span className="text-xs text-gray-400">{showInfo ? "Hide" : "Show"}</span>
+                                                <button
+                                                    onClick={() => setShowInfo(!showInfo)}
+                                                    className="focus:outline-none"
+                                                    aria-label={showInfo ? "Hide options" : "Show options"}
+                                                >
+                                                    <div
+                                                        className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${showInfo ? 'bg-blue-600' : 'bg-gray-500'
+                                                            }`}
+                                                    >
+                                                        <div
+                                                            className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${showInfo ? 'translate-x-4' : 'translate-x-0'
+                                                                }`}
+                                                        ></div>
                                                     </div>
+                                                </button>
+                                            </div>
 
-                                                    {/* Search Input - Right */}
-                                                    <div className="w-2/3 mt-1">
-                                                        <div className="relative pt-1">
+                                            {/* Content */}
+                                            {showInfo && (
+                                                <div className="pt-2 -mt-2">
+                                                    <label className="text-sm font-medium leading-relaxed relative">
+                                                        <span className="font-semibold">Source Document:</span>{" "}
+                                                        <span className="text-[12px]">
+                                                            Please select a search method for desired document:
+                                                        </span>
+                                                        <span className="text-blue-400 text-[12px] cursor-pointer ml-2 relative group">
+                                                            Learn more about Search Type
+                                                            {/* Tooltip */}
+                                                            <div className="absolute left-1/3 top-8 transform -translate-x-1/4 w-[290px] z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                                <div className="bg-[#3b3b5b] text-white text-[11px] p-3 rounded-lg shadow-lg">
+                                                                    <p className="mb-1 mt-0">
+                                                                        <strong>AI Search:</strong> Output will come from Agents
+                                                                    </p>
+                                                                    <p>
+                                                                        <strong>Manual Search:</strong> Output will come from database
+                                                                    </p>
+                                                                </div>
+                                                                <div className="absolute -top-[5px] left-6 w-5 h-5 transform rotate-45 bg-[#3b3b5b] z-0" />
+                                                            </div>
+                                                        </span>
+                                                    </label>
+
+                                                    <div className="mt-3 flex items-center gap-6">
+                                                        <label className="flex items-center gap-2 text-sm">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={searchMethod === 'ai'}
+                                                                onChange={() => setSearchMethod('ai')}
+                                                            />
+                                                            AI Search
+                                                        </label>
+                                                        <label className="flex items-center gap-2 text-sm">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={searchMethod === 'manual'}
+                                                                onChange={() => setSearchMethod('manual')}
+                                                            />
+                                                            Manual Search
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-center">
+                                        <div className="w-full mr-4 ml-4">
+                                            {/* STEP 1 - AI Search */}
+                                            {searchMethod === 'ai' && (
+                                                <div className="mt-6">
+                                                    <h3 className="text-lg text-center font-semibold mb-2">Search and select a Resource</h3>
+
+                                                    {/* INPUT FIELD */}
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="relative w-full">
                                                             <input
                                                                 type="text"
-                                                                placeholder="Search..."
+                                                                placeholder="Ask anything"
                                                                 value={searchQuery}
-                                                                onChange={(e) => {
-                                                                    setSearchQuery(e.target.value);
-                                                                    if (e.target.value === '' && Object.values(selectedFilters).every(arr => arr.length === 0)) {
-                                                                        setSearchResults([]);
-                                                                        setHasSearchedAISearch(false);
-                                                                    }
-                                                                }}
-                                                                className="w-full pt-3 pb-3 h-[40px] p-3 pr-[80px] rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                                className="w-full pt-3 pb-3 h-[45px] p-4 pr-36 rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                                 style={{ backgroundColor: appColors.primaryColor }}
-                                                                onKeyDown={(e) => e.key === 'Enter' && handleManualSearchSubmit()}
+                                                                onKeyDown={(e) => e.key === 'Enter' && isSubmitEnabled && handleSubmitAISearch()}
                                                             />
                                                             <div className="relative group">
-                                                                {!searchQuery && Object.values(selectedFilters).every(arr => arr.length === 0) && (
+                                                                {!searchQuery && (
                                                                     <div className="absolute -top-0 -right-14 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                                        Please input text or select filters
+                                                                        Please input text
                                                                     </div>
                                                                 )}
-                                                                {/* <button
+                                                                <button
+                                                                    onClick={handleSubmitAISearch}
+                                                                    disabled={isLoading || !isSubmitEnabled || !searchQuery}
+                                                                    className="absolute right-2 -top-[40.5px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
+                                                                >
+                                                                    {isLoading ? (
+                                                                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                                                        </svg>
+                                                                    ) : (
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none"
+                                                                            viewBox="0 0 24 24"
+                                                                            stroke="currentColor"
+                                                                            className="w-5 h-5"
+                                                                        >
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                                        </svg>
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+                                                    {/* Documents */}
+                                                    {hasSearchedAISearch && (
+                                                        <div>
+                                                            <div
+                                                                className="flex items-center mb-2 mt-4 ml-4 cursor-pointer"
+                                                                onClick={() => setIsSearchResultsOpen(!isSearchResultsOpen)}
+                                                            >
+                                                                <span className="text-blue-700 text-sm">{isSearchResultsOpen ? '▼' : '▶'}</span>
+                                                                <h3 className="font-medium ml-2 text-sm text-blue-400">Source Documents</h3>
+                                                                <span className="ml-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                                                                    {searchResults.length} docs
+                                                                </span>
+                                                            </div>
+
+                                                            {isSearchResultsOpen && (
+                                                                <div className="ml-4 mr-4">
+                                                                    {searchResults.length === 0 ? (
+                                                                        // Show message when no documents found
+                                                                        <div className="p-4 bg-white/5 rounded-md text-center">
+                                                                            <svg
+                                                                                className="w-8 h-8 mx-auto text-gray-400 mb-2"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={1.5}
+                                                                                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                                />
+                                                                            </svg>
+                                                                            <p className="text-sm text-gray-400">No source documents found </p>
+                                                                        </div>
+                                                                    ) : (
+                                                                        // Show documents when available
+                                                                        <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
+                                                                            {searchResults.map((doc) => (
+                                                                                <div
+                                                                                    key={`search-result-${doc.id}-${doc.type}`}
+                                                                                    className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
+                                                                                    onClick={() => handleDocumentClick(doc)}
+                                                                                >
+                                                                                    <svg width="20" height="20" viewBox="0 0 48 48">
+                                                                                        <g transform="translate(10, 10)" fill="orange" fillOpacity="0.8">
+                                                                                            <rect y="0" width="34" height="4" rx="1" />
+                                                                                            <rect y="6" width="34" height="4" rx="1" />
+                                                                                            <rect y="12" width="34" height="4" rx="1" />
+                                                                                        </g>
+                                                                                    </svg>
+                                                                                    <div className="flex-1">
+                                                                                        <div className="text-xs text-white/90">{doc.title}</div>
+                                                                                        {doc.type && (
+                                                                                            <div className="text-[10px] text-gray-400 mt-1">
+                                                                                                Type: {doc.type.toUpperCase()}
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+
+                                            {/* STEP 2 - MANUAL SEARCH */}
+                                            {searchMethod === 'manual' && (
+                                                <div className="mt-4">
+                                                    {/* Top Row - Source and Search */}
+                                                    <div className="flex gap-4 mb-6 -mt-2">
+                                                        {/* Content Source Selector - Left */}
+                                                        <div className="w-1/3">
+                                                            {/* <label className="block text-sm font-medium -mb-3 -mt-2">Content Source</label> */}
+                                                            <div className="relative">
+                                                                <select
+                                                                    value={contentSource}
+                                                                    onChange={(e) => {
+                                                                        setContentSource(e.target.value);
+                                                                        setSelectedFilters({
+                                                                            "Video Type": [],
+                                                                            "Classifications": [],
+                                                                            "category": [],
+                                                                            "content_categories": [],
+                                                                            "market_categories": []
+                                                                        });
+                                                                    }}
+                                                                    className="w-full p-2 mt-2 rounded bg-white/10 border border-white/20 text-sm appearance-none pr-8" // Added appearance-none and pr-8
+                                                                >
+                                                                    <option value="select" disabled hidden>
+                                                                        Select Content source
+                                                                    </option>
+                                                                    <option value="voc">Voice of Customer (VoC)</option>
+                                                                    <option value="vob">Voice of Business (VoB)</option>
+                                                                    <option value="vom">Voice of Market (VoM)</option>
+                                                                </select>
+                                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 mt-2">
+                                                                    <svg
+                                                                        className="fill-current h-4 w-4"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 20 20"
+                                                                    >
+                                                                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+
+                                                        {/* Search Input - Right */}
+                                                        <div className="w-2/3 mt-1">
+                                                            <div className="relative pt-1">
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Search..."
+                                                                    value={searchQuery}
+                                                                    onChange={(e) => {
+                                                                        setSearchQuery(e.target.value);
+                                                                        if (e.target.value === '' && Object.values(selectedFilters).every(arr => arr.length === 0)) {
+                                                                            setSearchResults([]);
+                                                                            setHasSearchedAISearch(false);
+                                                                        }
+                                                                    }}
+                                                                    className="w-full pt-3 pb-3 h-[40px] p-3 pr-[80px] rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    style={{ backgroundColor: appColors.primaryColor }}
+                                                                    onKeyDown={(e) => e.key === 'Enter' && handleManualSearchSubmit()}
+                                                                />
+                                                                <div className="relative group">
+                                                                    {!searchQuery && Object.values(selectedFilters).every(arr => arr.length === 0) && (
+                                                                        <div className="absolute -top-0 -right-14 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                                            Please input text or select filters
+                                                                        </div>
+                                                                    )}
+                                                                    {/* <button
                                                             onClick={handleManualSearchSubmit}
                                                             disabled={isLoading || (!searchQuery && Object.values(selectedFilters).every(arr => arr.length === 0))}
                                                             className="absolute right-2 -top-[36.5px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
@@ -1174,249 +1251,260 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                                             </svg>
                                                         </button> */}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                {/* Bottom Row - Filters and Results */}
-                                                <div className="flex gap-4 -mt-2">
-                                                    {/* Left Filters - 1/3 width */}
-                                                    <div className="w-1/3 space-y-3 border rounded-md p-2 h-[270px] overflow-y-auto no-scrollbar">
-                                                        {/* Dynamic Filters based on contentSource */}
-                                                        {contentSource === 'voc' ? (
-                                                            <>
-                                                                {/* Video Type Filter */}
-                                                                <div className="border border-white/20 rounded-md overflow-hidden no-scrollbar">
+                                                    {/* Bottom Row - Filters and Results */}
+                                                    <div className="flex gap-4 -mt-2">
+                                                        {/* Left Filters - 1/3 width */}
+                                                        <div className="w-1/3 space-y-3 border rounded-md p-2 h-[270px] overflow-y-auto no-scrollbar">
+                                                            {/* Dynamic Filters based on contentSource */}
+                                                            {contentSource === 'voc' ? (
+                                                                <>
+                                                                    {/* Video Type Filter */}
+                                                                    <div className="border border-white/20 rounded-md overflow-hidden no-scrollbar">
+                                                                        <button
+                                                                            className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
+                                                                            onClick={() => setContentTypeOpen(!contentTypeOpen)}
+                                                                        >
+                                                                            <span>Filter By Content Type</span>
+                                                                            <span>{contentTypeOpen ? '▼' : '▶'}</span>
+                                                                        </button>
+                                                                        {contentTypeOpen && (
+                                                                            <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
+                                                                                {filterOptions.voc["Video Type"].map((type) => (
+                                                                                    <label key={type.value} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                            checked={selectedFilters["Video Type"].includes(type.value)}
+                                                                                            onChange={() => handleFilterSelect("Video Type", type.value)}
+                                                                                        />
+                                                                                        <span className="flex-1">{type.label}</span>
+                                                                                    </label>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Classifications Filter */}
+                                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                                        <button
+                                                                            className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
+                                                                            onClick={() => setChallengesOpen(!challengesOpen)}
+                                                                        >
+                                                                            <span>Filter By Classifications</span>
+                                                                            <span>{challengesOpen ? '▼' : '▶'}</span>
+                                                                        </button>
+                                                                        {challengesOpen && (
+                                                                            <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
+                                                                                {filterOptions.voc["Classifications"].map((classification) => (
+                                                                                    <label key={classification.value} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                            checked={selectedFilters["Classifications"].includes(classification.value)}
+                                                                                            onChange={() => handleFilterSelect("Classifications", classification.value)}
+                                                                                        />
+                                                                                        {classification.label}
+                                                                                    </label>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </>
+                                                            ) : contentSource === 'vob' ? (
+                                                                /* VoB Filters */
+                                                                <div className="border border-white/20 rounded-md overflow-hidden">
                                                                     <button
                                                                         className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                         onClick={() => setContentTypeOpen(!contentTypeOpen)}
                                                                     >
-                                                                        <span>Filter By Content Type</span>
+                                                                        <span>Filter By Category</span>
                                                                         <span>{contentTypeOpen ? '▼' : '▶'}</span>
                                                                     </button>
                                                                     {contentTypeOpen && (
                                                                         <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
-                                                                            {filterOptions.voc["Video Type"].map((type) => (
-                                                                                <label key={type.value} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                            {filterOptions.vob["category"].map((category, index) => (
+                                                                                <label
+                                                                                    key={`category-${category.value}-${index}`}
+                                                                                    className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer"
+                                                                                >
                                                                                     <input
                                                                                         type="checkbox"
                                                                                         className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                        checked={selectedFilters["Video Type"].includes(type.value)}
-                                                                                        onChange={() => handleFilterSelect("Video Type", type.value)}
+                                                                                        checked={selectedFilters["category"].includes(category.value)}
+                                                                                        onChange={() => handleFilterSelect("category", category.value)}
                                                                                     />
-                                                                                    <span className="flex-1">{type.label}</span>
+                                                                                    <span className="flex-1">{category.label}</span>
                                                                                 </label>
                                                                             ))}
                                                                         </div>
                                                                     )}
                                                                 </div>
+                                                            ) : contentSource === 'vom' ? (
 
-                                                                {/* Classifications Filter */}
-                                                                <div className="border border-white/20 rounded-md overflow-hidden">
-                                                                    <button
-                                                                        className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
-                                                                        onClick={() => setChallengesOpen(!challengesOpen)}
-                                                                    >
-                                                                        <span>Filter By Classifications</span>
-                                                                        <span>{challengesOpen ? '▼' : '▶'}</span>
-                                                                    </button>
-                                                                    {challengesOpen && (
-                                                                        <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
-                                                                            {filterOptions.voc["Classifications"].map((classification) => (
-                                                                                <label key={classification.value} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
-                                                                                    <input
-                                                                                        type="checkbox"
-                                                                                        className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                        checked={selectedFilters["Classifications"].includes(classification.value)}
-                                                                                        onChange={() => handleFilterSelect("Classifications", classification.value)}
-                                                                                    />
-                                                                                    {classification.label}
-                                                                                </label>
-                                                                            ))}
-                                                                        </div>
-                                                                    )}
+                                                                <>
+                                                                    {/* Market Categories Filter */}
+                                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                                        <button
+                                                                            className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
+                                                                            onClick={() => setContentTypeOpen(!contentTypeOpen)}
+                                                                        >
+                                                                            <span>Filter By Market Categories</span>
+                                                                            <span>{contentTypeOpen ? '▼' : '▶'}</span>
+                                                                        </button>
+                                                                        {contentTypeOpen && (
+                                                                            <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
+                                                                                {filterOptions.vom["market_categories"].map((market_categories, index) => (
+                                                                                    <label
+                                                                                        key={`market_categories-${market_categories.value}-${index}`}
+                                                                                        className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer"
+                                                                                    >
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                            checked={selectedFilters["market_categories"].includes(market_categories.value)}
+                                                                                            onChange={() => handleFilterSelect("market_categories", market_categories.value)}
+                                                                                        />
+                                                                                        <span className="flex-1">{market_categories.label}</span>
+                                                                                    </label>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Content Categories Filter */}
+                                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                                        <button
+                                                                            className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
+                                                                            onClick={() => setContentTypeOpen(!contentTypeOpen)}
+                                                                        >
+                                                                            <span>Filter By Content Categories</span>
+                                                                            <span>{contentTypeOpen ? '▼' : '▶'}</span>
+                                                                        </button>
+                                                                        {contentTypeOpen && (
+                                                                            <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
+                                                                                {filterOptions.vom["content_categories"].map((content_categories, index) => (
+                                                                                    <label
+                                                                                        key={`content_categories-${content_categories.value}-${index}`}
+                                                                                        className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer"
+                                                                                    >
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                            checked={selectedFilters["content_categories"].includes(content_categories.value)}
+                                                                                            onChange={() => handleFilterSelect("content_categories", content_categories.value)}
+                                                                                        />
+                                                                                        <span className="flex-1">{content_categories.label}</span>
+                                                                                    </label>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </>
+                                                            ) : <p className='text-sm text-gray-500'>Please Select Source Content</p>}
+                                                        </div>
+
+                                                        {/* Right Results - 2/3 width */}
+                                                        <div className="w-2/3 rounded-md border overflow-hidden h-[270px]">
+                                                            <div className="border border-white/20 rounded-md h-full">
+                                                                <div className="p-2 border-b border-white/20">
+                                                                    <div className="text-blue-300 font-medium text-xs">
+                                                                        {contentSource === 'voc' ? 'Full Episodes' : 'Files'} ({searchResults.length} results)
+                                                                    </div>
                                                                 </div>
-                                                            </>
-                                                        ) : contentSource === 'vob' ? (
-                                                            /* VoB Filters */
-                                                            <div className="border border-white/20 rounded-md overflow-hidden">
-                                                                <button
-                                                                    className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
-                                                                    onClick={() => setContentTypeOpen(!contentTypeOpen)}
-                                                                >
-                                                                    <span>Filter By Category</span>
-                                                                    <span>{contentTypeOpen ? '▼' : '▶'}</span>
-                                                                </button>
-                                                                {contentTypeOpen && (
-                                                                    <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
-                                                                        {filterOptions.vob["category"].map((category, index) => (
-                                                                            <label
-                                                                                key={`category-${category.value}-${index}`}
-                                                                                className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer"
+                                                                <div className="h-[234px] overflow-y-auto">
+                                                                    {isLoading ? (
+                                                                        <div className="flex items-center justify-center -mt-2 h-full">
+                                                                            <svg className="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                                                            </svg>
+                                                                        </div>
+                                                                    ) : searchResults.length > 0 ? (
+                                                                        searchResults.map((doc) => (
+                                                                            <div
+                                                                                key={doc.id}
+                                                                                className="flex items-center p-2 mx-2 my-1 bg-[#3b3b5b] border hover:bg-white/10 border-white/20 rounded-md cursor-pointer"
+                                                                                onClick={() => handleDocumentClick(doc)}
                                                                             >
                                                                                 <input
                                                                                     type="checkbox"
                                                                                     className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                    checked={selectedFilters["category"].includes(category.value)}
-                                                                                    onChange={() => handleFilterSelect("category", category.value)}
+                                                                                    checked={selectedDocuments.includes(doc.id)}
+                                                                                    onChange={() => handleDocumentSelect(doc.id)}
                                                                                 />
-                                                                                <span className="flex-1">{category.label}</span>
-                                                                            </label>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ) : contentSource === 'vom' ? (
-
-                                                            <>
-                                                                {/* Market Categories Filter */}
-                                                                <div className="border border-white/20 rounded-md overflow-hidden">
-                                                                    <button
-                                                                        className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
-                                                                        onClick={() => setContentTypeOpen(!contentTypeOpen)}
-                                                                    >
-                                                                        <span>Filter By Market Categories</span>
-                                                                        <span>{contentTypeOpen ? '▼' : '▶'}</span>
-                                                                    </button>
-                                                                    {contentTypeOpen && (
-                                                                        <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
-                                                                            {filterOptions.vom["market_categories"].map((market_categories, index) => (
-                                                                                <label
-                                                                                    key={`market_categories-${market_categories.value}-${index}`}
-                                                                                    className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer"
-                                                                                >
-                                                                                    <input
-                                                                                        type="checkbox"
-                                                                                        className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                        checked={selectedFilters["market_categories"].includes(market_categories.value)}
-                                                                                        onChange={() => handleFilterSelect("market_categories", market_categories.value)}
-                                                                                    />
-                                                                                    <span className="flex-1">{market_categories.label}</span>
-                                                                                </label>
-                                                                            ))}
+                                                                                <span className="text-xs">{doc.title}</span>
+                                                                            </div>
+                                                                        ))
+                                                                    ) : (
+                                                                        <div className="text-center text-gray-400 text-xs p-4 h-full -mt-1 flex items-center justify-center">
+                                                                            {hasSearchedAISearch ? 'No results found' : 'Perform a search or apply filters to see results'}
                                                                         </div>
                                                                     )}
                                                                 </div>
-
-                                                                {/* Content Categories Filter */}
-                                                                <div className="border border-white/20 rounded-md overflow-hidden">
-                                                                    <button
-                                                                        className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
-                                                                        onClick={() => setContentTypeOpen(!contentTypeOpen)}
-                                                                    >
-                                                                        <span>Filter By Content Categories</span>
-                                                                        <span>{contentTypeOpen ? '▼' : '▶'}</span>
-                                                                    </button>
-                                                                    {contentTypeOpen && (
-                                                                        <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20 no-scrollbar">
-                                                                            {filterOptions.vom["content_categories"].map((content_categories, index) => (
-                                                                                <label
-                                                                                    key={`content_categories-${content_categories.value}-${index}`}
-                                                                                    className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer"
-                                                                                >
-                                                                                    <input
-                                                                                        type="checkbox"
-                                                                                        className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                        checked={selectedFilters["content_categories"].includes(content_categories.value)}
-                                                                                        onChange={() => handleFilterSelect("content_categories", content_categories.value)}
-                                                                                    />
-                                                                                    <span className="flex-1">{content_categories.label}</span>
-                                                                                </label>
-                                                                            ))}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </>
-                                                        ) : <p className='text-sm text-gray-500'>Please Select Source Content</p>}
-                                                    </div>
-
-                                                    {/* Right Results - 2/3 width */}
-                                                    <div className="w-2/3 rounded-md border overflow-hidden h-[270px]">
-                                                        <div className="border border-white/20 rounded-md h-full">
-                                                            <div className="p-2 border-b border-white/20">
-                                                                <div className="text-blue-300 font-medium text-xs">
-                                                                    {contentSource === 'voc' ? 'Full Episodes' : 'Files'} ({searchResults.length} results)
-                                                                </div>
-                                                            </div>
-                                                            <div className="h-[234px] overflow-y-auto">
-                                                                {isLoading ? (
-                                                                    <div className="flex items-center justify-center -mt-2 h-full">
-                                                                        <svg className="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                                                                        </svg>
-                                                                    </div>
-                                                                ) : searchResults.length > 0 ? (
-                                                                    searchResults.map((doc) => (
-                                                                        <div
-                                                                            key={doc.id}
-                                                                            className="flex items-center p-2 mx-2 my-1 bg-[#3b3b5b] border hover:bg-white/10 border-white/20 rounded-md cursor-pointer"
-                                                                            onClick={() => handleDocumentClick(doc)}
-                                                                        >
-                                                                            <input
-                                                                                type="checkbox"
-                                                                                className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                checked={selectedDocuments.includes(doc.id)}
-                                                                                onChange={() => handleDocumentSelect(doc.id)}
-                                                                            />
-                                                                            <span className="text-xs">{doc.title}</span>
-                                                                        </div>
-                                                                    ))
-                                                                ) : (
-                                                                    <div className="text-center text-gray-400 text-xs p-4 h-full -mt-1 flex items-center justify-center">
-                                                                        {hasSearchedAISearch ? 'No results found' : 'Perform a search or apply filters to see results'}
-                                                                    </div>
-                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Footer */}
-                        <div className="flex justify-end gap-4 mt-6">
-                            <button
-                                className="px-4 py-1 bg-white/10 text-[13px] hover:bg-white/20 rounded-lg transition-colors"
-                                onClick={() => setShowLibraryDropdown(false)}
-                            >
-                                Cancel
-                            </button>
-
-                            {currentStep > 1 && (
-                                <button
-                                    className="px-4 py-1 bg-gray-500 text-[13px] hover:bg-gray-600 rounded-lg transition-colors"
-                                    onClick={handlePreviousStep}
-                                >
-                                    Previous
-                                </button>
+                                </>
                             )}
 
-                            {currentStep < 3 ? (
+                            {/* Footer */}
+                            <div className="flex justify-end gap-4 mt-6">
                                 <button
-                                    className="bg-blue-600 hover:bg-blue-700 text-[13px] text-white px-4 py-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                    onClick={handleNextStep}
+                                    className="px-4 py-1 bg-white/10 text-[13px] hover:bg-white/20 rounded-lg transition-colors"
+                                    onClick={() => setShowLibraryDropdown(false)}
                                 >
-                                    Next
+                                    Cancel
                                 </button>
-                            ) : (
-                                <button
-                                    className={`bg-blue-600 hover:bg-blue-700 text-[13px] text-white px-4 py-1 rounded-md 
+
+                                {currentStep > 1 && (
+                                    <button
+                                        className="px-4 py-1 bg-gray-500 text-[13px] hover:bg-gray-600 rounded-lg transition-colors"
+                                        onClick={handlePreviousStep}
+                                    >
+                                        Previous
+                                    </button>
+                                )}
+
+                                {currentStep < 3 ? (
+                                    <button
+                                        className="bg-blue-600 hover:bg-blue-700 text-[13px] text-white px-4 py-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                        onClick={handleNextStep}
+                                    >
+                                        Next
+                                    </button>
+
+                                ) : (
+                                    <button
+                                        className={`bg-blue-600 hover:bg-blue-700 text-[13px] text-white px-4 py-1 rounded-md 
                                     ${selectedDocuments.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    disabled={selectedDocuments.length === 0}
-                                    onClick={handleUseTemplate}
+                                        disabled={selectedDocuments.length === 0}
+                                        onClick={handleUseTemplate}
+                                    >
+                                        Use Template
+                                    </button>
+                                )}
+                                <button
+                                    onClick={goToNextStep}
+                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                                 >
-                                    Use Template
+                                    Next (Optimization)
                                 </button>
-                            )}
+                            </div>
                         </div>
+
                     </div>
-                </div>
+
+                </>
+
             )}
         </div>
     );
