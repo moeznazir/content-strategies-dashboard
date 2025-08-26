@@ -722,6 +722,39 @@ const Assistant = () => {
 
             {/* Main chat area */}
             <div className="flex-1 flex flex-col">
+                  {/* Prompts guide info icon */}
+                <div className="relative">
+                    <div className="flex justify-end mr-12 mt-2 z-10">  {/* push to right side */}
+                        <div
+                            className="relative group cursor-pointer flex flex-col items-center"
+                            onClick={() => setShowGuideline(true)}
+                            onMouseEnter={() => setHoveredTab('guide')}
+                            onMouseLeave={handleMouseLeave}
+                        >
+                            {/* Info icon */}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6 text-gray-400 hover:text-white transition-colors"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+
+                            {/*  tooltip */}
+                            <span className="absolute top-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 w-[100px]">
+                                Prompts guide
+                            </span>
+
+                        </div>
+                    </div>
+                </div>
                 <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
                     {/* Chat history container with scroll */}
                     <div
@@ -988,7 +1021,7 @@ const Assistant = () => {
                             />
                             {/* Toggle Switch */}
                            <div className="relative group">
-                                <div className="absolute right-14 -top-10 group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
+                                <div className="absolute right-14 -top-[42px] group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
                                     <div
                                         className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${isPromptMode ? 'bg-blue-600' : 'bg-gray-500'}`}
                                     >
