@@ -123,9 +123,8 @@ const Assistant = () => {
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [currentMessages, setCurrentMessages] = useState([]);
     const [isExpanded, setIsExpanded] = useState(false);
-
-
     const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
+
     const [addOns, setAddOns] = useState({
         industry: [],
         audience: [],
@@ -965,6 +964,8 @@ const Assistant = () => {
                     <hr className="border-gray-500 -mx-4" />
                 </div>
                 <div
+             <div
+
                     onClick={() => {
                         setSelectedConversation(null);
                         setCurrentMessages([]);
@@ -1021,8 +1022,9 @@ const Assistant = () => {
 
             {/* Main chat area */}
             <div className="flex-1 flex flex-col">
-
+            
                 {/* Prompts guide info icon */}
+
                 <div className="relative">
                     <div className="flex justify-end mr-12 mt-2 z-10">  {/* push to right side */}
                         <div
@@ -1348,6 +1350,40 @@ const Assistant = () => {
                                     rows={1}
                                 />
                             </div>
+                            <textarea
+                                placeholder="Ask anything"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={`w-full pt-3 pb-3 p-4 pr-36 border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-y-auto transition-all duration-200 ${isExpanded ? 'rounded-xl' : 'rounded-full'
+                                    }`}
+                                style={{
+                                    backgroundColor: appColors.primaryColor,
+                                    minHeight: '50px',
+                                    maxHeight: '200px',
+                                    height: 'auto',
+                                }}
+                                onInput={(e) => {
+                                    e.target.style.height = 'auto';
+                                    const newHeight = Math.min(e.target.scrollHeight, 200);
+                                    e.target.style.height = newHeight + 'px';
+
+                                    setIsExpanded(newHeight > 50); // Switch when height increases beyond base
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey && isSubmitEnabled) {
+                                        e.preventDefault();
+                                        handleSubmit();
+
+                                        // Reset height and rounding
+                                        setTimeout(() => {
+                                            e.target.style.height = 'auto';
+                                            e.target.style.height = '50px';
+                                            setIsExpanded(false);
+                                        }, 100);
+                                    }
+                                }}
+                                rows={1}
+                            />
                             <input
                                 type="file"
                                 id="file-upload"
@@ -1360,6 +1396,8 @@ const Assistant = () => {
                             {/* Toggle Switch */}
                             <div className="relative group">
                                 <div className="absolute right-14 -top-[38px] group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
+                           <div className="relative group">
+                                <div className="absolute right-14 -top-[42px] group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
                                     <div
                                         className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${isPromptMode ? 'bg-blue-600' : 'bg-gray-500'}`}
                                     >
@@ -1382,10 +1420,11 @@ const Assistant = () => {
                                     </div>
                                 )}
                                 {/* Submit Button */}
-                                <button
+                               <button
                                     onClick={handleSubmit}
                                     disabled={isLoading || !isSubmitEnabled || !searchQuery}
                                     className="absolute right-2 -top-[44px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
+                                    className="absolute right-2 -top-[48px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
                                 >
                                     {isLoading ? (
                                         <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
