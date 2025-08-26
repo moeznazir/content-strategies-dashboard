@@ -509,7 +509,6 @@ const Assistant = () => {
                     }
                     throw uploadError;
                 }
-
                 // Insert record in DB
                 const { data: dbData, error: dbError } = await supabase
                     .from("lib_uploaded_doc")
