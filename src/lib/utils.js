@@ -55,6 +55,12 @@ export const normalizeThemes = (themes) => {
   }
 };
 
+export const sanitizeFileName = (name) => {
+  return name
+    .replace(/\s+/g, '_')      // replace spaces with underscores
+    .replace(/[^a-zA-Z0-9._-]/g, ''); // remove special chars
+};
+
 // Add this utility function at the top of the file
 export const extractFieldsFromTemplate = (templateText) => {
   const fieldRegex = /{([^}]+)}/g;

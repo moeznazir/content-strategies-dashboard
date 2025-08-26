@@ -8,6 +8,7 @@ import ContextModal from '../customComponents/ContextModal';
 import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { sanitizeFileName } from '@/lib/utils';
 
 
 const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
@@ -19,9 +20,9 @@ const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
             skip: "Skip"
         },
         {
-            title: "Optimize Your Query for Better Results",
+            title: "Optimize Your Prompt for Better Results",
             description: "Get suggestions to improve your prompt and professionalize your query with one click.",
-            button: "Optimize Query",
+            button: "Optimize Prompt",
             skip: "Skip"
         },
         {
@@ -121,6 +122,10 @@ const Assistant = () => {
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [currentMessages, setCurrentMessages] = useState([]);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+
+    const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
     const [addOns, setAddOns] = useState({
         industry: [],
         audience: [],
@@ -142,12 +147,23 @@ const Assistant = () => {
     const [pendingSubmit, setPendingSubmit] = useState(false); // Add this state
     const totalGuidelineSteps = 4;
 
+    const [currentStep, setCurrentStep] = useState(0);
+    const steps = ['library', 'business', 'context', 'addons'];
+
 
     useEffect(() => {
         if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
     }, [currentMessages]);
+
+    useEffect(() => {
+        if (showAddonsModal && searchQuery.trim() !== '') {
+            setShowReplaceConfirmation(true);
+        } else {
+            setShowReplaceConfirmation(false);
+        }
+    }, [showAddonsModal]);
 
     useEffect(() => {
         const fetchConversations = async () => {
@@ -175,44 +191,42 @@ const Assistant = () => {
         fetchConversations();
     }, []);
 
-    useEffect(() => {
-        const optimizeQuery = async () => {
-            if (showOptimizationModal && searchQuery.trim()) {
-                try {
-                    setIsLoading(true);
-                    setOptimizedQuery(""); // Clear previous optimization
-                    const optimized = await optimizePrompt(searchQuery);
+    const optimizeQuery = async () => {
+        if (showOptimizationModal && searchQuery.trim()) {
+            try {
+                setIsLoading(true);
+                setOptimizedQuery(""); // Clear previous optimization
+                const optimized = await optimizePrompt(searchQuery);
 
-                    if (!optimized.error) {
-                        let raw = optimized.prompt || optimized.message;
+                if (!optimized.error) {
+                    let raw = optimized.prompt || optimized.message;
 
-                        // Remove wrapping quotes if present
-                        if (raw.startsWith('"') && raw.endsWith('"')) {
-                            raw = raw.slice(1, -1);
-                        }
-
-                        // Clean the response
-                        const cleanedResponse = raw
-                            .replace(/^,+|,+$/g, '')
-                            .replace(/,+\s*,+/g, ', ')
-                            .replace(/\s+/g, ' ')
-                            .trim();
-
-                        setOptimizedQuery(cleanedResponse);
-                    } else {
-                        ShowCustomToast('Failed to optimize prompt', 'error');
+                    // Remove wrapping quotes if present
+                    if (raw.startsWith('"') && raw.endsWith('"')) {
+                        raw = raw.slice(1, -1);
                     }
-                } catch (error) {
-                    console.log('Optimization error:', error);
-                    ShowCustomToast('Error optimizing prompt', 'error');
-                } finally {
-                    setIsLoading(false);
-                }
-            }
-        };
 
-        optimizeQuery();
-    }, [showOptimizationModal, searchQuery]);
+                    // Clean the response
+                    const cleanedResponse = raw
+                        .replace(/^,+|,+$/g, '')
+                        .replace(/,+\s*,+/g, ', ')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+
+                    setOptimizedQuery(cleanedResponse);
+                } else {
+                    ShowCustomToast('Failed to optimize prompt', 'error');
+                }
+            } catch (error) {
+                console.log('Optimization error:', error);
+                ShowCustomToast('Error optimizing prompt', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    };
+
+
 
     const handleConversationSelect = async (conversationId) => {
         try {
@@ -239,8 +253,51 @@ const Assistant = () => {
         }
     };
 
+    // Update the tabs array to include the file icon
     const tabs = [
-        { id: 'uplode', label: '+' },
+        {
+            id: 'uplode',
+            label: uploading ? (
+                // Spinner while uploading
+                <svg
+                    className="h-5 w-5 animate-spin text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                >
+                    <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                    ></circle>
+                    <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                </svg>
+            ) : (
+                // File + plus icon (default state)
+                <div className="flex items-center space-x-1">
+                    {/* File icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7l-5-5H4z" />
+                    </svg>
+                    {/* Plus icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            fillRule="evenodd"
+                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                </div>
+            ),
+        },
+
         { id: 'library', label: `Library` },
         { id: 'business', label: 'Optimization' },
         { id: 'context', label: 'Context' },
@@ -252,7 +309,7 @@ const Assistant = () => {
         context: [
             "Add relevant documents to improve response quality",
             "Context helps the AI understand your business better",
-            "Select documents that match your query topic"
+            "Select documents that match your prompt topic"
         ],
         library: [
             "Choose from pre-built prompts for common tasks",
@@ -260,9 +317,9 @@ const Assistant = () => {
             "Save time with our curated prompt library"
         ],
         business: [
-            "Optimize your query for better results",
+            "Optimize your prompt for better results",
             "Get suggestions to improve your prompt",
-            "Professionalize your query with one click"
+            "Professionalize your prompt with one click"
         ],
         addons: [
             "Add specific parameters to refine your results",
@@ -276,17 +333,75 @@ const Assistant = () => {
         ]
     };
 
+    const goToNextStep = () => {
+        if (currentStep < steps.length - 1) {
+            setCurrentStep(currentStep + 1);
+            // Close current modal and open next one
+            if (steps[currentStep] === 'library') {
+                setShowLibraryDropdown(false);
+            } else if (steps[currentStep] === 'business') {
+                setShowOptimizationModal(false);
+            } else if (steps[currentStep] === 'context') {
+                setShowContextModal(false);
+            }
+
+            // Open next modal
+            if (steps[currentStep + 1] === 'business') {
+                // if (!searchQuery.trim()) {
+                //     ShowCustomToast('Please enter a prompt first', 'info', 2000);
+                //     return;
+                // }
+                setShowOptimizationModal(true);
+            } else if (steps[currentStep + 1] === 'context') {
+                setShowContextModal(true);
+            } else if (steps[currentStep + 1] === 'addons') {
+                setShowAddonsModal(true);
+            }
+
+            setCurrentStep(currentStep + 1);
+        }
+    };
+
+    const goToPreviousStep = () => {
+        if (currentStep > 0) {
+            // Close current modal
+            if (steps[currentStep] === 'business') {
+                setShowOptimizationModal(false);
+            } else if (steps[currentStep] === 'context') {
+                setShowContextModal(false);
+            } else if (steps[currentStep] === 'addons') {
+                setShowAddonsModal(false);
+            }
+
+            // Open previous modal
+            if (steps[currentStep - 1] === 'library') {
+                setShowLibraryDropdown(true);
+            } else if (steps[currentStep - 1] === 'business') {
+                setShowOptimizationModal(true);
+            } else if (steps[currentStep - 1] === 'context') {
+                setShowContextModal(true);
+            }
+
+            setCurrentStep(currentStep - 1);
+        }
+    };
     const handleTabClick = async (tabId) => {
         setActiveTab(tabId);
+
+        // Update current step based on the tab clicked
+        const stepIndex = steps.indexOf(tabId);
+        if (stepIndex !== -1) {
+            setCurrentStep(stepIndex);
+        }
 
         if (tabId === 'context') {
             setShowContextModal(true);
             setHasSearched(true);
         } else if (tabId === 'business') {
-            if (!searchQuery.trim()) {
-                ShowCustomToast('Please enter a query first', 'info', 2000);
-                return;
-            }
+            // if (!searchQuery.trim()) {
+            //     ShowCustomToast('Please enter a prompt first', 'info', 2000);
+            //     return;
+            // }
             setShowOptimizationModal(true);
             setHasSearched(true);
         } else if (tabId === 'addons') {
@@ -366,72 +481,138 @@ const Assistant = () => {
             processedDescription: processedContent  // This now contains the fully processed template
         }]);
     };
+    // Upload handler
+
+
     const handleFileUpload = async (event) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
         setUploading(true);
-        const userId = localStorage.getItem('current_user_id');
+        const userId = localStorage.getItem("current_user_id");
         const uploadedDocumentIds = [];
-
-        // Store file info for display
-        const newFiles = Array.from(files).map(file => ({
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            file // keep the file object for upload
-        }));
-        setSelectedFiles([...selectedFiles, ...newFiles]);
 
         try {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const filePath = `${userId}/${Date.now()}-${file.name}`;
+                const safeFileName = sanitizeFileName(file.name);
+                const filePath = `${userId}/${Date.now()}-${safeFileName}`;
 
-                // Upload file to storage
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('uploaded-documents')
-                    .upload(filePath, file);
+                // Upload to storage
+                const { error: uploadError } = await supabase.storage
+                    .from("uploaded-documents")
+                    .upload(filePath, file, { upsert: true });
 
-                if (uploadError) throw uploadError;
+                if (uploadError) {
+                    if (uploadError.message.includes("already exists")) {
+                        ShowCustomToast(`"${file.name}" already uploaded.`, "warning");
+                        continue;
+                    }
+                    throw uploadError;
+                }
 
-                // Create record in database
+                // Insert record in DB
                 const { data: dbData, error: dbError } = await supabase
-                    .from('lib_uploaded_doc')
+                    .from("lib_uploaded_doc")
                     .insert([
                         {
                             user_id: userId,
                             uploded_doc_url: filePath,
                             document_name: file.name,
-
-                        }
+                        },
                     ])
-                    .select('id');
+                    .select("id");
 
-                if (dbError) throw dbError;
+                if (dbError) {
+                    ShowCustomToast(`Failed to save record for "${file.name}"`, "error");
+                    continue;
+                }
 
                 if (dbData && dbData[0]) {
                     uploadedDocumentIds.push(dbData[0].id);
+
+                    // Save full file info in state
+                    setSelectedFiles((prev) => [
+                        ...prev,
+                        {
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            file,
+                            filePath, // store for removal
+                            dbId: dbData[0].id, // store DB id for removal
+                        },
+                    ]);
                 }
             }
 
-            // ShowCustomToast('File(s) uploaded successfully!', 'success');
-            setSelectedUploadedDocuments([...selectedUploadedDocuments, ...uploadedDocumentIds]);
+            setSelectedUploadedDocuments([
+                ...selectedUploadedDocuments,
+                ...uploadedDocumentIds,
+            ]);
+
+            // Reset the file input after successful upload
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         } catch (error) {
-            console.log('Upload error:', error);
-            ShowCustomToast('Error uploading file(s)', 'error');
-            // Remove failed files from display
-            setSelectedFiles(selectedFiles.filter(f => !newFiles.some(nf => nf.name === f.name)));
+            console.log("Upload error:", error);
+            ShowCustomToast("Unexpected error while uploading", "error");
         } finally {
             setUploading(false);
         }
     };
-    const handleRemoveFile = (index) => {
-        const newFiles = [...selectedFiles];
-        newFiles.splice(index, 1);
-        setSelectedFiles(newFiles);
-    };
 
+    // Remove handler
+    const handleRemoveFile = async (index) => {
+        const fileToRemove = selectedFiles[index];
+        if (!fileToRemove) return;
+
+        try {
+            // 1. Delete from storage
+            if (fileToRemove.filePath) {
+                const { error: storageError } = await supabase.storage
+                    .from("uploaded-documents")
+                    .remove([fileToRemove.filePath]);
+
+                if (storageError) {
+                    console.error("Storage delete error:", storageError);
+                }
+            }
+
+            // 2. Delete from DB
+            if (fileToRemove.dbId) {
+                const { error: dbError } = await supabase
+                    .from("lib_uploaded_doc")
+                    .delete()
+                    .eq("id", fileToRemove.dbId);
+
+                if (dbError) {
+                    console.error("DB delete error:", dbError);
+                }
+            }
+
+            // 3. Update UI state
+            const newFiles = [...selectedFiles];
+            newFiles.splice(index, 1);
+            setSelectedFiles(newFiles);
+
+            setSelectedUploadedDocuments((prev) =>
+                prev.filter((id) => id !== fileToRemove.dbId)
+            );
+
+            // Reset the file input after removal
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+
+            ShowCustomToast(`File(s) removed successfully.`, "success");
+        } catch (error) {
+            console.error("Remove file error:", error);
+            ShowCustomToast("Error while removing file.", "error");
+        }
+    };
+    console.log("selectedFilesAfter", selectedFiles);
     const handleAddOnChange = (type, value, isChecked) => {
         setAddOns(prev => {
             if (type === 'objective') {
@@ -479,25 +660,25 @@ const Assistant = () => {
     };
     const handleSubmit = async () => {
         try {
-          // Check if this is the first search and show guidelines if needed
-          const hasSeenGuidelines = localStorage.getItem('hasSeenAssistantGuidelines');
-          
-          if (!hasSeenGuidelines) {
-            // Show guideline modal and set pending submit flag
-            setShowGuideline(true);
-            setPendingSubmit(true); // Mark that we have a pending submit
-            localStorage.setItem('hasSeenAssistantGuidelines', 'true');
-            return; // Exit early without submitting
-          }
-          
-          // If guidelines were already seen, proceed with normal submit
-          await executeSubmit();
-          
+            // Check if this is the first search and show guidelines if needed
+            const hasSeenGuidelines = localStorage.getItem('hasSeenAssistantGuidelines');
+
+            if (!hasSeenGuidelines) {
+                // Show guideline modal and set pending submit flag
+                setShowGuideline(true);
+                setPendingSubmit(true); // Mark that we have a pending submit
+                localStorage.setItem('hasSeenAssistantGuidelines', 'true');
+                return; // Exit early without submitting
+            }
+
+            // If guidelines were already seen, proceed with normal submit
+            await executeSubmit();
+
         } catch (error) {
-          ShowCustomToast('Something went wrong, Please try again', 'info', 2000);
-          console.log('Error sending chat:', error);
+            ShowCustomToast('Something went wrong, Please try again', 'info', 2000);
+            console.log('Error sending chat:', error);
         }
-      };
+    };
     const executeSubmit = async () => {
         try {
             setIsLoading(true);
@@ -620,84 +801,203 @@ const Assistant = () => {
             setIsLoading(false);
         }
     };
-    
-  const handleGuidelineAction = () => {
-    switch (currentGuidelineStep) {
-      case 0: // Library step
-        setShowLibraryDropdown(true);
-        setActiveTab('library');
-        setShowGuideline(false);
-        break;
-      case 1: // Optimization step
-        if (searchQuery.trim()) {
-          setShowOptimizationModal(true);
-          setShowGuideline(false);
-        } else {
-          setShowGuideline(false);
-          ShowCustomToast('Please enter a query first to optimize', 'info');
-          return;
+
+    const handleGuidelineAction = () => {
+        switch (currentGuidelineStep) {
+            case 0: // Library step
+                setShowLibraryDropdown(true);
+                setActiveTab('library');
+                setShowGuideline(false);
+                break;
+            case 1: // Optimization step
+                if (searchQuery.trim()) {
+                    setShowOptimizationModal(true);
+                    setShowGuideline(false);
+                } else {
+                    setShowGuideline(false);
+                    // ShowCustomToast('Please enter a prompt first to optimize', 'info');
+                    return;
+                }
+                break;
+            case 2: // Context step
+                setShowContextModal(true);
+                setActiveTab('context');
+                setShowGuideline(false);
+                break;
+            case 3: // Add-ons step
+                setShowAddonsModal(true);
+                setActiveTab('addons');
+                setShowGuideline(false);
+                break;
+            default:
+                break;
         }
-        break;
-      case 2: // Context step
-        setShowContextModal(true);
-        setActiveTab('context');
+
+        // Move to next step or close
+        if (currentGuidelineStep < totalGuidelineSteps - 1) {
+            setCurrentGuidelineStep(prev => prev + 1);
+        } else {
+            setShowGuideline(false);
+        }
+
+        // Don't automatically execute submit - let user manually submit again
+        setPendingSubmit(false);
+    };
+
+    const handleGuidelineSkip = () => {
+        if (currentGuidelineStep < totalGuidelineSteps - 1) {
+            setCurrentGuidelineStep(prev => prev + 1);
+        } else {
+            setShowGuideline(false);
+        }
+
+        // Don't automatically execute submit - let user manually submit again
+        setPendingSubmit(false);
+    };
+
+    const handleGuidelineClose = () => {
         setShowGuideline(false);
-        break;
-      case 3: // Add-ons step
-        setShowAddonsModal(true);
-        setActiveTab('addons');
-        setShowGuideline(false);
-        break;
-      default:
-        break;
-    }
 
-    // Move to next step or close
-    if (currentGuidelineStep < totalGuidelineSteps - 1) {
-      setCurrentGuidelineStep(prev => prev + 1);
-    } else {
-      setShowGuideline(false);
-    }
-    
-    // Don't automatically execute submit - let user manually submit again
-    setPendingSubmit(false);
-  };
+        // Don't automatically execute submit - let user manually submit again
+        setPendingSubmit(false);
+    };
+    const getAddOnsCount = () => {
+        return {
+            industry: addOns.industry.length,
+            audience: addOns.audience.length,
+            tone: addOns.tone.length,
+            objective: addOns.objective ? 1 : 0,
+            dos: addOns.advice.do.length,
+            donts: addOns.advice.dont.length
+        };
+    };
 
-  const handleGuidelineSkip = () => {
-    if (currentGuidelineStep < totalGuidelineSteps - 1) {
-      setCurrentGuidelineStep(prev => prev + 1);
-    } else {
-      setShowGuideline(false);
-    }
-    
-    // Don't automatically execute submit - let user manually submit again
-    setPendingSubmit(false);
-  };
+    // Add this component to display add-on counts
+    const AddOnsIndicator = () => {
+        const counts = getAddOnsCount();
+        const hasAddOns = Object.values(counts).some(count => count > 0);
 
-  const handleGuidelineClose = () => {
-    setShowGuideline(false);
-    
-    // Don't automatically execute submit - let user manually submit again
-    setPendingSubmit(false);
-  };
-    
+        if (!hasAddOns) return null;
+
+        return (
+            <div className="w-full max-w-[890px] -mb-2">
+                <div className="relative">
+                    <div className="overflow-x-auto whitespace-nowrap no-scrollbar pb-2 -mb-2">
+                        <div className="inline-flex gap-2 min-w-min">
+                            {/* Industry */}
+                            {counts.industry > 0 && (
+                                <span className="inline-flex items-center text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
+                                    Industry: +{counts.industry}
+                                </span>
+                            )}
+
+                            {/* Audience */}
+                            {counts.audience > 0 && (
+                                <span className="inline-flex items-center text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full">
+                                    Audience: +{counts.audience}
+                                </span>
+                            )}
+
+                            {/* Tone */}
+                            {counts.tone > 0 && (
+                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+                                    Tone: +{counts.tone}
+                                </span>
+                            )}
+
+                            {/* Objective */}
+                            {counts.objective > 0 && (
+                                <span className="inline-flex items-center text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">
+                                    Objective: +{counts.objective}
+                                </span>
+                            )}
+
+                            {/* Dos */}
+                            {counts.dos > 0 && (
+                                <span className="inline-flex items-center text-xs bg-teal-500/20 text-teal-300 px-2 py-1 rounded-full">
+                                    Dos: +{counts.dos}
+                                </span>
+                            )}
+
+                            {/* Donts */}
+                            {counts.donts > 0 && (
+                                <span className="inline-flex items-center text-xs bg-red-500/20 text-red-300 px-2 py-1 rounded-full">
+                                    Don'ts: +{counts.donts}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const handleClearSearchQuery = () => {
+        setSearchQuery(''); // This clears the search query in parent
+    };
+
+    const handleReplace = () => {
+        // Clear the search query using the callback from parent
+        if (handleClearSearchQuery) {
+            handleClearSearchQuery();
+        }
+        setShowReplaceConfirmation(false);
+    };
+
+    const handleCancelReplace = () => {
+        setShowReplaceConfirmation(false);
+    };
     // Check if submit should be enabled
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
     return (
         <div className="w-full flex" style={{ backgroundColor: appColors.primaryColor, minHeight: '90%' }}>
+
             {/* Conversations sidebar */}
             <div className="w-64 border-r border-gray-700 overflow-y-auto relative no-scrollbar" style={{ height: '85vh' }}>
+
+
                 {/* Sticky header with conversation title and new chat button */}
                 <div className="sticky top-0 z-10 bg-[#2b2b4b] p-4 pb-0">
                     <div className="flex justify-between items-center mb-3">
-                        <h2 className="text-xl font-semibold text-white -mt-[6px]">Conversations</h2>
+                        <h2 className="text-xl font-semibold text-white -mt-[6px]">Chats</h2>
                     </div>
                     <hr className="border-gray-500 -mx-4" />
                 </div>
+                <div
+                    onClick={() => {
+                        setSelectedConversation(null);
+                        setCurrentMessages([]);
+                        setSearchQuery('');
+                        setSelectedDocs([]);
+                        setSelectedDocTitles([]);
+                        setSelectedLibraryDocTitles([]);
+                        setSelectedLibraryDocs([]);
+                        setSelectedSource([]);
+                        setSelectedSourceTitles([]);
+                        setSelectedFiles([]);
+                        setSelectedUploadedDocuments([]);
+                        setAddOns({
+                            industry: [],
+                            audience: [],
+                            tone: [],
+                            objective: '',
+                            advice: {
+                                do: [],
+                                dont: []
+                            }
+                        });
+                    }}
+                    className="w-[225px] ml-4 flex space-y-2 items-center gap-3 p-3 mt-2 text-sm text-white  bg-white/10 hover:bg-white/20 rounded-md transition-colors cursor-pointer"
+                >
+                    {/* Pencil/Edit icon */}
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className="icon -ml-[3px]" aria-hidden="true"><path d="M2.6687 11.333V8.66699C2.6687 7.74455 2.66841 7.01205 2.71655 6.42285C2.76533 5.82612 2.86699 5.31731 3.10425 4.85156L3.25854 4.57617C3.64272 3.94975 4.19392 3.43995 4.85229 3.10449L5.02905 3.02149C5.44666 2.84233 5.90133 2.75849 6.42358 2.71582C7.01272 2.66769 7.74445 2.66797 8.66675 2.66797H9.16675C9.53393 2.66797 9.83165 2.96586 9.83179 3.33301C9.83179 3.70028 9.53402 3.99805 9.16675 3.99805H8.66675C7.7226 3.99805 7.05438 3.99834 6.53198 4.04102C6.14611 4.07254 5.87277 4.12568 5.65601 4.20313L5.45581 4.28906C5.01645 4.51293 4.64872 4.85345 4.39233 5.27149L4.28979 5.45508C4.16388 5.7022 4.08381 6.01663 4.04175 6.53125C3.99906 7.05373 3.99878 7.7226 3.99878 8.66699V11.333C3.99878 12.2774 3.99906 12.9463 4.04175 13.4688C4.08381 13.9833 4.16389 14.2978 4.28979 14.5449L4.39233 14.7285C4.64871 15.1465 5.01648 15.4871 5.45581 15.7109L5.65601 15.7969C5.87276 15.8743 6.14614 15.9265 6.53198 15.958C7.05439 16.0007 7.72256 16.002 8.66675 16.002H11.3337C12.2779 16.002 12.9461 16.0007 13.4685 15.958C13.9829 15.916 14.2976 15.8367 14.5447 15.7109L14.7292 15.6074C15.147 15.3511 15.4879 14.9841 15.7117 14.5449L15.7976 14.3447C15.8751 14.128 15.9272 13.8546 15.9587 13.4688C16.0014 12.9463 16.0017 12.2774 16.0017 11.333V10.833C16.0018 10.466 16.2997 10.1681 16.6667 10.168C17.0339 10.168 17.3316 10.4659 17.3318 10.833V11.333C17.3318 12.2555 17.3331 12.9879 17.2849 13.5771C17.2422 14.0993 17.1584 14.5541 16.9792 14.9717L16.8962 15.1484C16.5609 15.8066 16.0507 16.3571 15.4246 16.7412L15.1492 16.8955C14.6833 17.1329 14.1739 17.2354 13.5769 17.2842C12.9878 17.3323 12.256 17.332 11.3337 17.332H8.66675C7.74446 17.332 7.01271 17.3323 6.42358 17.2842C5.90135 17.2415 5.44665 17.1577 5.02905 16.9785L4.85229 16.8955C4.19396 16.5601 3.64271 16.0502 3.25854 15.4238L3.10425 15.1484C2.86697 14.6827 2.76534 14.1739 2.71655 13.5771C2.66841 12.9879 2.6687 12.2555 2.6687 11.333ZM13.4646 3.11328C14.4201 2.334 15.8288 2.38969 16.7195 3.28027L16.8865 3.46485C17.6141 4.35685 17.6143 5.64423 16.8865 6.53613L16.7195 6.7207L11.6726 11.7686C11.1373 12.3039 10.4624 12.6746 9.72827 12.8408L9.41089 12.8994L7.59351 13.1582C7.38637 13.1877 7.17701 13.1187 7.02905 12.9707C6.88112 12.8227 6.81199 12.6134 6.84155 12.4063L7.10132 10.5898L7.15991 10.2715C7.3262 9.53749 7.69692 8.86241 8.23218 8.32715L13.2791 3.28027L13.4646 3.11328ZM15.7791 4.2207C15.3753 3.81702 14.7366 3.79124 14.3035 4.14453L14.2195 4.2207L9.17261 9.26856C8.81541 9.62578 8.56774 10.0756 8.45679 10.5654L8.41772 10.7773L8.28296 11.7158L9.22241 11.582L9.43433 11.543C9.92426 11.432 10.3749 11.1844 10.7322 10.8271L15.7791 5.78027L15.8552 5.69629C16.185 5.29194 16.1852 4.708 15.8552 4.30371L15.7791 4.2207Z"></path></svg>
 
+                    New Chat
+                </div>
                 {/* Conversation list with padding */}
                 <div className="p-4 pt-2">
+
                     {isLoading && conversations.length === 0 ? (
                         <div className="flex justify-center items-center h-20">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -721,6 +1021,40 @@ const Assistant = () => {
 
             {/* Main chat area */}
             <div className="flex-1 flex flex-col">
+
+                {/* Prompts guide info icon */}
+                <div className="relative">
+                    <div className="flex justify-end mr-12 mt-2 z-10">  {/* push to right side */}
+                        <div
+                            className="relative group cursor-pointer flex flex-col items-center"
+                            onClick={() => setShowGuideline(true)}
+                            onMouseEnter={() => setHoveredTab('guide')}
+                            onMouseLeave={handleMouseLeave}
+                        >
+                            {/* Info icon */}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6 text-gray-400 hover:text-white transition-colors"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+
+                            {/*  tooltip */}
+                            <span className="absolute top-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 w-[100px]">
+                                Prompts guide
+                            </span>
+
+                        </div>
+                    </div>
+                </div>
                 <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
                     {/* Chat history container with scroll */}
                     <div
@@ -737,36 +1071,36 @@ const Assistant = () => {
                                             <ReactMarkdown
                                                 remarkPlugins={[remarkGfm]}
                                                 components={{
-                                                    // Headings with gradient text
+                                                    // Headings with gradient text - increased sizes
                                                     h1: ({ node, ...props }) => (
-                                                        <h1 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent" {...props} />
+                                                        <h1 className="text-3xl font-bold mb-5 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent" {...props} />
                                                     ),
                                                     h2: ({ node, ...props }) => (
-                                                        <h2 className="text-xl font-semibold mb-3 mt-4 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" {...props} />
+                                                        <h2 className="text-2xl font-semibold mb-4 mt-5 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" {...props} />
                                                     ),
                                                     h3: ({ node, ...props }) => (
-                                                        <h3 className="text-lg font-medium mb-2 mt-3 text-gray-200" {...props} />
+                                                        <h3 className="text-xl font-medium mb-3 mt-4 text-gray-200" {...props} />
                                                     ),
 
-                                                    // Lists with custom bullets
+                                                    // Lists with custom bullets - increased text size
                                                     ul: ({ node, ...props }) => (
-                                                        <ul className="list-disc pl-5 mb-4 space-y-1 marker:text-blue-400" {...props} />
+                                                        <ul className="list-disc pl-6 mb-5 space-y-2 marker:text-blue-400 text-lg" {...props} />
                                                     ),
                                                     ol: ({ node, ...props }) => (
-                                                        <ol className="list-decimal pl-5 mb-4 space-y-1 marker:text-blue-400 marker:font-bold" {...props} />
+                                                        <ol className="list-decimal pl-6 mb-5 space-y-2 marker:text-blue-400 marker:font-bold text-lg" {...props} />
                                                     ),
                                                     li: ({ node, ...props }) => (
-                                                        <li className="mb-1.5 pl-1.5" {...props} />
+                                                        <li className="mb-2 pl-2 text-lg" {...props} />
                                                     ),
 
-                                                    // Paragraphs with better line height
+                                                    // Paragraphs with better line height and increased size
                                                     p: ({ node, ...props }) => (
-                                                        <p className="leading-relaxed text-gray-100" {...props} />
+                                                        <p className="leading-relaxed text-gray-100 text-lg" {...props} />
                                                     ),
 
-                                                    // Enhanced table styling
+                                                    // Enhanced table styling with larger text
                                                     table: ({ node, ...props }) => (
-                                                        <div className="overflow-x-auto rounded-lg border border-gray-700 shadow-sm mb-4">
+                                                        <div className="overflow-x-auto rounded-lg border border-gray-700 shadow-sm mb-5 text-lg">
                                                             <table className="min-w-full divide-y divide-gray-700" {...props} />
                                                         </div>
                                                     ),
@@ -781,37 +1115,37 @@ const Assistant = () => {
                                                     ),
                                                     th: ({ node, ...props }) => (
                                                         <th
-                                                            className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider"
+                                                            className="px-5 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider"
                                                             {...props}
                                                         />
                                                     ),
                                                     td: ({ node, ...props }) => (
-                                                        <td className="px-4 py-3 text-sm text-gray-200" {...props} />
+                                                        <td className="px-5 py-4 text-gray-200" {...props} />
                                                     ),
 
-                                                    // Code blocks with syntax highlighting feel
+                                                    // Code blocks with increased text size
                                                     code: ({ node, inline, ...props }) => inline ? (
-                                                        <code className="bg-gray-700 px-1.5 py-0.5 rounded-md text-sm font-mono text-purple-300" {...props} />
+                                                        <code className="bg-gray-700 px-2 py-1 rounded-md text-base font-mono text-purple-300" {...props} />
                                                     ) : (
-                                                        <div className="bg-gray-800 rounded-lg overflow-hidden mb-4 shadow-inner">
-                                                            <pre className="p-3 overflow-x-auto text-sm font-mono text-gray-200">
+                                                        <div className="bg-gray-800 rounded-lg overflow-hidden mb-5 shadow-inner">
+                                                            <pre className="p-4 overflow-x-auto text-base font-mono text-gray-200">
                                                                 <code {...props} />
                                                             </pre>
                                                         </div>
                                                     ),
 
-                                                    // Blockquotes with elegant styling
+                                                    // Blockquotes with elegant styling and larger text
                                                     blockquote: ({ node, ...props }) => (
                                                         <blockquote
-                                                            className="border-l-4 border-blue-500 pl-4 italic text-gray-300 my-4 py-2 bg-gray-800/50 rounded-r-lg"
+                                                            className="border-l-4 border-blue-500 pl-5 italic text-gray-300 my-5 py-3 bg-gray-800/50 rounded-r-lg text-lg"
                                                             {...props}
                                                         />
                                                     ),
 
-                                                    // Links with hover effect
+                                                    // Links with hover effect and larger text
                                                     a: ({ node, ...props }) => (
                                                         <a
-                                                            className="text-blue-400 hover:text-blue-300 underline underline-offset-4 transition-colors"
+                                                            className="text-blue-400 hover:text-blue-300 underline underline-offset-4 transition-colors text-lg"
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             {...props}
@@ -838,7 +1172,7 @@ const Assistant = () => {
                         {!isLoading && currentMessages.length === 0 && (
                             <div className="h-full flex items-center justify-center">
                                 <h1 className="text-2xl font-bold" style={{ color: appColors.textColor }}>
-                                    {conversations.length === 0 ? 'How can I help you today?' : 'Choose a conversation or begin a new one!'}
+                                    {conversations.length === 0 ? 'How can I help you today?' : 'Choose a chat or begin a new one!'}
                                 </h1>
                             </div>
                         )}
@@ -846,6 +1180,8 @@ const Assistant = () => {
 
                     {/* Input area - fixed at bottom */}
                     <div className="w-full max-w-4xl sticky bottom-4 bg-transparent pt-4">
+                        {/* Add-ons indicators */}
+
                         {selectedDocTitles.length > 0 || selectedSourceTitles.length > 0 || selectedLibraryDocTitles.length > 0 || selectedFiles.length > 0 || selectedPromptTitle ? (
                             <div className="w-full max-w-[890px] mb-2"> {/* Fixed width container */}
                                 <div className="relative">
@@ -918,7 +1254,7 @@ const Assistant = () => {
                                             ))} */}
 
                                             {/* Files */}
-                                            {selectedFiles.map((file, index) => (
+                                            {/* {selectedFiles.map((file, index) => (
                                                 <span
                                                     key={index}
                                                     className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
@@ -931,7 +1267,8 @@ const Assistant = () => {
                                                         ×
                                                     </button>
                                                 </span>
-                                            ))}
+                                            ))} */}
+                                            <AddOnsIndicator />
                                         </div>
                                     </div>
 
@@ -942,15 +1279,75 @@ const Assistant = () => {
                         ) : null}
 
                         <div className="relative w-full">
-                            <input
-                                type="text"
-                                placeholder="Ask anything"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pt-3 pb-3 p-4 pr-36 rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                style={{ backgroundColor: appColors.primaryColor }}
-                                onKeyDown={(e) => e.key === 'Enter' && isSubmitEnabled && handleSubmit()}
-                            />
+
+                            <div
+                                className={`w-full pt-3 pb-3 p-4 pr-36 border border-gray-300 text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 transition-all duration-200 ${isExpanded || selectedFiles.length > 0 ? 'rounded-xl' : 'rounded-full'}`}
+                                style={{
+                                    backgroundColor: appColors.primaryColor,
+                                    minHeight: '50px',
+                                }}
+                                onClick={() => document.querySelector('textarea').focus()}
+                            >
+                                {/* File tags inside the textarea */}
+                                {selectedFiles.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        {selectedFiles.map((file, index) => (
+                                            <span
+                                                key={index}
+                                                className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-600/30 text-blue-200 rounded-full border border-blue-500/50"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                {file.name}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRemoveFile(index);
+                                                    }}
+                                                    className="ml-1 text-blue-300 hover:text-white"
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Textarea for input */}
+                                <textarea
+                                    placeholder={selectedFiles.length > 0 ? "Add a message or ask about your files..." : "Ask anything"}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full -mb-1 bg-transparent outline-none resize-none overflow-y-auto"
+                                    style={{
+                                        minHeight: selectedFiles.length > 0 ? '30px' : '20px',
+                                        maxHeight: '200px',
+                                        height: 'auto',
+                                    }}
+                                    onInput={(e) => {
+                                        e.target.style.height = 'auto';
+                                        const newHeight = Math.min(e.target.scrollHeight, 200);
+                                        e.target.style.height = newHeight + 'px';
+
+                                        const hasContent = newHeight > 30 || selectedFiles.length > 0;
+                                        setIsExpanded(hasContent);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey && isSubmitEnabled) {
+                                            e.preventDefault();
+                                            handleSubmit();
+
+                                            // Reset height and rounding after a short delay
+                                            setTimeout(() => {
+                                                e.target.style.height = 'auto';
+                                                setIsExpanded(false);
+                                            }, 100);
+                                        }
+                                    }}
+                                    rows={1}
+                                />
+                            </div>
                             <input
                                 type="file"
                                 id="file-upload"
@@ -961,18 +1358,20 @@ const Assistant = () => {
                                 ref={fileInputRef}
                             />
                             {/* Toggle Switch */}
-                            <div className="absolute right-14 top-3.5 group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
-                                <div
-                                    className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${isPromptMode ? 'bg-blue-600' : 'bg-gray-500'}`}
-                                >
+                            <div className="relative group">
+                                <div className="absolute right-14 -top-[38px] group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
                                     <div
-                                        className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${isPromptMode ? 'translate-x-4' : 'translate-x-0'}`}
-                                    ></div>
-                                </div>
+                                        className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${isPromptMode ? 'bg-blue-600' : 'bg-gray-500'}`}
+                                    >
+                                        <div
+                                            className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${isPromptMode ? 'translate-x-4' : 'translate-x-0'}`}
+                                        ></div>
+                                    </div>
 
-                                {/* Tooltip on hover */}
-                                <div className="absolute top-10 left-1/2 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    Randomness
+                                    {/* Tooltip on hover */}
+                                    <div className="absolute top-10 left-1/2 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        Randomness
+                                    </div>
                                 </div>
                             </div>
                             <div className="relative group">
@@ -986,7 +1385,7 @@ const Assistant = () => {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isLoading || !isSubmitEnabled || !searchQuery}
-                                    className="absolute right-2 -top-[43px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
+                                    className="absolute right-2 -top-[44px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
                                 >
                                     {isLoading ? (
                                         <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1015,7 +1414,7 @@ const Assistant = () => {
                     </div>
 
                     {/* Tabs with hover tooltips */}
-                    <div className="flex mt-4 flex-wrap justify-center gap-2">
+                    <div className="flex mt-4 flex-wrap justify-center gap-2 -mb-4">
                         {tabs.map((tab) => (
                             <div
                                 key={tab.id}
@@ -1061,7 +1460,9 @@ const Assistant = () => {
                                 )}
                             </div>
                         ))}
+
                     </div>
+
                 </div>
 
                 {/* Context Modal */}
@@ -1069,6 +1470,12 @@ const Assistant = () => {
                     showContextModal={showContextModal}
                     setShowContextModal={setShowContextModal}
                     onDocSelect={handleDocSelect}
+                    currentStep={currentStep}
+                    goToPreviousStep={goToPreviousStep}
+                    goToNextStep={goToNextStep}
+                    searchQueries={searchQuery}
+                    setSearchQueries={setSearchQuery}
+                    onClearSearchQuery={handleClearSearchQuery}
 
                 />
 
@@ -1079,6 +1486,12 @@ const Assistant = () => {
                     onSourceSelect={handleSourceSelect}
                     onLibraryDocsSelect={handleLibraryDocsSelect}
                     selectedLibraryDocs={selectedLibraryDocs}
+                    currentSteps={currentStep}
+                    goToPreviousStep={goToPreviousStep}
+                    goToNextStep={goToNextStep}
+                    searchQueries={searchQuery}
+                    setSearchQueries={setSearchQuery}
+                    onClearSearchQuery={handleClearSearchQuery}
                 />
 
                 {/* Optimization Modal */}
@@ -1100,31 +1513,75 @@ const Assistant = () => {
                             <hr className='-mx-6 -mt-2' />
 
                             <div className="mb-4">
-                                <h3 className="text-sm font-medium mb-1 mt-4">Original Query:</h3>
-                                <div className="bg-white/5 p-3 rounded-lg mb-3 text-sm">
-                                    <p>{searchQuery}</p>
+                                <div className="flex items-center justify-between mb-1 mt-4">
+                                    <h3 className="text-sm font-medium -mb-2">Original Prompt:</h3>
+                                    <button
+                                        onClick={() => optimizeQuery(searchQuery)}
+                                        disabled={!searchQuery.trim() || isLoading}
+                                        className={`px-3 py-1 mb-2 text-xs rounded-md transition-colors flex items-center ${!searchQuery.trim() || isLoading
+                                            ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                                            }`}
+                                    >
+                                        {isLoading ? (
+                                            <>
+                                                <svg className="animate-spin h-3 w-3 mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Optimizing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                                Optimize Prompt
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
+                                <textarea
+                                    value={searchQuery}
+                                    onChange={(e) => {
+                                        setSearchQuery(e.target.value);
+                                        // If user hasn't optimized yet, update optimized query too
+                                        if (!optimizedQuery || optimizedQuery === searchQuery) {
+                                            setOptimizedQuery(e.target.value);
+                                        }
+                                    }}
+                                    className="w-full bg-white/5 p-3 rounded-lg mb-3 text-sm min-h-[100px]"
+                                    placeholder="Enter or edit your prompt here..."
+                                />
                             </div>
 
-                            <div className="mb-4">
-                                <h3 className="text-sm font-medium mb-1">Optimized Query:</h3>
+                            <div className="mb-4 -mt-4">
+                                <h3 className="text-sm font-medium mb-1">Optimized Prompt:</h3>
                                 {isLoading ? (
                                     <div className="w-full bg-white/5 p-3 rounded-lg mb-3 text-sm min-h-[150px] flex items-center justify-center">
                                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                        Optimizing your query...
+                                        Optimizing your prompt...
                                     </div>
                                 ) : (
                                     <textarea
                                         value={optimizedQuery}
                                         onChange={(e) => setOptimizedQuery(e.target.value)}
                                         className="w-full bg-white/5 p-3 rounded-lg mb-3 text-sm min-h-[150px]"
+                                        placeholder="Optimized prompt will appear here..."
                                     />
                                 )}
                             </div>
 
                             <div className="flex justify-end gap-3">
+
                                 <button
-                                    className="px-2 py-1 text-[13px] bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                                    onClick={goToPreviousStep}
+                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                >
+                                    Previous (Library)
+                                </button>
+                                <button
+                                    className="px-4 py-1 text-[13px] bg-gray-600 hover:bg-gray-700 rounded-md transition-colors"
                                     onClick={() => {
                                         setOptimizedQuery(searchQuery);
                                         setShowOptimizationModal(false);
@@ -1133,7 +1590,9 @@ const Assistant = () => {
                                     Cancel
                                 </button>
                                 <button
-                                    className={`text-[13px] text-white px-4 py-1 rounded-md transition-colors ${!isLoading && optimizedQuery ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-500 cursor-not-allowed'
+                                    className={`px-4 py-1 text-[13px] rounded-md transition-colors ${!isLoading && optimizedQuery
+                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                        : 'bg-gray-500 text-gray-300 cursor-not-allowed'
                                         }`}
                                     disabled={isLoading || !optimizedQuery}
                                     onClick={() => {
@@ -1141,13 +1600,44 @@ const Assistant = () => {
                                         setShowOptimizationModal(false);
                                     }}
                                 >
-                                    Use Optimized Query
+                                    Use Optimized Prompt
+                                </button>
+                                <button
+                                    onClick={goToNextStep}
+                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                >
+                                    Next (Context)
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
 
+                {/* Confirmation Modal */}
+                {showReplaceConfirmation && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 z-[9999]">
+                        <div className="border border-gray-300 rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: appColors.primaryColor }}>
+                            <h3 className="text-lg font-semibold mb-4 text-white">Replace Prompt?</h3>
+                            <p className="text-sm mb-6 text-gray-400">
+                                Would you like to replace your current prompt with one from the Add-Ons?
+                            </p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-sm text-gray-800 transition-colors"
+                                    onClick={handleCancelReplace}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm text-white transition-colors"
+                                    onClick={handleReplace}
+                                >
+                                    Replace
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {/* Add-Ons Modal */}
                 {showAddonsModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
@@ -1155,7 +1645,11 @@ const Assistant = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-bold -mt-2">Optional Add-Ons</h2>
                                 <button
-                                    onClick={() => setShowAddonsModal(false)}
+                                    onClick={() => {
+                                        setShowReplaceConfirmation(false);
+                                        setShowAddonsModal(false);
+
+                                    }}
                                     className="text-white -mt-3 hover:text-gray-300 text-2xl"
                                 >
                                     &times;
@@ -1292,7 +1786,11 @@ const Assistant = () => {
 
                             <div className="flex justify-end gap-3 mt-6">
                                 <button
-                                    onClick={() => setShowAddonsModal(false)}
+                                    onClick={() => {
+                                        setShowReplaceConfirmation(false);
+                                        setShowAddonsModal(false);
+
+                                    }}
                                     className=" text-[13px] px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                                 >
                                     Cancel
@@ -1305,8 +1803,16 @@ const Assistant = () => {
                                 >
                                     Apply Add-Ons
                                 </button>
+                                <button
+                                    onClick={goToPreviousStep}
+                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                >
+                                    Previous (Context)
+                                </button>
                             </div>
+
                         </div>
+
                     </div>
                 )}
 
