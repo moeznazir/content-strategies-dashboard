@@ -126,7 +126,7 @@ const Assistant = () => {
     const [isExpanded, setIsExpanded] = useState(false);
 
 
-    const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
+    // const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
     const [addOns, setAddOns] = useState({
         industry: [],
         audience: [],
@@ -159,13 +159,13 @@ const Assistant = () => {
         }
     }, [currentMessages]);
 
-    useEffect(() => {
-        if (showAddonsModal && searchQuery.trim() !== '') {
-            setShowReplaceConfirmation(true);
-        } else {
-            setShowReplaceConfirmation(false);
-        }
-    }, [showAddonsModal]);
+    // useEffect(() => {
+    //     if (showAddonsModal && searchQuery.trim() !== '') {
+    //         setShowReplaceConfirmation(true);
+    //     } else {
+    //         setShowReplaceConfirmation(false);
+    //     }
+    // }, [showAddonsModal]);
 
     useEffect(() => {
         const fetchConversations = async () => {
@@ -552,6 +552,7 @@ const Assistant = () => {
             // Reset input
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
+                setIsExpanded(false)
             }
         } catch (error) {
             console.log("Upload error:", error);
@@ -602,7 +603,7 @@ const Assistant = () => {
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
-
+            setIsExpanded(false)
             // ShowCustomToast(`File(s) removed successfully.`, "success");
         } catch (error) {
             console.error("Remove file error:", error);
@@ -670,6 +671,7 @@ const Assistant = () => {
 
             // If guidelines were already seen, proceed with normal submit
             await executeSubmit();
+
 
         } catch (error) {
             ShowCustomToast('Something went wrong, Please try again', 'info', 2000);
@@ -929,17 +931,17 @@ const Assistant = () => {
         setSearchQuery(''); // This clears the search query in parent
     };
 
-    const handleReplace = () => {
-        // Clear the search query using the callback from parent
-        if (handleClearSearchQuery) {
-            handleClearSearchQuery();
-        }
-        setShowReplaceConfirmation(false);
-    };
+    // const handleReplace = () => {
+    //     // Clear the search query using the callback from parent
+    //     if (handleClearSearchQuery) {
+    //         handleClearSearchQuery();
+    //     }
+    //     setShowReplaceConfirmation(false);
+    // };
 
-    const handleCancelReplace = () => {
-        setShowReplaceConfirmation(false);
-    };
+    // const handleCancelReplace = () => {
+    //     setShowReplaceConfirmation(false);
+    // };
     // Check if submit should be enabled
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
@@ -1297,7 +1299,7 @@ const Assistant = () => {
                                         return (
                                             <div
                                                 key={index}
-                                                className={`relative w-20 h-20 rounded-md overflow-hidden bg-white ${file.isUploading ? "border-l-4 border-blue-500" : ""
+                                                className={`relative w-20 h-20 mb-2 rounded-md overflow-hidden bg-white ${file.isUploading ? "border-l-4 border-blue-500" : ""
                                                     }`}
                                             >
                                                 {/* Image Preview */}
@@ -1345,9 +1347,6 @@ const Assistant = () => {
                                     })}
                                 </div>
 
-
-
-
                                 {/* Textarea for input */}
                                 <textarea
                                     placeholder={selectedFiles.length > 0 ? "Add a message or ask about your files..." : "Ask anything"}
@@ -1370,13 +1369,28 @@ const Assistant = () => {
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey && isSubmitEnabled) {
                                             e.preventDefault();
+
+                                            // Store the current textarea reference
+                                            const textarea = e.currentTarget;
+
                                             handleSubmit();
 
-                                            // Reset height and rounding after a short delay
+                                            // Clear text value and reset height after a small delay
                                             setTimeout(() => {
-                                                e.target.style.height = 'auto';
+                                                setSearchQuery("");
+                                                textarea.style.height = 'auto';
                                                 setIsExpanded(false);
                                             }, 100);
+                                        }
+                                    }}
+                                    ref={(el) => {
+                                        // Add a ref to access the textarea directly
+                                        if (el) {
+                                            // Reset height when component re-renders with empty query
+                                            if (!searchQuery) {
+                                                el.style.height = 'auto';
+                                                setIsExpanded(false);
+                                            }
                                         }
                                     }}
                                     rows={1}
@@ -1666,7 +1680,7 @@ const Assistant = () => {
                 )}
 
                 {/* Confirmation Modal */}
-                {showReplaceConfirmation && (
+                {/* {showReplaceConfirmation && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 z-[9999]">
                         <div className="border border-gray-300 rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: appColors.primaryColor }}>
                             <h3 className="text-lg font-semibold mb-4 text-white">Replace Prompt?</h3>
@@ -1689,7 +1703,7 @@ const Assistant = () => {
                             </div>
                         </div>
                     </div>
-                )}
+                )} */}
                 {/* Add-Ons Modal */}
                 {showAddonsModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
@@ -1698,7 +1712,7 @@ const Assistant = () => {
                                 <h2 className="text-xl font-bold -mt-2">Optional Add-Ons</h2>
                                 <button
                                     onClick={() => {
-                                        setShowReplaceConfirmation(false);
+                                        // setShowReplaceConfirmation(false);
                                         setShowAddonsModal(false);
 
                                     }}
@@ -1837,16 +1851,16 @@ const Assistant = () => {
                             </div>
 
                             <div className="flex justify-end gap-3 mt-6">
-                                <button
+                                {/* <button
                                     onClick={() => {
-                                        setShowReplaceConfirmation(false);
+                                        // setShowReplaceConfirmation(false);
                                         setShowAddonsModal(false);
 
                                     }}
                                     className=" text-[13px] px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                                 >
                                     Cancel
-                                </button>
+                                </button> */}
                                 <button
                                     onClick={() => {
                                         setShowAddonsModal(false);

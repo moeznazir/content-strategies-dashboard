@@ -26,7 +26,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
     const isSubmitEnabled = searchQuery.trim();
     const [contentSource, setContentSource] = useState('select'); // 'voc' or 'vob'
 
-    const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
+    // const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
 
     const [selectedFilters, setSelectedFilters] = useState({
         "Video Type": [],
@@ -300,25 +300,25 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             setIsLoading(false);
         }
     };
-    useEffect(() => {
-        if (searchQueries.trim() !== '') {
-            setShowReplaceConfirmation(true);
-        } else {
-            setShowReplaceConfirmation(false);
-        }
-    }, [searchQueries, setSearchQueries]);
+    // useEffect(() => {
+    //     if (searchQueries.trim() !== '') {
+    //         setShowReplaceConfirmation(true);
+    //     } else {
+    //         setShowReplaceConfirmation(false);
+    //     }
+    // }, [searchQueries, setSearchQueries]);
 
-    const handleReplace = () => {
-        // Clear the search query using the callback from parent
-        if (onClearSearchQuery) {
-            onClearSearchQuery();
-        }
-        setShowReplaceConfirmation(false);
-    };
+    // const handleReplace = () => {
+    //     // Clear the search query using the callback from parent
+    //     if (onClearSearchQuery) {
+    //         onClearSearchQuery();
+    //     }
+    //     setShowReplaceConfirmation(false);
+    // };
 
-    const handleCancelReplace = () => {
-        setShowReplaceConfirmation(false);
-    };
+    // const handleCancelReplace = () => {
+    //     setShowReplaceConfirmation(false);
+    // };
     // Trigger search when filters change (for manual search)
     useEffect(() => {
         if (searchMethod === 'manual') {
@@ -356,7 +356,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             {showContextModal && (
                 <>
                     {/* Confirmation Modal */}
-                    {showReplaceConfirmation && (
+                    {/* {showReplaceConfirmation && (
                         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 z-[9999]">
                             <div className="border border-gray-300 rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: appColors.primaryColor }}>
                                 <h3 className="text-lg font-semibold mb-4 text-white">Replace Prompt?</h3>
@@ -379,7 +379,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                 </div>
                             </div>
                         </div>
-                    )}
+                    )} */}
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
                         <div className="border w-[800px] max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl text-white px-6 py-5 relative font-sans" style={{ backgroundColor: appColors.primaryColor }}>
 
@@ -396,14 +396,31 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                 </div>
                                 <div className="flex justify-center w-40 text-xs font-semibold text-white">
                                     <span className="text-center text-[10px]">Step 1</span>
-                                </div>
-                            </div>
+                                    <div>
 
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                            <div className='flex justify-end'>
+                                <button
+                                    onClick={() => {
+                                        setShowContextModal(false);
+                                        setIsLoading(false);
+                                    }}
+                                    className="text-white -mt-14  hover:text-gray-300 text-2xl"
+                                >
+                                    &times;
+                                </button>
+                            </div>
                             {/* Divider */}
                             <div className="border-t my-2 -mx-6"></div>
 
                             {/* Title */}
                             <h2 className="text-xl font-semibold text-center mb-3">Context</h2>
+
                             <div className="border-t my-2 -mx-6"></div>
 
                             {/* Source Document and Toggle */}
@@ -903,7 +920,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                         Previous: Optimization
                                     </div>
                                 </div>
-                                <button
+                                {/* <button
                                     className="px-4 py-1 bg-white/10 text-[13px] hover:bg-white/20 rounded-lg transition-colors"
                                     onClick={() => {
                                         clearSearchState();
@@ -911,7 +928,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                     }}
                                 >
                                     Cancel
-                                </button>
+                                </button> */}
                                 <button
                                     className={`bg-blue-600 hover:bg-blue-700 text-[13px] text-white px-4 py-1 rounded-md 
                                 ${selectedDocuments.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}

@@ -798,9 +798,23 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                         <div className="mt-1 text-xs text-[10px] font-medium">
                                             Step {step}
                                         </div>
+
                                     </div>
+
                                 ))}
+                           
                             </div>
+                            <div className='flex justify-end'>
+                                    <button
+                                        onClick={() => {
+                                            setShowLibraryDropdown(false);
+                                            setIsLoading(false);
+                                        }}
+                                        className="text-white -mt-14  hover:text-gray-300 text-2xl"
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
 
                             {/* Divider */}
                             <div className="border-t my-2 -mx-6"></div>
@@ -1528,12 +1542,12 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
                             {/* Footer */}
                             <div className="flex justify-end gap-4 mt-6">
-                                <button
+                                {/* <button
                                     className="px-4 py-1 bg-white/10 text-[13px] hover:bg-white/20 rounded-lg transition-colors"
                                     onClick={() => setShowLibraryDropdown(false)}
                                 >
                                     Cancel
-                                </button>
+                                </button> */}
 
                                 {currentStep > 1 && (
                                     <button
