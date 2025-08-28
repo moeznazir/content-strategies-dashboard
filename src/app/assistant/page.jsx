@@ -1636,7 +1636,7 @@ const Assistant = () => {
                                         Previous: Library
                                     </div>
                                 </div>
-                                <button
+                                {/* <button
                                     className="px-4 py-1 text-[13px] bg-gray-600 hover:bg-gray-700 rounded-md transition-colors"
                                     onClick={() => {
                                         setOptimizedQuery(searchQuery);
@@ -1644,7 +1644,7 @@ const Assistant = () => {
                                     }}
                                 >
                                     Cancel
-                                </button>
+                                </button> */}
                                 <button
                                     className={`px-4 py-1 text-[13px] rounded-md transition-colors ${!isLoading && optimizedQuery
                                         ? 'bg-blue-600 text-white hover:bg-blue-700'
