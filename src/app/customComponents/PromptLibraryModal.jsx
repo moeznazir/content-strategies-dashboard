@@ -3,6 +3,7 @@ import { ShowCustomToast } from './CustomToastify';
 import { appColors } from '@/lib/theme';
 import { createClient } from '@supabase/supabase-js';
 import { createSearchContextandSource } from '@/lib/services/chatServices';
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -40,6 +41,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
     const [currentStep, setCurrentStep] = useState(1);
     const [searchMethod, setSearchMethod] = useState('ai');
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchQueryStep1, setSearchQueryStep1] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitEnabled, setIsSubmitEnabled] = useState(true);
     const [hasSearchedAISearch, setHasSearchedAISearch] = useState(false);
@@ -358,10 +360,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
     };
 
     // Filter documents based on selected template
-    const getFilteredDocuments = () => {
-        if (!selectedTemplate) return [];
-        return libraryDocuments.filter(doc => doc.template_id === selectedTemplate);
-    };
+    // const getFilteredDocuments = () => {
+    //     if (!selectedTemplate) return [];
+    //     return libraryDocuments.filter(doc => doc.template_id === selectedTemplate);
+    // };
     const handleDocumentClick = (doc) => {
         if (!doc?.id) {
             console.log('Invalid document ID:', doc);
@@ -704,7 +706,31 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
         clearAllSelections();
         setShowLibraryDropdown(false);
     };
+    // Filter documents based on selected template and search query
+    const getFilteredDocuments = () => {
+        let filtered = libraryDocuments;
 
+        // Filter by department and template if selected
+        if (selectedTemplate) {
+            filtered = filtered.filter(doc => doc.template_id === selectedTemplate);
+        } else if (selectedDepartment) {
+            // If only department is selected, show all templates from that department
+            const departmentTemplates = templateLibraries[selectedDepartment] || [];
+            const templateIds = departmentTemplates.map(t => t.id);
+            filtered = filtered.filter(doc => templateIds.includes(doc.template_id));
+        }
+
+        // Filter by search query if provided
+        if (searchQueryStep1.trim()) {
+            const query = searchQueryStep1.toLowerCase().trim();
+            filtered = filtered.filter(doc =>
+                doc.title.toLowerCase().includes(query) ||
+                (documentDescriptions[doc.id] && documentDescriptions[doc.id].toLowerCase().includes(query))
+            );
+        }
+
+        return filtered;
+    };
     console.log("showReplaceConfirmation", showReplaceConfirmation);
     return (
         <div className="relative ml-[5%] mb-4 w-[220px] no-scrollbar">
@@ -786,27 +812,43 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                             <div className="border-t my-2 -mx-6"></div>
 
                             {/* Selected Template Display */}
-                            <div className="w-full !mr-4 ml-4 mt-4 mb-2">
-                                <div className="flex justify-between items-center">
-                                    <label className="text-sm font-medium leading-relaxed border p-2 py-1 rounded-md">
+                            <div className="w-full px-4 mt-4 mb-2 -ml-4">
+                                <div className="flex flex-wrap justify-between items-center gap-4">
+                                    <label className="text-sm font-medium leading-relaxed border p-2 py-1 rounded-md flex-shrink-0 min-w-[200px] max-w-full break-words">
                                         <span className="font-semibold text-[15px]">Selected Template: </span>
-                                        <span className='text-[12px]'>
+                                        <span className='text-[12px] break-words'>
                                             {selectedTemplate ?
                                                 templateLibraries[selectedDepartment]?.find(t => t.id === selectedTemplate)?.name :
                                                 'None selected'}
                                         </span>
                                     </label>
+
+
                                 </div>
                             </div>
 
                             {/* Step 1 Content - Template Selection */}
                             {currentStep === 1 && (
                                 <>
+
                                     <div className="flex justify-center">
-                                        <div className="w-full mr-4 ml-4">
+
+                                        <div className="w-full">
+                                            <div className="flex-1 min-w-[300px]">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search documents..."
+                                                    value={searchQueryStep1}
+                                                    onChange={(e) => setSearchQueryStep1(e.target.value)}
+                                                    className="w-full pt-2 pb-2 h-[38px] p-3 rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    style={{ backgroundColor: appColors.primaryColor }}
+                                                />
+                                            </div>
                                             <div className="flex gap-4 mt-4">
                                                 {/* Left Filters */}
                                                 <div className="w-1/3 space-y-3 border rounded-md p-2">
+
+
                                                     {/* Department Filter */}
                                                     <div className="border border-white/20 rounded-md overflow-hidden">
                                                         <button
@@ -823,18 +865,33 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                         <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                                                                     </div>
                                                                 ) : (
-                                                                    departmentTypes.map((dept) => (
-                                                                        <label key={dept.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                    <>
+                                                                        <label className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
                                                                             <input
                                                                                 type="checkbox"
                                                                                 name="department"
                                                                                 className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                checked={selectedDepartment === dept.id}
-                                                                                onChange={() => handleDepartmentSelect(dept.id)}
+                                                                                checked={!selectedDepartment}
+                                                                                onChange={() => {
+                                                                                    setSelectedDepartment('');
+                                                                                    setSelectedTemplate('');
+                                                                                }}
                                                                             />
-                                                                            {dept.name}
+                                                                            All Departments
                                                                         </label>
-                                                                    ))
+                                                                        {departmentTypes.map((dept) => (
+                                                                            <label key={dept.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    name="department"
+                                                                                    className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                    checked={selectedDepartment === dept.id}
+                                                                                    onChange={() => handleDepartmentSelect(dept.id)}
+                                                                                />
+                                                                                {dept.name}
+                                                                            </label>
+                                                                        ))}
+                                                                    </>
                                                                 )}
                                                             </div>
                                                         )}
@@ -857,18 +914,30 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                             <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                                                                         </div>
                                                                     ) : (
-                                                                        templateLibraries[selectedDepartment]?.map((template) => (
-                                                                            <label key={template.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                        <>
+                                                                            <label className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
                                                                                 <input
                                                                                     type="checkbox"
                                                                                     name="template"
                                                                                     className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                    checked={selectedTemplate === template.id}
-                                                                                    onChange={() => handleTemplateSelect(template.id)}
+                                                                                    checked={!selectedTemplate}
+                                                                                    onChange={() => setSelectedTemplate('')}
                                                                                 />
-                                                                                {template.name}
+                                                                                All Templates
                                                                             </label>
-                                                                        ))
+                                                                            {templateLibraries[selectedDepartment]?.map((template) => (
+                                                                                <label key={template.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        name="template"
+                                                                                        className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                        checked={selectedTemplate === template.id}
+                                                                                        onChange={() => handleTemplateSelect(template.id)}
+                                                                                    />
+                                                                                    {template.name}
+                                                                                </label>
+                                                                            ))}
+                                                                        </>
                                                                     )}
                                                                 </div>
                                                             )}
@@ -878,10 +947,13 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
                                                 {/* Right Results */}
                                                 <div className="w-2/3 rounded-md border border overflow-hidden p-2">
+                                                    {/* Search Input for Documents */}
+
+
                                                     <div className="border border-white/20 rounded-md">
                                                         <div className="p-2 border-b border-white/20">
                                                             <div className="text-blue-300 font-medium text-xs">
-                                                                Prompts{selectedTemplate && ` (${getFilteredDocuments().length})`}
+                                                                Prompts ({getFilteredDocuments().length})
                                                             </div>
                                                         </div>
                                                         <div className="h-[270px] max-h-[calc(80vh-100px)] overflow-y-auto">
@@ -889,21 +961,21 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                 <div className="flex justify-center items-center h-full">
                                                                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
                                                                 </div>
-                                                            ) : selectedTemplate ? (
+                                                            ) : (
                                                                 <>
                                                                     {getFilteredDocuments().length > 0 ? (
                                                                         getFilteredDocuments().map((doc) => (
                                                                             <div key={doc.id} className="relative">
                                                                                 <div className="flex items-center bg-[#2b2b4b] p-2 mx-2 my-1 bg-[#3b3b5b] border hover:bg-white/10 border-white/20 rounded-md cursor-pointer"
-                                                                                    onClick={() => handleLibraryDocumentClick(doc)} // Pass entire doc object
+                                                                                    onClick={() => handleLibraryDocumentClick(doc)}
                                                                                 >
                                                                                     <input
                                                                                         type="checkbox"
                                                                                         className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                                                                         checked={selectedLibraryStep1Documents.includes(doc.id)}
                                                                                         onChange={(e) => {
-                                                                                            e.stopPropagation(); // Prevent the div's onClick from firing
-                                                                                            handleLibraryDocumentClick(doc); // Pass entire doc object
+                                                                                            e.stopPropagation();
+                                                                                            handleLibraryDocumentClick(doc);
                                                                                         }}
                                                                                     />
                                                                                     <div className="flex items-center justify-between flex-1 min-w-0">
@@ -915,7 +987,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                                             }}
                                                                                             className="ml-2 text-xs text-white/50 hover:text-white"
                                                                                         >
-                                                                                            {/* {showDocumentDescription === doc.id ? '▼' : '◀'}  */}
+                                                                                            {/* {showDocumentDescription === doc.id ? '▼' : '◀'} */}
                                                                                         </button>
                                                                                     </div>
                                                                                 </div>
@@ -928,11 +1000,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                             </div>
                                                                         ))
                                                                     ) : (
-                                                                        <div className="text-center text-gray-400 text-xs p-4">No documents found for this template</div>
+                                                                        <div className="text-center text-gray-400 text-xs p-4">No documents found</div>
                                                                     )}
                                                                 </>
-                                                            ) : (
-                                                                <div className="text-center text-gray-400 text-xs p-4">Please select a template to view documents</div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -1492,12 +1562,21 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                         Use Template
                                     </button>
                                 )}
-                                <button
-                                    onClick={goToNextStep}
-                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                >
-                                    Next (Optimization)
-                                </button>
+                                {/* Next Button with Tooltip */}
+                                <div className="relative group">
+                                    <button
+                                        onClick={goToNextStep}
+                                        className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                    >
+                                        <ArrowRight className="w-4 h-4 text-white" />
+                                    </button>
+                                    {/* Tooltip */}
+                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
+                    bg-black/80 text-white text-xs rounded-md px-2 py-1 
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Next: Optimization
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

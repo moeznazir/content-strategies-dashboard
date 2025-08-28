@@ -2,6 +2,7 @@ import { createSearchContext, createSearchContextandSource } from '@/lib/service
 import { appColors } from '@/lib/theme';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -305,7 +306,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
         } else {
             setShowReplaceConfirmation(false);
         }
-    }, [ searchQueries, setSearchQueries]);
+    }, [searchQueries, setSearchQueries]);
 
     const handleReplace = () => {
         // Clear the search query using the callback from parent
@@ -887,12 +888,21 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                             </div>
                             {/* Footer */}
                             <div className="flex justify-end gap-4 mt-6">
-                                <button
-                                    onClick={goToPreviousStep}
-                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                >
-                                    Previous (Optimization)
-                                </button>
+                                {/* Previous Button with Tooltip */}
+                                <div className="relative group">
+                                    <button
+                                        onClick={goToPreviousStep}
+                                        className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                    >
+                                        <ArrowLeft className="w-4 h-4 text-white" />
+                                    </button>
+                                    {/* Tooltip */}
+                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
+                    bg-black/80 text-white text-xs rounded-md px-2 py-1 
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Previous: Optimization
+                                    </div>
+                                </div>
                                 <button
                                     className="px-4 py-1 bg-white/10 text-[13px] hover:bg-white/20 rounded-lg transition-colors"
                                     onClick={() => {
@@ -913,12 +923,21 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                 >
                                     Use Template
                                 </button>
-                                <button
-                                    onClick={goToNextStep}
-                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                >
-                                    Next (Add-Ons)
-                                </button>
+                                {/* Next Button with Tooltip */}
+                                <div className="relative group">
+                                    <button
+                                        onClick={goToNextStep}
+                                        className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                    >
+                                        <ArrowRight className="w-4 h-4 text-white" />
+                                    </button>
+                                    {/* Tooltip */}
+                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
+                    bg-black/80 text-white text-xs rounded-md px-2 py-1 
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Next: Add-Ons
+                                    </div>
+                                </div>
 
                             </div>
                         </div>
