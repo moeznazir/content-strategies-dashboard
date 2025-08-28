@@ -21,6 +21,7 @@ export default function RootLayout({ children }) {
 
     return () => clearTimeout(timer);
   }, []);
+  
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // Prevent inspect and dev tools

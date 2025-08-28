@@ -9,6 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sanitizeFileName } from '@/lib/utils';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 
 const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
@@ -140,6 +141,7 @@ const Assistant = () => {
     const [selectedUploadedDocuments, setSelectedUploadedDocuments] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const [uploadingIndexes, setUploadingIndexes] = useState([]);
     const chatContainerRef = useRef(null);
     const fileInputRef = useRef(null);
     const [showGuideline, setShowGuideline] = useState(false);
@@ -257,29 +259,7 @@ const Assistant = () => {
     const tabs = [
         {
             id: 'uplode',
-            label: uploading ? (
-                // Spinner while uploading
-                <svg
-                    className="h-5 w-5 animate-spin text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                >
-                    <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                    ></circle>
-                    <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    ></path>
-                </svg>
-            ) : (
+            label: (
                 // File + plus icon (default state)
                 <div className="flex items-center space-x-1">
                     {/* File icon */}
@@ -295,7 +275,7 @@ const Assistant = () => {
                         />
                     </svg>
                 </div>
-            ),
+            )
         },
 
         { id: 'library', label: `Library` },
@@ -335,8 +315,7 @@ const Assistant = () => {
 
     const goToNextStep = () => {
         if (currentStep < steps.length - 1) {
-            setCurrentStep(currentStep + 1);
-            // Close current modal and open next one
+            // Close current modal
             if (steps[currentStep] === 'library') {
                 setShowLibraryDropdown(false);
             } else if (steps[currentStep] === 'business') {
@@ -345,20 +324,20 @@ const Assistant = () => {
                 setShowContextModal(false);
             }
 
-            // Open next modal
-            if (steps[currentStep + 1] === 'business') {
-                // if (!searchQuery.trim()) {
-                //     ShowCustomToast('Please enter a prompt first', 'info', 2000);
-                //     return;
-                // }
+            // Open next modal and set active tab
+            const nextStep = currentStep + 1;
+            const nextTab = steps[nextStep];
+
+            setCurrentStep(nextStep);
+            setActiveTab(nextTab);
+
+            if (nextTab === 'business') {
                 setShowOptimizationModal(true);
-            } else if (steps[currentStep + 1] === 'context') {
+            } else if (nextTab === 'context') {
                 setShowContextModal(true);
-            } else if (steps[currentStep + 1] === 'addons') {
+            } else if (nextTab === 'addons') {
                 setShowAddonsModal(true);
             }
-
-            setCurrentStep(currentStep + 1);
         }
     };
 
@@ -373,16 +352,20 @@ const Assistant = () => {
                 setShowAddonsModal(false);
             }
 
-            // Open previous modal
-            if (steps[currentStep - 1] === 'library') {
+            // Open previous modal and set active tab
+            const prevStep = currentStep - 1;
+            const prevTab = steps[prevStep];
+
+            setCurrentStep(prevStep);
+            setActiveTab(prevTab);
+
+            if (prevTab === 'library') {
                 setShowLibraryDropdown(true);
-            } else if (steps[currentStep - 1] === 'business') {
+            } else if (prevTab === 'business') {
                 setShowOptimizationModal(true);
-            } else if (steps[currentStep - 1] === 'context') {
+            } else if (prevTab === 'context') {
                 setShowContextModal(true);
             }
-
-            setCurrentStep(currentStep - 1);
         }
     };
     const handleTabClick = async (tabId) => {
@@ -397,25 +380,34 @@ const Assistant = () => {
         if (tabId === 'context') {
             setShowContextModal(true);
             setHasSearched(true);
+            setShowOptimizationModal(false);
+            setShowAddonsModal(false);
+            setShowLibraryDropdown(false);
         } else if (tabId === 'business') {
-            // if (!searchQuery.trim()) {
-            //     ShowCustomToast('Please enter a prompt first', 'info', 2000);
-            //     return;
-            // }
             setShowOptimizationModal(true);
             setHasSearched(true);
+            setShowContextModal(false);
+            setShowAddonsModal(false);
+            setShowLibraryDropdown(false);
         } else if (tabId === 'addons') {
             setShowAddonsModal(true);
             setHasSearched(true);
+            setShowContextModal(false);
+            setShowOptimizationModal(false);
+            setShowLibraryDropdown(false);
         } else if (tabId === 'library') {
-            setActiveTab('library');
             setShowLibraryDropdown(!showLibraryDropdown);
             setHasSearched(true);
-            setShowAddonsDropdown(false);
-            setSelectedAddOn(null);
+            setShowContextModal(false);
+            setShowOptimizationModal(false);
+            setShowAddonsModal(false);
         } else if (tabId === 'uplode') {
             setHasSearched(true);
             fileInputRef.current.click();
+            setShowContextModal(false);
+            setShowOptimizationModal(false);
+            setShowAddonsModal(false);
+            setShowLibraryDropdown(false);
         }
     };
     const handleMouseEnter = (tabId) => {
@@ -488,30 +480,38 @@ const Assistant = () => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
 
-        setUploading(true);
         const userId = localStorage.getItem("current_user_id");
         const uploadedDocumentIds = [];
 
+        const filesArr = Array.from(files);
+
+        // Temp show in preview (with loading)
+        const newFileStates = filesArr.map((file) => ({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            file,
+            isUploading: true,
+        }));
+
+        setSelectedFiles((prev) => [...prev, ...newFileStates]);
+
         try {
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+            for (let i = 0; i < filesArr.length; i++) {
+                const file = filesArr[i];
                 const safeFileName = sanitizeFileName(file.name);
                 const filePath = `${userId}/${Date.now()}-${safeFileName}`;
 
-                // Upload to storage
+                // Upload to Supabase
                 const { error: uploadError } = await supabase.storage
                     .from("uploaded-documents")
                     .upload(filePath, file, { upsert: true });
 
                 if (uploadError) {
-                    if (uploadError.message.includes("already exists")) {
-                        ShowCustomToast(`"${file.name}" already uploaded.`, "warning");
-                        continue;
-                    }
-                    throw uploadError;
+                    ShowCustomToast(`Failed to upload "${file.name}"`, "error");
+                    continue;
                 }
-                // Insert record in DB
-                
+
                 const { data: dbData, error: dbError } = await supabase
                     .from("lib_uploaded_doc")
                     .insert([
@@ -528,40 +528,37 @@ const Assistant = () => {
                     continue;
                 }
 
-                if (dbData && dbData[0]) {
-                    uploadedDocumentIds.push(dbData[0].id);
+                const dbId = dbData?.[0]?.id;
 
-                    // Save full file info in state
-                    setSelectedFiles((prev) => [
-                        ...prev,
-                        {
-                            name: file.name,
-                            size: file.size,
-                            type: file.type,
-                            file,
-                            filePath, // store for removal
-                            dbId: dbData[0].id, // store DB id for removal
-                        },
-                    ]);
-                }
+                // Update the uploaded file state
+                setSelectedFiles((prev) =>
+                    prev.map((f) =>
+                        f.name === file.name && f.isUploading
+                            ? {
+                                ...f,
+                                filePath,
+                                dbId,
+                                isUploading: false,
+                            }
+                            : f
+                    )
+                );
+
+                uploadedDocumentIds.push(dbId);
             }
 
-            setSelectedUploadedDocuments([
-                ...selectedUploadedDocuments,
-                ...uploadedDocumentIds,
-            ]);
+            setSelectedUploadedDocuments((prev) => [...prev, ...uploadedDocumentIds]);
 
-            // Reset the file input after successful upload
+            // Reset input
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
         } catch (error) {
             console.log("Upload error:", error);
             ShowCustomToast("Unexpected error while uploading", "error");
-        } finally {
-            setUploading(false);
         }
     };
+
 
     // Remove handler
     const handleRemoveFile = async (index) => {
@@ -606,7 +603,7 @@ const Assistant = () => {
                 fileInputRef.current.value = "";
             }
 
-            ShowCustomToast(`File(s) removed successfully.`, "success");
+            // ShowCustomToast(`File(s) removed successfully.`, "success");
         } catch (error) {
             console.error("Remove file error:", error);
             ShowCustomToast("Error while removing file.", "error");
@@ -810,14 +807,10 @@ const Assistant = () => {
                 setShowGuideline(false);
                 break;
             case 1: // Optimization step
-                if (searchQuery.trim()) {
-                    setShowOptimizationModal(true);
-                    setShowGuideline(false);
-                } else {
-                    setShowGuideline(false);
-                    // ShowCustomToast('Please enter a prompt first to optimize', 'info');
-                    return;
-                }
+
+                setShowOptimizationModal(true);
+                setActiveTab('business');
+                setShowGuideline(false);
                 break;
             case 2: // Context step
                 setShowContextModal(true);
@@ -1047,10 +1040,18 @@ const Assistant = () => {
                                 />
                             </svg>
 
-                            {/*  tooltip */}
-                            <span className="absolute top-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 w-[100px]">
-                                Prompts guide
-                            </span>
+                            {/* Tooltip */}
+                            <div className="absolute top-full -ml-[210px] mt-3 z-10 hidden group-hover:block">
+                                {/* Tooltip box */}
+                                <div className="relative bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-64 right-0">
+                                    <p className="mb-0">
+                                        Let the AI Navigator walk you through a best practice prompt experience.
+                                    </p>
+                                    {/* Tooltip arrow */}
+                                    <div className="absolute -top-2 right-4 w-4 h-4 transform rotate-45 bg-[#3b3b5b]"></div>
+                                </div>
+                            </div>
+
 
                         </div>
                     </div>
@@ -1289,30 +1290,63 @@ const Assistant = () => {
                                 onClick={() => document.querySelector('textarea').focus()}
                             >
                                 {/* File tags inside the textarea */}
-                                {selectedFiles.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mb-2">
-                                        {selectedFiles.map((file, index) => (
-                                            <span
+                                <div className="flex flex-wrap gap-3">
+                                    {selectedFiles.map((file, index) => {
+                                        const imageUrl = URL.createObjectURL(file.file);
+
+                                        return (
+                                            <div
                                                 key={index}
-                                                className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-600/30 text-blue-200 rounded-full border border-blue-500/50"
+                                                className={`relative w-20 h-20 rounded-md overflow-hidden bg-white ${file.isUploading ? "border-l-4 border-blue-500" : ""
+                                                    }`}
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                {file.name}
+                                                {/* Image Preview */}
+                                                <img
+                                                    src={imageUrl}
+                                                    alt="preview"
+                                                    className="w-full h-full object-cover"
+                                                />
+
+                                                {/* Loading Overlay */}
+                                                {file.isUploading && (
+                                                    <div className="absolute inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-10">
+                                                        <svg
+                                                            className="animate-spin h-5 w-5 text-white"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <circle
+                                                                className="opacity-25"
+                                                                cx="12"
+                                                                cy="12"
+                                                                r="10"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            />
+                                                            <path
+                                                                className="opacity-75"
+                                                                fill="currentColor"
+                                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                )}
+
+                                                {/* Remove (X) Button */}
                                                 <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleRemoveFile(index);
-                                                    }}
-                                                    className="ml-1 text-blue-300 hover:text-white"
+                                                    onClick={() => handleRemoveFile(index)}
+                                                    className="absolute top-0.5 right-0.5 text-white bg-black/60 rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-black z-20"
                                                 >
                                                     ×
                                                 </button>
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+
+
 
                                 {/* Textarea for input */}
                                 <textarea
@@ -1573,13 +1607,21 @@ const Assistant = () => {
                             </div>
 
                             <div className="flex justify-end gap-3">
-
-                                <button
-                                    onClick={goToPreviousStep}
-                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                >
-                                    Previous (Library)
-                                </button>
+                                {/* Previous Button with Tooltip */}
+                                <div className="relative group">
+                                    <button
+                                        onClick={goToPreviousStep}
+                                        className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                    >
+                                        <ArrowLeft className="w-4 h-4 text-white" />
+                                    </button>
+                                    {/* Tooltip */}
+                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
+                    bg-black/80 text-white text-xs rounded-md px-2 py-1 
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Previous: Library
+                                    </div>
+                                </div>
                                 <button
                                     className="px-4 py-1 text-[13px] bg-gray-600 hover:bg-gray-700 rounded-md transition-colors"
                                     onClick={() => {
@@ -1602,12 +1644,22 @@ const Assistant = () => {
                                 >
                                     Use Optimized Prompt
                                 </button>
-                                <button
-                                    onClick={goToNextStep}
-                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                >
-                                    Next (Context)
-                                </button>
+
+                                {/* Next Button with Tooltip */}
+                                <div className="relative group">
+                                    <button
+                                        onClick={goToNextStep}
+                                        className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                    >
+                                        <ArrowRight className="w-4 h-4 text-white" />
+                                    </button>
+                                    {/* Tooltip */}
+                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
+                    bg-black/80 text-white text-xs rounded-md px-2 py-1 
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Next: Context
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1803,12 +1855,20 @@ const Assistant = () => {
                                 >
                                     Apply Add-Ons
                                 </button>
-                                <button
-                                    onClick={goToPreviousStep}
-                                    className="px-4 py-1 text-[13px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                >
-                                    Previous (Context)
-                                </button>
+                                <div className="relative group">
+                                    <button
+                                        onClick={goToPreviousStep}
+                                        className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                    >
+                                        <ArrowLeft className="w-4 h-4 text-white" />
+                                    </button>
+                                    {/* Tooltip */}
+                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
+                    bg-black/80 text-white text-xs rounded-md px-2 py-1 
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Previous: Context
+                                    </div>
+                                </div>
                             </div>
 
                         </div>
