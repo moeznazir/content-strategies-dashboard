@@ -400,9 +400,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
         setSelectedLibraryStep1Documents([docId]);
 
         // Notify parent componentto send id and title for displaying title  above the input and idon backend
-        // if (onLibraryDocsSelect) {
-        //     onLibraryDocsSelect(docId, docTitle);
-        // }
+        if (onLibraryDocsSelect) {
+            onLibraryDocsSelect(docId, docTitle);
+        }
     };
 
     console.log("onLibrrr", selectedLibraryDocs);
@@ -1588,7 +1588,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                     <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
                     bg-black/80 text-white text-xs rounded-md px-2 py-1 
                     opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                        Next: Optimization
+                                         Add Context
                                     </div>
                                 </div>
                             </div>
