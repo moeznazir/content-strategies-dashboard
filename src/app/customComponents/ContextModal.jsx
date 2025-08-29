@@ -917,7 +917,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                     <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
                     bg-black/80 text-white text-xs rounded-md px-2 py-1 
                     opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                        Previous: Optimization
+                                        Add Library
                                     </div>
                                 </div>
                                 {/* <button
@@ -952,7 +952,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                     <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
                     bg-black/80 text-white text-xs rounded-md px-2 py-1 
                     opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                        Next: Add-Ons
+                                        Apply Add-Ons
                                     </div>
                                 </div>
 

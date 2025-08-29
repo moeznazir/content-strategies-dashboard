@@ -125,6 +125,7 @@ const Assistant = () => {
     const [currentMessages, setCurrentMessages] = useState([]);
     const [isExpanded, setIsExpanded] = useState(false);
 
+    const [originalPrompt, setOriginalPrompt] = useState('');
 
     // const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
     const [addOns, setAddOns] = useState({
@@ -150,7 +151,7 @@ const Assistant = () => {
     const totalGuidelineSteps = 4;
 
     const [currentStep, setCurrentStep] = useState(0);
-    const steps = ['library', 'business', 'context', 'addons'];
+    const steps = ['library', 'context', 'addons'];
 
 
     useEffect(() => {
@@ -166,7 +167,16 @@ const Assistant = () => {
     //         setShowReplaceConfirmation(false);
     //     }
     // }, [showAddonsModal]);
+    useEffect(() => {
+        localStorage.removeItem('originalPrompt');
+    }, []);
 
+    useEffect(() => {
+        const savedOriginalPrompt = localStorage.getItem('originalPrompt');
+        if (savedOriginalPrompt) {
+            setOriginalPrompt(savedOriginalPrompt);
+        }
+    }, []);
     useEffect(() => {
         const fetchConversations = async () => {
             try {
@@ -318,8 +328,6 @@ const Assistant = () => {
             // Close current modal
             if (steps[currentStep] === 'library') {
                 setShowLibraryDropdown(false);
-            } else if (steps[currentStep] === 'business') {
-                setShowOptimizationModal(false);
             } else if (steps[currentStep] === 'context') {
                 setShowContextModal(false);
             }
@@ -331,22 +339,17 @@ const Assistant = () => {
             setCurrentStep(nextStep);
             setActiveTab(nextTab);
 
-            if (nextTab === 'business') {
-                setShowOptimizationModal(true);
-            } else if (nextTab === 'context') {
+            if (nextTab === 'context') {
                 setShowContextModal(true);
             } else if (nextTab === 'addons') {
                 setShowAddonsModal(true);
             }
         }
     };
-
     const goToPreviousStep = () => {
         if (currentStep > 0) {
             // Close current modal
-            if (steps[currentStep] === 'business') {
-                setShowOptimizationModal(false);
-            } else if (steps[currentStep] === 'context') {
+            if (steps[currentStep] === 'context') {
                 setShowContextModal(false);
             } else if (steps[currentStep] === 'addons') {
                 setShowAddonsModal(false);
@@ -361,13 +364,12 @@ const Assistant = () => {
 
             if (prevTab === 'library') {
                 setShowLibraryDropdown(true);
-            } else if (prevTab === 'business') {
-                setShowOptimizationModal(true);
             } else if (prevTab === 'context') {
                 setShowContextModal(true);
             }
         }
     };
+
     const handleTabClick = async (tabId) => {
         setActiveTab(tabId);
 
@@ -470,9 +472,15 @@ const Assistant = () => {
         setSelectedLibraryDocTitles([{
             id: docId,
             title: docTitle,
-            processedDescription: processedContent  // This now contains the fully processed template
+            processedDescription: processedContent
         }]);
     };
+
+    const handleRemoveLibraryDoc = (docId) => {
+        setSelectedLibraryDocs((prev) => prev.filter((id) => id !== docId));
+        setSelectedLibraryDocTitles((prev) => prev.filter((doc) => doc.id !== docId));
+    };
+
     // Upload handler
 
 
@@ -857,13 +865,22 @@ const Assistant = () => {
         setPendingSubmit(false);
     };
     const getAddOnsCount = () => {
+        const industry = addOns.industry.length;
+        const audience = addOns.audience.length;
+        const tone = addOns.tone.length;
+        const objective = addOns.objective ? 1 : 0;
+        const dos = addOns.advice.do.length;
+        const donts = addOns.advice.dont.length;
+        const total = industry + audience + tone + objective + dos + donts;
+
         return {
-            industry: addOns.industry.length,
-            audience: addOns.audience.length,
-            tone: addOns.tone.length,
-            objective: addOns.objective ? 1 : 0,
-            dos: addOns.advice.do.length,
-            donts: addOns.advice.dont.length
+            industry,
+            audience,
+            tone,
+            objective,
+            dos,
+            donts,
+            total
         };
     };
 
@@ -875,7 +892,7 @@ const Assistant = () => {
         if (!hasAddOns) return null;
 
         return (
-            <div className="w-full max-w-[890px] -mb-2">
+            <div className="w-full max-w-[890px]">
                 <div className="relative">
                     <div className="overflow-x-auto whitespace-nowrap no-scrollbar pb-2 -mb-2">
                         <div className="inline-flex gap-2 min-w-min">
@@ -949,50 +966,57 @@ const Assistant = () => {
         <div className="w-full flex" style={{ backgroundColor: appColors.primaryColor, minHeight: '90%' }}>
 
             {/* Conversations sidebar */}
-            <div className="w-64 border-r border-gray-700 overflow-y-auto relative no-scrollbar" style={{ height: '85vh' }}>
-
-
-                {/* Sticky header with conversation title and new chat button */}
-                <div className="sticky top-0 z-10 bg-[#2b2b4b] p-4 pb-0">
-                    <div className="flex justify-between items-center mb-3">
-                        <h2 className="text-xl font-semibold text-white -mt-[6px]">Chats</h2>
+            <div className="w-64 border-r border-gray-700 relative flex flex-col" style={{ height: "85vh" }}>
+                {/* Sticky New Chat + Header */}
+                <div className="sticky top-0 z-20 ">
+                    {/* New Chat button */}
+                    <div
+                        onClick={() => {
+                            setSelectedConversation(null);
+                            setCurrentMessages([]);
+                            setSearchQuery("");
+                            setSelectedDocs([]);
+                            setSelectedDocTitles([]);
+                            setSelectedLibraryDocTitles([]);
+                            setSelectedLibraryDocs([]);
+                            setSelectedSource([]);
+                            setSelectedSourceTitles([]);
+                            setSelectedFiles([]);
+                            setSelectedUploadedDocuments([]);
+                            setAddOns({
+                                industry: [],
+                                audience: [],
+                                tone: [],
+                                objective: "",
+                                advice: { do: [], dont: [] },
+                            });
+                        }}
+                        className="p-3 mx-4 mt-3 mb-2 flex items-center gap-3 text-sm text-white hover:bg-white/20 rounded-md transition-colors cursor-pointer"
+                    >
+                        {/* Pencil/Edit icon */}
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="icon -ml-[3px]"
+                            aria-hidden="true"
+                        >
+                            <path d="M2.6687 11.333V8.66699C2.6687 7.74455 2.66841 7.01205 2.71655 6.42285C2.76533 5.82612 2.86699 5.31731 3.10425 4.85156L3.25854 4.57617C3.64272 3.94975 4.19392 3.43995 4.85229 3.10449L5.02905 3.02149C5.44666 2.84233 5.90133 2.75849 6.42358 2.71582C7.01272 2.66769 7.74445 2.66797 8.66675 2.66797H9.16675C9.53393 2.66797 9.83165 2.96586 9.83179 3.33301C9.83179 3.70028 9.53402 3.99805 9.16675 3.99805H8.66675C7.7226 3.99805 7.05438 3.99834 6.53198 4.04102C6.14611 4.07254 5.87277 4.12568 5.65601 4.20313L5.45581 4.28906C5.01645 4.51293 4.64872 4.85345 4.39233 5.27149L4.28979 5.45508C4.16388 5.7022 4.08381 6.01663 4.04175 6.53125C3.99906 7.05373 3.99878 7.7226 3.99878 8.66699V11.333C3.99878 12.2774 3.99906 12.9463 4.04175 13.4688C4.08381 13.9833 4.16389 14.2978 4.28979 14.5449L4.39233 14.7285C4.64871 15.1465 5.01648 15.4871 5.45581 15.7109L5.65601 15.7969C5.87276 15.8743 6.14614 15.9265 6.53198 15.958C7.05439 16.0007 7.72256 16.002 8.66675 16.002H11.3337C12.2779 16.002 12.9461 16.0007 13.4685 15.958C13.9829 15.916 14.2976 15.8367 14.5447 15.7109L14.7292 15.6074C15.147 15.3511 15.4879 14.9841 15.7117 14.5449L15.7976 14.3447C15.8751 14.128 15.9272 13.8546 15.9587 13.4688C16.0014 12.9463 16.0017 12.2774 16.0017 11.333V10.833C16.0018 10.466 16.2997 10.1681 16.6667 10.168C17.0339 10.168 17.3316 10.4659 17.3318 10.833V11.333C17.3318 12.2555 17.3331 12.9879 17.2849 13.5771C17.2422 14.0993 17.1584 14.5541 16.9792 14.9717L16.8962 15.1484C16.5609 15.8066 16.0507 16.3571 15.4246 16.7412L15.1492 16.8955C14.6833 17.1329 14.1739 17.2354 13.5769 17.2842C12.9878 17.3323 12.256 17.332 11.3337 17.332H8.66675C7.74446 17.332 7.01271 17.3323 6.42358 17.2842C5.90135 17.2415 5.44665 17.1577 5.02905 16.9785L4.85229 16.8955C4.19396 16.5601 3.64271 16.0502 3.25854 15.4238L3.10425 15.1484C2.86697 14.6827 2.76534 14.1739 2.71655 13.5771C2.66841 12.9879 2.6687 12.2555 2.6687 11.333ZM13.4646 3.11328C14.4201 2.334 15.8288 2.38969 16.7195 3.28027L16.8865 3.46485C17.6141 4.35685 17.6143 5.64423 16.8865 6.53613L16.7195 6.7207L11.6726 11.7686C11.1373 12.3039 10.4624 12.6746 9.72827 12.8408L9.41089 12.8994L7.59351 13.1582C7.38637 13.1877 7.17701 13.1187 7.02905 12.9707C6.88112 12.8227 6.81199 12.6134 6.84155 12.4063L7.10132 10.5898L7.15991 10.2715C7.3262 9.53749 7.69692 8.86241 8.23218 8.32715L13.2791 3.28027L13.4646 3.11328ZM15.7791 4.2207C15.3753 3.81702 14.7366 3.79124 14.3035 4.14453L14.2195 4.2207L9.17261 9.26856C8.81541 9.62578 8.56774 10.0756 8.45679 10.5654L8.41772 10.7773L8.28296 11.7158L9.22241 11.582L9.43433 11.543C9.92426 11.432 10.3749 11.1844 10.7322 10.8271L15.7791 5.78027L15.8552 5.69629C16.185 5.29194 16.1852 4.708 15.8552 4.30371L15.7791 4.2207Z"></path>
+                        </svg>
+                        New Chat
                     </div>
-                    <hr className="border-gray-500 -mx-4" />
-                </div>
-                <div
-                    onClick={() => {
-                        setSelectedConversation(null);
-                        setCurrentMessages([]);
-                        setSearchQuery('');
-                        setSelectedDocs([]);
-                        setSelectedDocTitles([]);
-                        setSelectedLibraryDocTitles([]);
-                        setSelectedLibraryDocs([]);
-                        setSelectedSource([]);
-                        setSelectedSourceTitles([]);
-                        setSelectedFiles([]);
-                        setSelectedUploadedDocuments([]);
-                        setAddOns({
-                            industry: [],
-                            audience: [],
-                            tone: [],
-                            objective: '',
-                            advice: {
-                                do: [],
-                                dont: []
-                            }
-                        });
-                    }}
-                    className="w-[225px] ml-4 flex space-y-2 items-center gap-3 p-3 mt-2 text-sm text-white  bg-white/10 hover:bg-white/20 rounded-md transition-colors cursor-pointer"
-                >
-                    {/* Pencil/Edit icon */}
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className="icon -ml-[3px]" aria-hidden="true"><path d="M2.6687 11.333V8.66699C2.6687 7.74455 2.66841 7.01205 2.71655 6.42285C2.76533 5.82612 2.86699 5.31731 3.10425 4.85156L3.25854 4.57617C3.64272 3.94975 4.19392 3.43995 4.85229 3.10449L5.02905 3.02149C5.44666 2.84233 5.90133 2.75849 6.42358 2.71582C7.01272 2.66769 7.74445 2.66797 8.66675 2.66797H9.16675C9.53393 2.66797 9.83165 2.96586 9.83179 3.33301C9.83179 3.70028 9.53402 3.99805 9.16675 3.99805H8.66675C7.7226 3.99805 7.05438 3.99834 6.53198 4.04102C6.14611 4.07254 5.87277 4.12568 5.65601 4.20313L5.45581 4.28906C5.01645 4.51293 4.64872 4.85345 4.39233 5.27149L4.28979 5.45508C4.16388 5.7022 4.08381 6.01663 4.04175 6.53125C3.99906 7.05373 3.99878 7.7226 3.99878 8.66699V11.333C3.99878 12.2774 3.99906 12.9463 4.04175 13.4688C4.08381 13.9833 4.16389 14.2978 4.28979 14.5449L4.39233 14.7285C4.64871 15.1465 5.01648 15.4871 5.45581 15.7109L5.65601 15.7969C5.87276 15.8743 6.14614 15.9265 6.53198 15.958C7.05439 16.0007 7.72256 16.002 8.66675 16.002H11.3337C12.2779 16.002 12.9461 16.0007 13.4685 15.958C13.9829 15.916 14.2976 15.8367 14.5447 15.7109L14.7292 15.6074C15.147 15.3511 15.4879 14.9841 15.7117 14.5449L15.7976 14.3447C15.8751 14.128 15.9272 13.8546 15.9587 13.4688C16.0014 12.9463 16.0017 12.2774 16.0017 11.333V10.833C16.0018 10.466 16.2997 10.1681 16.6667 10.168C17.0339 10.168 17.3316 10.4659 17.3318 10.833V11.333C17.3318 12.2555 17.3331 12.9879 17.2849 13.5771C17.2422 14.0993 17.1584 14.5541 16.9792 14.9717L16.8962 15.1484C16.5609 15.8066 16.0507 16.3571 15.4246 16.7412L15.1492 16.8955C14.6833 17.1329 14.1739 17.2354 13.5769 17.2842C12.9878 17.3323 12.256 17.332 11.3337 17.332H8.66675C7.74446 17.332 7.01271 17.3323 6.42358 17.2842C5.90135 17.2415 5.44665 17.1577 5.02905 16.9785L4.85229 16.8955C4.19396 16.5601 3.64271 16.0502 3.25854 15.4238L3.10425 15.1484C2.86697 14.6827 2.76534 14.1739 2.71655 13.5771C2.66841 12.9879 2.6687 12.2555 2.6687 11.333ZM13.4646 3.11328C14.4201 2.334 15.8288 2.38969 16.7195 3.28027L16.8865 3.46485C17.6141 4.35685 17.6143 5.64423 16.8865 6.53613L16.7195 6.7207L11.6726 11.7686C11.1373 12.3039 10.4624 12.6746 9.72827 12.8408L9.41089 12.8994L7.59351 13.1582C7.38637 13.1877 7.17701 13.1187 7.02905 12.9707C6.88112 12.8227 6.81199 12.6134 6.84155 12.4063L7.10132 10.5898L7.15991 10.2715C7.3262 9.53749 7.69692 8.86241 8.23218 8.32715L13.2791 3.28027L13.4646 3.11328ZM15.7791 4.2207C15.3753 3.81702 14.7366 3.79124 14.3035 4.14453L14.2195 4.2207L9.17261 9.26856C8.81541 9.62578 8.56774 10.0756 8.45679 10.5654L8.41772 10.7773L8.28296 11.7158L9.22241 11.582L9.43433 11.543C9.92426 11.432 10.3749 11.1844 10.7322 10.8271L15.7791 5.78027L15.8552 5.69629C16.185 5.29194 16.1852 4.708 15.8552 4.30371L15.7791 4.2207Z"></path></svg>
 
-                    New Chat
+                    {/* Chats header */}
+                    <div className="px-4">
+                        <h2 className="text-xl font-semibold text-white mb-2 ml-2">Chats</h2>
+                        <hr className="border-gray-500" />
+                    </div>
                 </div>
-                {/* Conversation list with padding */}
-                <div className="p-4 pt-2">
 
+                {/* Scrollable conversation list */}
+                <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2">
                     {isLoading && conversations.length === 0 ? (
                         <div className="flex justify-center items-center h-20">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -1002,11 +1026,15 @@ const Assistant = () => {
                             {conversations.map((conv) => (
                                 <div
                                     key={conv.conversation_id}
-                                    className={`p-3 rounded-lg cursor-pointer ${selectedConversation === conv.conversation_id ? 'bg-blue-600' : 'bg-white/10 hover:bg-white/20'}`}
+                                    className={`p-3 rounded-lg cursor-pointer ${selectedConversation === conv.conversation_id
+                                        ? "bg-blue-600"
+                                        : "hover:bg-white/20"
+                                        }`}
                                     onClick={() => handleConversationSelect(conv.conversation_id)}
                                 >
-                                    <p className="text-white text-sm truncate">{conv.title || `Conversation ${conv.conversation_id.slice(-4)}`}</p>
-                                    {/* <p className="text-xs text-white/60">{new Date(conv.created_at || Date.now()).toLocaleString()}</p> */}
+                                    <p className="text-white text-sm truncate">
+                                        {conv.title || `Conversation ${conv.conversation_id.slice(-4)}`}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -1014,56 +1042,17 @@ const Assistant = () => {
                 </div>
             </div>
 
+
             {/* Main chat area */}
             <div className="flex-1 flex flex-col">
 
-                {/* Prompts guide info icon */}
-                <div className="relative">
-                    <div className="flex justify-end mr-12 mt-2 z-10">  {/* push to right side */}
-                        <div
-                            className="relative group cursor-pointer flex flex-col items-center"
-                            onClick={() => setShowGuideline(true)}
-                            onMouseEnter={() => setHoveredTab('guide')}
-                            onMouseLeave={handleMouseLeave}
-                        >
-                            {/* Info icon */}
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6 text-gray-400 hover:text-white transition-colors"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                            </svg>
 
-                            {/* Tooltip */}
-                            <div className="absolute top-full -ml-[210px] mt-3 z-10 hidden group-hover:block">
-                                {/* Tooltip box */}
-                                <div className="relative bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-64 right-0">
-                                    <p className="mb-0">
-                                        Let the AI Navigator walk you through a best practice prompt experience.
-                                    </p>
-                                    {/* Tooltip arrow */}
-                                    <div className="absolute -top-2 right-4 w-4 h-4 transform rotate-45 bg-[#3b3b5b]"></div>
-                                </div>
-                            </div>
-
-
-                        </div>
-                    </div>
-                </div>
                 <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
                     {/* Chat history container with scroll */}
                     <div
                         ref={chatContainerRef}
-                        className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar"
-                        style={{ maxHeight: '65vh' }}
+                        className={`w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar items-center`}
+                        style={{ maxHeight: '52vh' }}
                     >
                         {/* Always show existing messages */}
                         {currentMessages.length > 0 && (
@@ -1173,7 +1162,7 @@ const Assistant = () => {
 
                         {/* Show empty state if no messages */}
                         {!isLoading && currentMessages.length === 0 && (
-                            <div className="h-full flex items-center justify-center">
+                            <div className="h-full flex items-center justify-center mb-4">
                                 <h1 className="text-2xl font-bold" style={{ color: appColors.textColor }}>
                                     {conversations.length === 0 ? 'How can I help you today?' : 'Choose a chat or begin a new one!'}
                                 </h1>
@@ -1184,164 +1173,171 @@ const Assistant = () => {
                     {/* Input area - fixed at bottom */}
                     <div className="w-full max-w-4xl sticky bottom-4 bg-transparent pt-4">
                         {/* Add-ons indicators */}
+                        {(selectedDocTitles.length > 0 || selectedSourceTitles.length > 0 ||
+                            selectedLibraryDocTitles.length > 0 || selectedFiles.length > 0 ||
+                            selectedPromptTitle || getAddOnsCount().total > 0) && (
+                                <div className="w-full max-w-[890px] mb-2">
+                                    <div className="relative">
+                                        {/* Scrollable area for all tags and AddOns */}
+                                        <div className="overflow-x-auto whitespace-nowrap no-scrollbar pb-2 -mb-2">
+                                            <div className="inline-flex gap-2 min-w-min">
+                                                {/* Prompt Title */}
+                                                {selectedPromptTitle && (
+                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+                                                        {selectedPromptTitle}
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedPromptId(null);
+                                                                setSelectedPromptTitle('');
+                                                                setSearchQuery('');
+                                                            }}
+                                                            className="ml-1 text-blue-100 hover:text-white"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                )}
 
-                        {selectedDocTitles.length > 0 || selectedSourceTitles.length > 0 || selectedLibraryDocTitles.length > 0 || selectedFiles.length > 0 || selectedPromptTitle ? (
-                            <div className="w-full max-w-[890px] mb-2"> {/* Fixed width container */}
-                                <div className="relative">
-                                    {/* Scrollable area for all tags */}
-                                    <div className="overflow-x-auto whitespace-nowrap no-scrollbar pb-2 -mb-2">
-                                        <div className="inline-flex gap-2 min-w-min">
-                                            {/* Prompt Title */}
-                                            {selectedPromptTitle && (
-                                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
-                                                    {selectedPromptTitle}
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedPromptId(null);
-                                                            setSelectedPromptTitle('');
-                                                            setSearchQuery('');
-                                                        }}
-                                                        className="ml-1 text-blue-100 hover:text-white"
+                                                {/* Document Titles */}
+                                                {selectedDocTitles.map(doc => (
+                                                    <span
+                                                        key={doc.id}
+                                                        className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full"
                                                     >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            )}
+                                                        {doc.title}
+                                                        <button
+                                                            onClick={() => handleDocSelect(doc.id, doc.title)}
+                                                            className="ml-1 text-blue-100 hover:text-white"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                ))}
 
-                                            {/* Document Titles */}
-                                            {selectedDocTitles.map(doc => (
-                                                <span
-                                                    key={doc.id}
-                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                                >
-                                                    {doc.title}
-                                                    <button
-                                                        onClick={() => handleDocSelect(doc.id, doc.title)}
-                                                        className="ml-1 text-blue-500 hover:text-blue-700"
+                                                {/* Source Titles */}
+                                                {selectedSourceTitles.map(source => (
+                                                    <span
+                                                        key={source.id}
+                                                        className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full"
                                                     >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            ))}
+                                                        {source.title}
+                                                        <button
+                                                            onClick={() => handleSourceSelect(source.id, source.title)}
+                                                            className="ml-1 text-blue-100 hover:text-white"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                ))}
 
-                                            {/* Source Titles */}
-                                            {selectedSourceTitles.map(source => (
-                                                <span
-                                                    key={source.id}
-                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                                >
-                                                    {source.title}
-                                                    <button
-                                                        onClick={() => handleSourceSelect(source.id, source.title)}
-                                                        className="ml-1 text-blue-500 hover:text-blue-700"
+                                                {/* Library Document Titles */}
+                                                {/* {selectedLibraryDocTitles.map(source => (
+                                                    <span
+                                                        key={source.id}
+                                                        className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
                                                     >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            ))}
+                                                        {source.title}
+                                                        <button
+                                                              onClick={() => handleRemoveLibraryDoc(source.id)}
+                                                            className="ml-1 text-blue-500 hover:text-blue-700"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                ))} */}
 
-                                            {/* Library Document Titles */}
-                                            {/* {selectedLibraryDocTitles.map(source => (
-                                                <span
-                                                    key={source.id}
-                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                                >
-                                                    {source.title}
-                                                    <button
-                                                        onClick={() => handleLibraryDocsSelect(source.id, source.title)}
-                                                        className="ml-1 text-blue-500 hover:text-blue-700"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            ))} */}
 
-                                            {/* Files */}
-                                            {/* {selectedFiles.map((file, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                                >
-                                                    {file.name}
-                                                    <button
-                                                        onClick={() => handleRemoveFile(index)}
-                                                        className="ml-1 text-blue-500 hover:text-blue-700"
+                                                {/* Files */}
+                                                {/* {selectedFiles.map((file, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full"
                                                     >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            ))} */}
-                                            <AddOnsIndicator />
+                                                        {file.name}
+                                                        <button
+                                                            onClick={() => handleRemoveFile(index)}
+                                                            className="ml-1 text-blue-100 hover:text-white"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                ))} */}
+
+                                                {/* AddOns indicators - inline with tags */}
+                                                <AddOnsIndicator />
+                                            </div>
                                         </div>
                                     </div>
-
-                                    {/* Optional: Fade effect to indicate scrollable area */}
-                                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#your-bg-color] to-transparent pointer-events-none"></div>
                                 </div>
-                            </div>
-                        ) : null}
+                            )}
 
-                        <div className="relative w-full">
+                        <div className={`relative w-full`}>
 
                             <div
                                 className={`w-full pt-3 pb-3 p-4 pr-36 border border-gray-300 text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 transition-all duration-200 ${isExpanded || selectedFiles.length > 0 ? 'rounded-xl' : 'rounded-full'}`}
                                 style={{
                                     backgroundColor: appColors.primaryColor,
                                     minHeight: '50px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center', // Added for vertical centering
                                 }}
                                 onClick={() => document.querySelector('textarea').focus()}
                             >
                                 {/* File tags inside the textarea */}
-                                <div className="flex flex-wrap gap-3">
+                                <div className="flex gap-3 overflow-x-auto whitespace-nowrap pb-2 no-scrollbar">
                                     {selectedFiles.map((file, index) => {
-                                        const imageUrl = URL.createObjectURL(file.file);
+                                        const extension = file.file.name.split(".").pop().toLowerCase();
+                                        const fileSize = (file.file.size / 1024).toFixed(1) + " KB";
+
+                                        const getFileIcon = (ext) => {
+                                            switch (ext) {
+                                                case "js": return "🟨 <>";       // JavaScript
+                                                case "css": return "🎨 { }";     // CSS
+                                                case "html": return "🌐 <>";     // HTML
+                                                case "json": return "🟦 {}";     // JSON
+                                                case "pdf": return "📕";         // PDF
+                                                case "doc":
+                                                case "docx": return "📄";        // Word
+                                                case "xls":
+                                                case "xlsx": return "📊";        // Excel
+                                                case "zip": return "🟪";         // Zip
+                                                default: return "📁";            // Generic file
+                                            }
+                                        };
 
                                         return (
                                             <div
                                                 key={index}
-                                                className={`relative w-20 h-20 mb-2 rounded-md overflow-hidden bg-white ${file.isUploading ? "border-l-4 border-blue-500" : ""
-                                                    }`}
+                                                className="inline-flex mb-1 items-center gap-3 bg-neutral-800   text-white px-4 py-2 rounded-xl shadow-md relative min-w-[220px] max-w-xs"
                                             >
-                                                {/* Image Preview */}
-                                                <img
-                                                    src={imageUrl}
-                                                    alt="preview"
-                                                    className="w-full h-full object-cover"
-                                                />
+                                                {/* File Icon */}
+                                                <div className="text-xl">
+                                                    {getFileIcon(extension)}
+                                                </div>
 
-                                                {/* Loading Overlay */}
+                                                {/* File Info */}
+                                                <div className="flex flex-col flex-1 min-w-0">
+                                                    <span className="text-sm font-medium truncate ">{file.file.name}</span>
+                                                    <span className="text-xs text-gray-300">
+                                                        {extension.toUpperCase()} • {fileSize}
+                                                    </span>
+                                                </div>
+
+                                                {/* Remove Button */}
+                                                <button
+          onClick={() => handleRemoveFile(index)}
+          className="ml-0 -mr-2 -mt-4 text-xs bg-white/20 hover:bg-white/30 rounded-full w-5 h-5 flex items-center justify-center"
+        >
+          ×
+        </button>
+                                                {/* Loader Overlay */}
                                                 {file.isUploading && (
-                                                    <div className="absolute inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-10">
-                                                        <svg
-                                                            className="animate-spin h-5 w-5 text-white"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <circle
-                                                                className="opacity-25"
-                                                                cx="12"
-                                                                cy="12"
-                                                                r="10"
-                                                                stroke="currentColor"
-                                                                strokeWidth="4"
-                                                            />
-                                                            <path
-                                                                className="opacity-75"
-                                                                fill="currentColor"
-                                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                                            />
-                                                        </svg>
+                                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
+                                                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                                     </div>
                                                 )}
 
-                                                {/* Remove (X) Button */}
-                                                <button
-                                                    onClick={() => handleRemoveFile(index)}
-                                                    className="absolute top-0.5 right-0.5 text-white bg-black/60 rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-black z-20"
-                                                >
-                                                    ×
-                                                </button>
                                             </div>
                                         );
                                     })}
@@ -1352,10 +1348,10 @@ const Assistant = () => {
                                     placeholder={selectedFiles.length > 0 ? "Add a message or ask about your files..." : "Ask anything"}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full -mb-1 bg-transparent outline-none resize-none overflow-y-auto"
+                                    className="w-full  -mt-[10px] bg-transparent outline-none resize-none overflow-y-auto no-scrollbar"
                                     style={{
                                         minHeight: selectedFiles.length > 0 ? '30px' : '20px',
-                                        maxHeight: '200px',
+                                        maxHeight: '100px',
                                         height: 'auto',
                                     }}
                                     onInput={(e) => {
@@ -1384,16 +1380,21 @@ const Assistant = () => {
                                         }
                                     }}
                                     ref={(el) => {
-                                        // Add a ref to access the textarea directly
                                         if (el) {
-                                            // Reset height when component re-renders with empty query
+                                            // ✅ On re-render, keep expanded if text is already long
                                             if (!searchQuery) {
-                                                el.style.height = 'auto';
+                                                el.style.height = "auto";
                                                 setIsExpanded(false);
+                                            } else {
+                                                el.style.height = "auto";
+                                                const newHeight = Math.min(el.scrollHeight, 200);
+                                                el.style.height = newHeight + "px";
+                                                setIsExpanded(newHeight > 30 || selectedFiles.length > 0);
                                             }
                                         }
                                     }}
                                     rows={1}
+
                                 />
                             </div>
                             <input
@@ -1405,9 +1406,46 @@ const Assistant = () => {
                                 accept="*"
                                 ref={fileInputRef}
                             />
-                            {/* Toggle Switch */}
-                            <div className="relative group">
-                                <div className="absolute right-14 -top-[38px] group cursor-pointer" onClick={() => setIsPromptMode((prev) => !prev)}>
+                            {/* Toggle Switch + Info Icon Row */}
+                            <div className="flex items-center gap-2 absolute right-14 -mt-[37px]">
+                                {/* Info Icon beside toggle */}
+                                <div
+                                    className="relative group cursor-pointer flex flex-col items-center"
+                                    onClick={() => setShowGuideline(true)}
+                                    onMouseEnter={() => setHoveredTab('guide')}
+                                    onMouseLeave={handleMouseLeave}
+                                >
+                                    {/* Info icon */}
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-6 w-6 text-gray-400 hover:text-white transition-colors"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+
+                                    {/* Tooltip */}
+                                    <div className="absolute bottom-full  -translate-x-1/2 mb-3 ml-[50px] z-10 hidden group-hover:block">
+                                        <div className="relative bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-64">
+                                            <p className="mb-0">
+                                                Let the AI Navigator walk you through a best practice prompt experience.
+                                            </p>
+                                            <div className="absolute -bottom-2 right-4 w-4 h-4 transform rotate-45 bg-[#3b3b5b]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Toggle Switch */}
+                                <div
+                                    className="relative group cursor-pointer"
+                                    onClick={() => setIsPromptMode((prev) => !prev)}
+                                >
                                     <div
                                         className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors duration-300 ${isPromptMode ? 'bg-blue-600' : 'bg-gray-500'}`}
                                     >
@@ -1421,7 +1459,10 @@ const Assistant = () => {
                                         Randomness
                                     </div>
                                 </div>
+
+
                             </div>
+
                             <div className="relative group">
                                 {/* Tooltip */}
                                 {!searchQuery && (
@@ -1433,7 +1474,7 @@ const Assistant = () => {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isLoading || !isSubmitEnabled || !searchQuery}
-                                    className="absolute right-2 -top-[44px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
+                                    className="absolute right-2 -top-[42.5px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
                                 >
                                     {isLoading ? (
                                         <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1590,17 +1631,30 @@ const Assistant = () => {
                                     </button>
                                 </div>
                                 <textarea
-                                    value={searchQuery}
+                                    value={originalPrompt ? originalPrompt : searchQuery}
                                     onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        // If user hasn't optimized yet, update optimized query too
-                                        if (!optimizedQuery || optimizedQuery === searchQuery) {
-                                            setOptimizedQuery(e.target.value);
+                                        const value = e.target.value;
+
+                                        if (originalPrompt) {
+                                            // agar originalPrompt show ho raha hai, to user edit kare to usi ko update karo
+                                            setOriginalPrompt(value);
+                                            localStorage.setItem("originalPrompt", value);
+                                        } else {
+                                            // warna searchQuery update hoti rahe
+                                            setSearchQuery(value);
+
+                                            // sirf pehli dafa hi originalPrompt set karo
+                                            if (value.trim()) {
+                                                setOriginalPrompt(value);
+                                                localStorage.setItem("originalPrompt", value);
+                                            }
                                         }
                                     }}
                                     className="w-full bg-white/5 p-3 rounded-lg mb-3 text-sm min-h-[100px]"
                                     placeholder="Enter or edit your prompt here..."
                                 />
+
+
                             </div>
 
                             <div className="mb-4 -mt-4">
@@ -1622,20 +1676,20 @@ const Assistant = () => {
 
                             <div className="flex justify-end gap-3">
                                 {/* Previous Button with Tooltip */}
-                                <div className="relative group">
-                                    <button
+                                {/* <div className="relative group"> */}
+                                {/* <button
                                         onClick={goToPreviousStep}
                                         className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
                                     >
                                         <ArrowLeft className="w-4 h-4 text-white" />
-                                    </button>
-                                    {/* Tooltip */}
-                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
+                                    </button> */}
+                                {/* Tooltip */}
+                                {/* <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
                     bg-black/80 text-white text-xs rounded-md px-2 py-1 
                     opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                        Previous: Library
-                                    </div>
-                                </div>
+                                        Add Library
+                                    </div> */}
+                                {/* </div> */}
                                 {/* <button
                                     className="px-4 py-1 text-[13px] bg-gray-600 hover:bg-gray-700 rounded-md transition-colors"
                                     onClick={() => {
@@ -1652,28 +1706,35 @@ const Assistant = () => {
                                         }`}
                                     disabled={isLoading || !optimizedQuery}
                                     onClick={() => {
-                                        setSearchQuery(optimizedQuery);
+                                        // Sirf agar originalPrompt empty hai to set karo
+                                        if (!originalPrompt) {
+                                            localStorage.setItem("originalPrompt", searchQuery);
+                                            setOriginalPrompt(searchQuery);
+                                        }
+
+                                        setSearchQuery(optimizedQuery); // optimized prompt ko current search bana do
                                         setShowOptimizationModal(false);
                                     }}
+
                                 >
                                     Use Optimized Prompt
                                 </button>
 
                                 {/* Next Button with Tooltip */}
-                                <div className="relative group">
-                                    <button
+                                {/* <div className="relative group"> */}
+                                {/* <button
                                         onClick={goToNextStep}
                                         className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
                                     >
                                         <ArrowRight className="w-4 h-4 text-white" />
-                                    </button>
-                                    {/* Tooltip */}
-                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
+                                    </button> */}
+                                {/* Tooltip */}
+                                {/* <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
                     bg-black/80 text-white text-xs rounded-md px-2 py-1 
                     opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                        Next: Context
-                                    </div>
-                                </div>
+                                        Add Context
+                                    </div> */}
+                                {/* </div> */}
                             </div>
                         </div>
                     </div>
@@ -1880,7 +1941,7 @@ const Assistant = () => {
                                     <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
                     bg-black/80 text-white text-xs rounded-md px-2 py-1 
                     opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                        Previous: Context
+                                        Add Context
                                     </div>
                                 </div>
                             </div>
