@@ -686,6 +686,8 @@ const Assistant = () => {
             console.log('Error sending chat:', error);
         }
     };
+
+
     const executeSubmit = async () => {
         try {
             setIsLoading(true);
@@ -806,6 +808,7 @@ const Assistant = () => {
             console.log('Error sending chat:', error);
         } finally {
             setIsLoading(false);
+
         }
     };
 
@@ -898,14 +901,14 @@ const Assistant = () => {
                         <div className="inline-flex gap-2 min-w-min">
                             {/* Industry */}
                             {counts.industry > 0 && (
-                                <span className="inline-flex items-center text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
+                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
                                     Industry: +{counts.industry}
                                 </span>
                             )}
 
                             {/* Audience */}
                             {counts.audience > 0 && (
-                                <span className="inline-flex items-center text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full">
+                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
                                     Audience: +{counts.audience}
                                 </span>
                             )}
@@ -919,21 +922,21 @@ const Assistant = () => {
 
                             {/* Objective */}
                             {counts.objective > 0 && (
-                                <span className="inline-flex items-center text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">
+                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
                                     Objective: +{counts.objective}
                                 </span>
                             )}
 
                             {/* Dos */}
                             {counts.dos > 0 && (
-                                <span className="inline-flex items-center text-xs bg-teal-500/20 text-teal-300 px-2 py-1 rounded-full">
+                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
                                     Dos: +{counts.dos}
                                 </span>
                             )}
 
                             {/* Donts */}
                             {counts.donts > 0 && (
-                                <span className="inline-flex items-center text-xs bg-red-500/20 text-red-300 px-2 py-1 rounded-full">
+                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
                                     Don'ts: +{counts.donts}
                                 </span>
                             )}
@@ -945,7 +948,9 @@ const Assistant = () => {
     };
 
     const handleClearSearchQuery = () => {
-        setSearchQuery(''); // This clears the search query in parent
+        setSelectedDocs([]);
+        setSelectedDocTitles([]);
+
     };
 
     // const handleReplace = () => {
@@ -962,13 +967,108 @@ const Assistant = () => {
     // Check if submit should be enabled
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
+    const formatPlainTextWithStyling = (text) => {
+        const lines = text.split('\n');
+        const elements = [];
+        let currentListItems = [];
+
+        const flushList = () => {
+            if (currentListItems.length > 0) {
+                elements.push(
+                    <ul key={`list-${elements.length}`} className="list-disc pl-6 mb-4 space-y-2 marker:text-blue-400">
+                        {currentListItems.map((item, i) => (
+                            <li key={i} className="text-gray-100">{item}</li>
+                        ))}
+                    </ul>
+                );
+                currentListItems = [];
+            }
+        };
+
+        lines.forEach((line, index) => {
+            const trimmedLine = line.trim();
+
+            if (!trimmedLine) {
+                flushList();
+                elements.push(<br key={`br-${index}`} />);
+                return;
+            }
+
+            // Detect main headings (short, important-looking lines)
+            if (trimmedLine.length < 60 && /^[A-Z][a-zA-Z\s]+$/.test(trimmedLine) && !trimmedLine.includes('?')) {
+                flushList();
+                elements.push(
+                    <h1 key={`h1-${index}`} className="text-2xl font-bold mb-4 text-white border-b border-gray-600 pb-2">
+                        {trimmedLine}
+                    </h1>
+                );
+                return;
+            }
+
+            // Detect subheadings (lines that are questions or end with colon)
+            if ((trimmedLine.endsWith('?') || trimmedLine.endsWith(':')) && trimmedLine.length < 100) {
+                flushList();
+                elements.push(
+                    <h2 key={`h2-${index}`} className="text-xl font-semibold mb-3 text-white">
+                        {trimmedLine}
+                    </h2>
+                );
+                return;
+            }
+
+            // Detect options (A), B), C), etc.)
+            if (/^[A-Z]\)\s/.test(trimmedLine)) {
+                flushList();
+                elements.push(
+                    <div key={`option-${index}`} className="flex items-start mb-2">
+                        <span className="font-bold text-blue-300 mr-2 flex-shrink-0">
+                            {trimmedLine.substring(0, 2)}
+                        </span>
+                        <span className="text-gray-100">{trimmedLine.substring(3)}</span>
+                    </div>
+                );
+                return;
+            }
+
+            // Detect list items (lines starting with •, -, *, or numbers)
+            if (/^[•\-*]\s/.test(trimmedLine) || /^\d+\.\s/.test(trimmedLine)) {
+                currentListItems.push(trimmedLine.replace(/^[•\-*]\s/, '').replace(/^\d+\.\s/, ''));
+                return;
+            }
+
+            // Detect bold patterns (text between ** or words in ALL CAPS for emphasis)
+            if (trimmedLine.includes('**') || /[A-Z]{3,}/.test(trimmedLine)) {
+                flushList();
+                const boldLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                elements.push(
+                    <p
+                        key={`bold-${index}`}
+                        className="mb-3 leading-relaxed text-gray-100"
+                        dangerouslySetInnerHTML={{ __html: boldLine }}
+                    />
+                );
+                return;
+            }
+
+            // Regular paragraphs
+            flushList();
+            elements.push(
+                <p key={`p-${index}`} className="mb-3 leading-relaxed text-gray-100">
+                    {trimmedLine}
+                </p>
+            );
+        });
+
+        flushList(); // Flush any remaining list items
+
+        return elements;
+    };
     return (
         <div className="w-full flex" style={{ backgroundColor: appColors.primaryColor, minHeight: '90%' }}>
-
             {/* Conversations sidebar */}
             <div className="w-64 border-r border-gray-700 relative flex flex-col" style={{ height: "85vh" }}>
-                {/* Sticky New Chat + Header */}
-                <div className="sticky top-0 z-20 ">
+                {/* Fixed header section */}
+                <div className="flex-shrink-0">
                     {/* New Chat button */}
                     <div
                         onClick={() => {
@@ -1015,7 +1115,7 @@ const Assistant = () => {
                     </div>
                 </div>
 
-                {/* Scrollable conversation list */}
+                {/* Scrollable conversation list only */}
                 <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2">
                     {isLoading && conversations.length === 0 ? (
                         <div className="flex justify-center items-center h-20">
@@ -1051,102 +1151,30 @@ const Assistant = () => {
                     {/* Chat history container with scroll */}
                     <div
                         ref={chatContainerRef}
-                        className={`w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar items-center`}
-                        style={{ maxHeight: '52vh' }}
+                        className="w-full max-w-4xl mb-4 mt-4 overflow-y-auto no-scrollbar items-center"
+                        style={{
+                            maxHeight:
+                                isExpanded ||
+                                    selectedFiles.length > 0 ||
+                                    getAddOnsCount().total > 0 ||
+                                    (selectedPromptTitle && selectedPromptTitle.length > 30)
+                                    ? "48vh"
+                                    : "68vh",
+                        }}
                     >
                         {/* Always show existing messages */}
                         {currentMessages.length > 0 && (
                             currentMessages.map((msg, index) => (
                                 <div key={`${msg.id}-${index}`} className="w-full space-y-4 mb-6">
                                     <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`rounded-lg px-4 py-2 max-w-3xl break-words overflow-hidden ${msg.role === 'user' ? 'bg-white/10 text-white' : 'text-white'}`}>
-                                            <ReactMarkdown
-                                                remarkPlugins={[remarkGfm]}
-                                                components={{
-                                                    // Headings with gradient text - increased sizes
-                                                    h1: ({ node, ...props }) => (
-                                                        <h1 className="text-3xl font-bold mb-5 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent" {...props} />
-                                                    ),
-                                                    h2: ({ node, ...props }) => (
-                                                        <h2 className="text-2xl font-semibold mb-4 mt-5 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" {...props} />
-                                                    ),
-                                                    h3: ({ node, ...props }) => (
-                                                        <h3 className="text-xl font-medium mb-3 mt-4 text-gray-200" {...props} />
-                                                    ),
-
-                                                    // Lists with custom bullets - increased text size
-                                                    ul: ({ node, ...props }) => (
-                                                        <ul className="list-disc pl-6 mb-5 space-y-2 marker:text-blue-400 text-lg" {...props} />
-                                                    ),
-                                                    ol: ({ node, ...props }) => (
-                                                        <ol className="list-decimal pl-6 mb-5 space-y-2 marker:text-blue-400 marker:font-bold text-lg" {...props} />
-                                                    ),
-                                                    li: ({ node, ...props }) => (
-                                                        <li className="mb-2 pl-2 text-lg" {...props} />
-                                                    ),
-
-                                                    // Paragraphs with better line height and increased size
-                                                    p: ({ node, ...props }) => (
-                                                        <p className="leading-relaxed text-gray-100 text-lg" {...props} />
-                                                    ),
-
-                                                    // Enhanced table styling with larger text
-                                                    table: ({ node, ...props }) => (
-                                                        <div className="overflow-x-auto rounded-lg border border-gray-700 shadow-sm mb-5 text-lg">
-                                                            <table className="min-w-full divide-y divide-gray-700" {...props} />
-                                                        </div>
-                                                    ),
-                                                    thead: ({ node, ...props }) => (
-                                                        <thead className="bg-gradient-to-r from-gray-700 to-gray-800" {...props} />
-                                                    ),
-                                                    tbody: ({ node, ...props }) => (
-                                                        <tbody className="divide-y divide-gray-700" {...props} />
-                                                    ),
-                                                    tr: ({ node, ...props }) => (
-                                                        <tr className="hover:bg-gray-800/50 transition-colors duration-150" {...props} />
-                                                    ),
-                                                    th: ({ node, ...props }) => (
-                                                        <th
-                                                            className="px-5 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider"
-                                                            {...props}
-                                                        />
-                                                    ),
-                                                    td: ({ node, ...props }) => (
-                                                        <td className="px-5 py-4 text-gray-200" {...props} />
-                                                    ),
-
-                                                    // Code blocks with increased text size
-                                                    code: ({ node, inline, ...props }) => inline ? (
-                                                        <code className="bg-gray-700 px-2 py-1 rounded-md text-base font-mono text-purple-300" {...props} />
-                                                    ) : (
-                                                        <div className="bg-gray-800 rounded-lg overflow-hidden mb-5 shadow-inner">
-                                                            <pre className="p-4 overflow-x-auto text-base font-mono text-gray-200">
-                                                                <code {...props} />
-                                                            </pre>
-                                                        </div>
-                                                    ),
-
-                                                    // Blockquotes with elegant styling and larger text
-                                                    blockquote: ({ node, ...props }) => (
-                                                        <blockquote
-                                                            className="border-l-4 border-blue-500 pl-5 italic text-gray-300 my-5 py-3 bg-gray-800/50 rounded-r-lg text-lg"
-                                                            {...props}
-                                                        />
-                                                    ),
-
-                                                    // Links with hover effect and larger text
-                                                    a: ({ node, ...props }) => (
-                                                        <a
-                                                            className="text-blue-400 hover:text-blue-300 underline underline-offset-4 transition-colors text-lg"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            {...props}
-                                                        />
-                                                    )
-                                                }}
-                                            >
-                                                {msg.content}
-                                            </ReactMarkdown>
+                                        <div className={`rounded-lg px-4 py-3 max-w-3xl break-words overflow-hidden ${msg.role === 'user' ? 'bg-white/10 text-white' : ' text-white'}`}>
+                                            {msg.role === 'assistant' ? (
+                                                <div className="message-content">
+                                                    {formatPlainTextWithStyling(msg.content)}
+                                                </div>
+                                            ) : (
+                                                <div className="whitespace-pre-wrap">{msg.content}</div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -1171,7 +1199,7 @@ const Assistant = () => {
                     </div>
 
                     {/* Input area - fixed at bottom */}
-                    <div className="w-full max-w-4xl sticky bottom-4 bg-transparent pt-4">
+                    <div className="flex flex-col w-full max-w-4xl" style={{ height: "auto" }}>
                         {/* Add-ons indicators */}
                         {(selectedDocTitles.length > 0 || selectedSourceTitles.length > 0 ||
                             selectedLibraryDocTitles.length > 0 || selectedFiles.length > 0 ||
@@ -1179,11 +1207,11 @@ const Assistant = () => {
                                 <div className="w-full max-w-[890px] mb-2">
                                     <div className="relative">
                                         {/* Scrollable area for all tags and AddOns */}
-                                        <div className="overflow-x-auto whitespace-nowrap no-scrollbar pb-2 -mb-2">
-                                            <div className="inline-flex gap-2 min-w-min">
+                                        <div className="pb-2 -mb-2">
+                                            <div className="flex gap-2 min-w-min">
                                                 {/* Prompt Title */}
                                                 {selectedPromptTitle && (
-                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full w-100">
                                                         {selectedPromptTitle}
                                                         <button
                                                             onClick={() => {
@@ -1198,8 +1226,26 @@ const Assistant = () => {
                                                     </span>
                                                 )}
 
+                                                {/* Document Titles - Grouped summary */}
+                                                {selectedDocTitles.length > 0 && (
+                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 !py-0 rounded-full w-[260px]">
+                                                        Context ({selectedDocTitles.length} Document{selectedDocTitles.length !== 1 ? 's' : ''})
+                                                        <button
+                                                            onClick={() => {
+                                                                // Remove all documents at once
+                                                                selectedDocTitles.forEach(doc => {
+                                                                    handleDocSelect(doc.id, doc.title);
+                                                                });
+                                                            }}
+                                                            className="ml-4 text-blue-100 hover:text-white"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                )}
+
                                                 {/* Document Titles */}
-                                                {selectedDocTitles.map(doc => (
+                                                {/* {selectedDocTitles.map(doc => (
                                                     <span
                                                         key={doc.id}
                                                         className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full"
@@ -1212,10 +1258,27 @@ const Assistant = () => {
                                                             ×
                                                         </button>
                                                     </span>
-                                                ))}
+                                                ))} */}
+                                                {/* Source Titles Group by */}
+                                                {selectedSourceTitles.length > 0 && (
+                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 !py-0 rounded-full w-[250px]">
+                                                        Library ({selectedSourceTitles.length} Document{selectedSourceTitles.length !== 1 ? 's' : ''})
+                                                        <button
+                                                            onClick={() => {
+                                                                // Remove all library docs at once
+                                                                selectedSourceTitles.forEach(source => {
+                                                                    handleSourceSelect(source.id, source.title);
+                                                                });
+                                                            }}
+                                                            className="ml-4 text-blue-100 hover:text-white"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                )}
 
                                                 {/* Source Titles */}
-                                                {selectedSourceTitles.map(source => (
+                                                {/* {selectedSourceTitles.map(source => (
                                                     <span
                                                         key={source.id}
                                                         className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full"
@@ -1228,7 +1291,7 @@ const Assistant = () => {
                                                             ×
                                                         </button>
                                                     </span>
-                                                ))}
+                                                ))} */}
 
                                                 {/* Library Document Titles */}
                                                 {/* {selectedLibraryDocTitles.map(source => (
@@ -1276,16 +1339,12 @@ const Assistant = () => {
                             <div
                                 className={`w-full pt-3 pb-3 p-4 pr-36 border border-gray-300 text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 transition-all duration-200 ${isExpanded || selectedFiles.length > 0 ? 'rounded-xl' : 'rounded-full'}`}
                                 style={{
-                                    backgroundColor: appColors.primaryColor,
-                                    minHeight: '50px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'center', // Added for vertical centering
+                                    maxHeight: "none", // Remove fixed maxHeight
                                 }}
-                                onClick={() => document.querySelector('textarea').focus()}
+                            // onClick={() => document.querySelector('textarea').focus()}
                             >
                                 {/* File tags inside the textarea */}
-                                <div className="flex gap-3 overflow-x-auto whitespace-nowrap pb-2 no-scrollbar">
+                                <div className="flex gap-3 overflow-x-auto mb-0 whitespace-nowrap pb-2 no-scrollbar">
                                     {selectedFiles.map((file, index) => {
                                         const extension = file.file.name.split(".").pop().toLowerCase();
                                         const fileSize = (file.file.size / 1024).toFixed(1) + " KB";
@@ -1326,11 +1385,11 @@ const Assistant = () => {
 
                                                 {/* Remove Button */}
                                                 <button
-          onClick={() => handleRemoveFile(index)}
-          className="ml-0 -mr-2 -mt-4 text-xs bg-white/20 hover:bg-white/30 rounded-full w-5 h-5 flex items-center justify-center"
-        >
-          ×
-        </button>
+                                                    onClick={() => handleRemoveFile(index)}
+                                                    className="ml-0 -mr-2 -mt-4 text-xs bg-white/20 hover:bg-white/30 rounded-full w-5 h-5 flex items-center justify-center"
+                                                >
+                                                    ×
+                                                </button>
                                                 {/* Loader Overlay */}
                                                 {file.isUploading && (
                                                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
@@ -1407,7 +1466,7 @@ const Assistant = () => {
                                 ref={fileInputRef}
                             />
                             {/* Toggle Switch + Info Icon Row */}
-                            <div className="flex items-center gap-2 absolute right-14 -mt-[37px]">
+                            <div className="flex items-center gap-2 absolute right-14 -mt-[40px]">
                                 {/* Info Icon beside toggle */}
                                 <div
                                     className="relative group cursor-pointer flex flex-col items-center"
@@ -1474,7 +1533,7 @@ const Assistant = () => {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isLoading || !isSubmitEnabled || !searchQuery}
-                                    className="absolute right-2 -top-[42.5px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
+                                    className="absolute right-2 -top-[46px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
                                 >
                                     {isLoading ? (
                                         <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1559,6 +1618,7 @@ const Assistant = () => {
                     showContextModal={showContextModal}
                     setShowContextModal={setShowContextModal}
                     onDocSelect={handleDocSelect}
+                    selectedDocTitles={selectedDocTitles}
                     currentStep={currentStep}
                     goToPreviousStep={goToPreviousStep}
                     goToNextStep={goToNextStep}
@@ -1717,7 +1777,7 @@ const Assistant = () => {
                                     }}
 
                                 >
-                                    Use Optimized Prompt
+                                    Recommend Optimized Prompt
                                 </button>
 
                                 {/* Next Button with Tooltip */}

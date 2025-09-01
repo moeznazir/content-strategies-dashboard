@@ -11,7 +11,7 @@ const supabase = createClient(
 );
 const ITEMS_PER_PAGE = 1000000000;
 
-const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, currentStep, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery }) => {
+const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, currentStep, selectedDocTitles, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery }) => {
     // State for Context Modals
     const [contentTypeOpen, setContentTypeOpen] = useState(true);
     const [challengesOpen, setChallengesOpen] = useState(true);
@@ -26,7 +26,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
     const isSubmitEnabled = searchQuery.trim();
     const [contentSource, setContentSource] = useState('select'); // 'voc' or 'vob'
 
-    // const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
+    const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
 
     const [selectedFilters, setSelectedFilters] = useState({
         "Video Type": [],
@@ -300,13 +300,13 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             setIsLoading(false);
         }
     };
-    // useEffect(() => {
-    //     if (searchQueries.trim() !== '') {
-    //         setShowReplaceConfirmation(true);
-    //     } else {
-    //         setShowReplaceConfirmation(false);
-    //     }
-    // }, [searchQueries, setSearchQueries]);
+    useEffect(() => {
+        if (showContextModal && searchQueries.trim() === '') {
+            setShowContextModal(false);
+            setShowReplaceConfirmation(true);
+        }
+    }, [searchQueries, showContextModal]);
+
 
     // const handleReplace = () => {
     //     // Clear the search query using the callback from parent
@@ -316,9 +316,9 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
     //     setShowReplaceConfirmation(false);
     // };
 
-    // const handleCancelReplace = () => {
-    //     setShowReplaceConfirmation(false);
-    // };
+    const handleCancelReplace = () => {
+        setShowReplaceConfirmation(false);
+    };
     // Trigger search when filters change (for manual search)
     useEffect(() => {
         if (searchMethod === 'manual') {
@@ -349,37 +349,137 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             "market_categories": [],
             "content_categories": []
         });
+
+
     };
+    const [selectAll, setSelectAll] = useState(false);
+
+
+
+    // Update the handleIndividualSelection function
+    const handleIndividualSelection = (docId, docTitle) => {
+        const wasSelected = selectedDocuments.includes(docId);
+
+        setSelectedDocuments(prev =>
+            wasSelected
+                ? prev.filter(id => id !== docId)
+                : [...prev, docId]
+        );
+
+        // Call onDocSelect to update parent component
+        if (onDocSelect) {
+            onDocSelect(docId, docTitle || 'Untitled Document');
+        }
+
+        // Update selectAll state if needed
+        if (selectAll && wasSelected) {
+            // If we're deselecting one item while select all is active, turn off select all
+            setSelectAll(false);
+        } else if (!selectAll && selectedDocuments.length + 1 === searchResults.length) {
+            // If we're about to select the last item, enable selectAll
+            setSelectAll(true);
+        }
+    };
+
+    // Update the useEffect for select all to handle the sync better
+    useEffect(() => {
+        if (selectAll && searchResults.length > 0) {
+            const allDocIds = searchResults.map(doc => doc.id);
+
+            // Only update if not already all selected
+            if (!arraysEqual(selectedDocuments, allDocIds)) {
+                setSelectedDocuments(allDocIds);
+
+                // Add all docs to parent that aren't already selected
+                searchResults.forEach(doc => {
+                    if (onDocSelect && !selectedDocuments.includes(doc.id)) {
+                        onDocSelect(doc.id, doc.title || "Untitled Document");
+                    }
+                });
+            }
+        } else if (!selectAll && selectedDocuments.length === searchResults.length && searchResults.length > 0) {
+            // If all are selected but selectAll is false, clear selection
+            setSelectedDocuments([]);
+
+            // Remove all search results from parent
+            searchResults.forEach(doc => {
+                if (onDocSelect) {
+                    onDocSelect(doc.id, doc.title || "Untitled Document");
+                }
+            });
+        }
+    }, [selectAll, searchResults]);
+
+    // Add this helper function to compare arrays
+    function arraysEqual(a, b) {
+        if (a === b) return true;
+        if (a == null || b == null) return false;
+        if (a.length !== b.length) return false;
+
+        for (let i = 0; i < a.length; ++i) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
+    }
+
+    // Update the sync useEffect
+    useEffect(() => {
+        // Get the document IDs from parent's selectedDocTitles
+        const parentSelectedIds = selectedDocTitles.map(doc => doc.id);
+
+        // Update local state to match parent
+        setSelectedDocuments(parentSelectedIds);
+
+        // Also update selectAll state based on whether all search results are selected
+        if (searchResults.length > 0) {
+            const allSearchResultIds = searchResults.map(doc => doc.id);
+            const allSelected = allSearchResultIds.every(id => parentSelectedIds.includes(id));
+            setSelectAll(allSelected);
+        }
+    }, [selectedDocTitles, searchResults]);
 
     return (
         <div className="relative ml-[5%] mb-4 w-[220px] no-scrollbar">
-            {showContextModal && (
-                <>
-                    {/* Confirmation Modal */}
-                    {/* {showReplaceConfirmation && (
-                        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 z-[9999]">
-                            <div className="border border-gray-300 rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: appColors.primaryColor }}>
-                                <h3 className="text-lg font-semibold mb-4 text-white">Replace Prompt?</h3>
-                                <p className="text-sm mb-6 text-gray-400">
-                                    Would you like to replace your current prompt with one from the context?
-                                </p>
-                                <div className="flex justify-end gap-3">
-                                    <button
-                                        className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-sm text-gray-800 transition-colors"
-                                        onClick={handleCancelReplace}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
+            {/* Confirmation Modal */}
+            {showReplaceConfirmation && (
+                <div className="fixed inset-0 flex items-center  justify-center bg-gray-800 bg-opacity-70 z-[9999]">
+                    <div className="relative border border-gray-300 w-[400px] rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: appColors.primaryColor }}>
+                        {/* <h3 className="text-lg font-semibold mb-4 text-white">Replace Prompt?</h3> */}
+                        {/* ✅ Heading */}
+                        <h3 className="text-lg font-semibold mb-2 -mt-4 text-white">
+                            Action Required
+                        </h3>
+
+                        {/* ✅ Cross icon (top-right) */}
+                        <button
+                            className="absolute top-2 right-3 text-gray-300 hover:text-white"
+                            onClick={handleCancelReplace}
+                        >
+                            ✕
+                        </button>
+                        <hr className="border-t border-gray-300 mb-2 mt-[10px] -mx-6" />
+                        <p className="text-sm mt-4 mb-0  text-gray-400">
+                            Please select or write a prompt before adding context
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            {/* <button
+                                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-sm text-gray-800 transition-colors"
+                                onClick={handleCancelReplace}
+                            >
+                                Cancel
+                            </button> */}
+                            {/* <button
                                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm text-white transition-colors"
                                         onClick={handleReplace}
                                     >
                                         Replace
-                                    </button>
-                                </div>
-                            </div>
+                                    </button> */}
                         </div>
-                    )} */}
+                    </div>
+                </div>
+            )}
+            {showContextModal && (
+                <>
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
                         <div className="border w-[800px] max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl text-white px-6 py-5 relative font-sans" style={{ backgroundColor: appColors.primaryColor }}>
 
@@ -419,7 +519,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                             <div className="border-t my-2 -mx-6"></div>
 
                             {/* Title */}
-                            <h2 className="text-xl font-semibold text-center mb-3">Context</h2>
+                            <h2 className="text-xl font-semibold text-center mb-3">Select your context documents</h2>
 
                             <div className="border-t my-2 -mx-6"></div>
 
@@ -448,9 +548,9 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                             <label className="text-sm font-medium leading-relaxed relative">
                                                 <span className="font-semibold">Source Document:</span>{" "}
                                                 <span className="text-[12px]">
-                                                    Please select a search method for desired document:
+                                                    Search for and select context documents.
                                                 </span>
-                                                <span className="text-blue-400 text-[12px] cursor-pointer ml-2 relative group">
+                                                <span className="text-blue-400 text-[12px] cursor-pointer ml-20 relative group">
                                                     Learn more about Search Type
                                                     <div className="absolute left-1/3 top-6 transform -translate-x-1/4 w-[290px] z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                                         <div className="bg-[#3b3b5b] text-white text-[11px] p-3 rounded-lg shadow-lg">
@@ -582,34 +682,46 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                                         />
                                                                     </svg>
                                                                     <p className="text-sm text-gray-400">No context documents found</p>
-
                                                                 </div>
                                                             ) : (
-                                                                // Show documents when available
-                                                                <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
-                                                                    {searchResults.map((doc) => (
-                                                                        <div
-                                                                            key={doc.id}
-                                                                            className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
-                                                                            onClick={() => handleDocumentClick(doc)}
-                                                                        >
-                                                                            <svg width="20" height="20" viewBox="0 0 48 48">
-                                                                                <g transform="translate(10, 10)" fill="orange" fillOpacity="0.8">
-                                                                                    <rect y="0" width="34" height="4" rx="1" />
-                                                                                    <rect y="6" width="34" height="4" rx="1" />
-                                                                                    <rect y="12" width="34" height="4" rx="1" />
-                                                                                </g>
-                                                                            </svg>
-                                                                            <div className="flex-1">
-                                                                                <div className="text-xs text-white/90">{doc.title}</div>
-                                                                                {doc.type && (
-                                                                                    <div className="text-[10px] text-gray-400 mt-1">
-                                                                                        Type: {doc.type.toUpperCase()}
-                                                                                    </div>
-                                                                                )}
+                                                                // Show documents when available with Select All option
+                                                                <div>
+                                                                    {/* Select All checkbox */}
+                                                                    <div className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer mb-2">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={selectAll}
+                                                                            onChange={() => setSelectAll(!selectAll)}
+                                                                            className="accent-blue-500 cursor-pointer"
+                                                                        />
+                                                                        <div className="text-xs text-white/90 font-medium">Select All</div>
+                                                                    </div>
+
+                                                                    {/* Documents list */}
+                                                                    <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
+                                                                        {searchResults.map((doc) => (
+                                                                            <div
+                                                                                key={`search-result-${doc.id}-${doc.type}`}
+                                                                                className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
+                                                                                onClick={() => handleIndividualSelection(doc.id, doc.title)}
+                                                                            >
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={selectedDocuments.includes(doc.id)}
+                                                                                    readOnly
+                                                                                    className="accent-blue-500 cursor-pointer"
+                                                                                />
+                                                                                <div className="flex-1">
+                                                                                    <div className="text-xs text-white/90">{doc.title}</div>
+                                                                                    {doc.type && (
+                                                                                        <div className="text-[10px] text-gray-400 mt-1">
+                                                                                            Type: {doc.type.toUpperCase()}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
-                                                                    ))}
+                                                                        ))}
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -938,7 +1050,9 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                         setShowContextModal(false);
                                     }}
                                 >
-                                    Use Template
+                                    {selectedDocuments.length > 0
+                                        ? `Use Template (${selectedDocuments.length})`
+                                        : "Use Template"}
                                 </button>
                                 {/* Next Button with Tooltip */}
                                 <div className="relative group">
