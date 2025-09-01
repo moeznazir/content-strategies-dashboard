@@ -33,7 +33,15 @@ html, body {
 .react-markdown tr {
   transition: all 0.2s ease;
 }
+.message-content strong {
+  font-weight: 600;
+  color: white;
+}
 
+.message-content em {
+  font-style: italic;
+  color: #e5e7eb;
+}
 /* Custom scrollbar for code blocks */
 .react-markdown pre::-webkit-scrollbar {
   height: 6px;

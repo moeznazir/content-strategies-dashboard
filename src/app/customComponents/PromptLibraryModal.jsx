@@ -802,19 +802,19 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                     </div>
 
                                 ))}
-                           
+
                             </div>
                             <div className='flex justify-end'>
-                                    <button
-                                        onClick={() => {
-                                            setShowLibraryDropdown(false);
-                                            setIsLoading(false);
-                                        }}
-                                        className="text-white -mt-14  hover:text-gray-300 text-2xl"
-                                    >
-                                        &times;
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={() => {
+                                        setShowLibraryDropdown(false);
+                                        setIsLoading(false);
+                                    }}
+                                    className="text-white -mt-14  hover:text-gray-300 text-2xl"
+                                >
+                                    &times;
+                                </button>
+                            </div>
 
                             {/* Divider */}
                             <div className="border-t my-2 -mx-6"></div>
@@ -1226,13 +1226,14 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                                     className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
                                                                                     onClick={() => handleDocumentClick(doc)}
                                                                                 >
-                                                                                    <svg width="20" height="20" viewBox="0 0 48 48">
-                                                                                        <g transform="translate(10, 10)" fill="orange" fillOpacity="0.8">
-                                                                                            <rect y="0" width="34" height="4" rx="1" />
-                                                                                            <rect y="6" width="34" height="4" rx="1" />
-                                                                                            <rect y="12" width="34" height="4" rx="1" />
-                                                                                        </g>
-                                                                                    </svg>
+                                                                                    {/* ✅ Checkbox instead of icon */}
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        checked={selectedDocuments.includes(doc.id)}
+                                                                                        readOnly
+                                                                                        className="accent-blue-500 cursor-pointer"
+                                                                                    />
+
                                                                                     <div className="flex-1">
                                                                                         <div className="text-xs text-white/90">{doc.title}</div>
                                                                                         {doc.type && (
@@ -1244,6 +1245,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                                 </div>
                                                                             ))}
                                                                         </div>
+
                                                                     )}
                                                                 </div>
                                                             )}
@@ -1573,7 +1575,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                         disabled={selectedDocuments.length === 0}
                                         onClick={handleUseTemplate}
                                     >
-                                        Use Template
+                                        {selectedDocuments.length > 0
+                                            ? `Use Template (${selectedDocuments.length})`
+                                            : "Use Template"}
                                     </button>
                                 )}
                                 {/* Next Button with Tooltip */}
@@ -1588,7 +1592,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                     <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
                     bg-black/80 text-white text-xs rounded-md px-2 py-1 
                     opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                         Add Context
+                                        Add Context
                                     </div>
                                 </div>
                             </div>
