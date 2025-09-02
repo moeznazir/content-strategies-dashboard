@@ -2028,7 +2028,7 @@ const Assistant = () => {
                 {/* Add-Ons Modal */}
                 {showAddonsModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
-                        <div className="bg-[#2b2b4b] border rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto" style={{ backgroundColor: appColors.primaryColor }}>
+                        <div className="bg-[#2b2b4b] border rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto no-scrollbar" style={{ backgroundColor: appColors.primaryColor }}>
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-bold -mt-2">Optional Add-Ons</h2>
                                 <button
