@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sanitizeFileName } from '@/lib/utils';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 
 
 const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
@@ -44,24 +44,30 @@ const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
-            <div className="rounded-lg p-6 w-full max-w-md mx-4" style={{ backgroundColor: appColors.primaryColor }}>
-                <div className="flex justify-between items-center mb-4 -mt-2">
-                    <h2 className="text-xl font-bold ">Getting Started</h2>
+            <div className="rounded-lg p-5 w-full max-w-sm mx-4 shadow-lg" style={{ backgroundColor: appColors.primaryColor }}>
 
+                {/* Header */}
+                <div className="flex justify-between items-center mb-2 -mt-3">
+                    <h2 className="text-lg font-semibold">Getting Started</h2>
                     <button
                         onClick={onClose}
-                        className=" hover:text-gray-500"
+                        className="text-gray-400 hover:text-gray-600 text-lg"
                     >
                         &times;
                     </button>
                 </div>
-                <hr className='border-b -mx-6 -mt-2 mb-2' />
-                <div className="mb-6">
-                    <h3 className="text-lg font-semibold  mb-2">{currentGuideline.title}</h3>
-                    <p className="text-gray-500">{currentGuideline.description}</p>
+
+                <hr className="border-b border-gray-300 -mx-5 mb-3" />
+
+                {/* Content */}
+                <div className="mb-5">
+                    <h3 className="text-base font-medium mb-1">{currentGuideline.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{currentGuideline.description}</p>
                 </div>
 
+                {/* Footer */}
                 <div className="flex justify-between items-center">
+                    {/* Steps */}
                     <div className="flex space-x-1">
                         {Array.from({ length: totalSteps }).map((_, i) => (
                             <div
@@ -71,16 +77,17 @@ const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
                         ))}
                     </div>
 
+                    {/* Actions */}
                     <div className="flex space-x-2">
                         <button
                             onClick={onSkip}
-                            className="px-2 py-1 rounded-md  hover:text-gray-400 border"
+                            className="px-3 py-1 rounded-md text-sm text-gray-600 hover:text-gray-400 border border-gray-300"
                         >
                             {currentGuideline.skip}
                         </button>
                         <button
                             onClick={onNext}
-                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
                         >
                             {currentGuideline.button}
                         </button>
@@ -88,6 +95,7 @@ const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
                 </div>
             </div>
         </div>
+
     );
 };
 
@@ -153,12 +161,71 @@ const Assistant = () => {
     const [currentStep, setCurrentStep] = useState(0);
     const steps = ['library', 'context', 'addons'];
 
+    const [newResponseArrived, setNewResponseArrived] = useState(false);
+    const [showScrollToTop, setShowScrollToTop] = useState(false);
+    const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
     useEffect(() => {
         if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+            const container = chatContainerRef.current;
+
+            // Scroll to bottom when new messages are added
+            container.scrollTop = container.scrollHeight;
+
+            // Check if we need to show scroll buttons
+            const checkScrollPosition = () => {
+                const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+                setShowScrollToTop(container.scrollTop > 300);
+                setShowScrollToBottom(!isNearBottom && container.scrollHeight > container.clientHeight);
+            };
+
+            checkScrollPosition();
+            container.addEventListener('scroll', checkScrollPosition);
+
+            return () => {
+                container.removeEventListener('scroll', checkScrollPosition);
+            };
         }
     }, [currentMessages]);
+
+    useEffect(() => {
+        if (apiResponse && currentMessages.length > 0) {
+            // Find the latest assistant message
+            const lastMessage = currentMessages[currentMessages.length - 1];
+            if (lastMessage.role === 'assistant') {
+                setNewResponseArrived(true);
+
+                // Scroll to the top of the new response
+                setTimeout(() => {
+                    const assistantMessages = document.querySelectorAll('.message-content');
+                    if (assistantMessages.length > 0) {
+                        const latestMessage = assistantMessages[assistantMessages.length - 1];
+                        latestMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            }
+        }
+    }, [apiResponse, currentMessages]);
+
+    const scrollToTopOfResponse = () => {
+        if (chatContainerRef.current) {
+            const assistantMessages = document.querySelectorAll('.message-content');
+            if (assistantMessages.length > 0) {
+                const latestMessage = assistantMessages[assistantMessages.length - 1];
+                latestMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setNewResponseArrived(false);
+            }
+        }
+    };
+
+    const scrollToBottom = () => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTo({
+                top: chatContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     // useEffect(() => {
     //     if (showAddonsModal && searchQuery.trim() !== '') {
@@ -666,6 +733,7 @@ const Assistant = () => {
     };
     const handleSubmit = async () => {
         try {
+            setNewResponseArrived(false);
             // Check if this is the first search and show guidelines if needed
             const hasSeenGuidelines = localStorage.getItem('hasSeenAssistantGuidelines');
 
@@ -692,6 +760,7 @@ const Assistant = () => {
         try {
             setIsLoading(true);
             setHasSearched(true);
+
             // Check if this is the first search and show guidelines if needed
             const hasSeenGuidelines = localStorage.getItem('hasSeenAssistantGuidelines');
             if (!hasSeenGuidelines) {
@@ -971,96 +1040,199 @@ const Assistant = () => {
         const lines = text.split('\n');
         const elements = [];
         let currentListItems = [];
-
+        let inEmphasizedSection = false;
+        let inTable = false;
+        let tableRows = [];
+        let tableHeaders = [];
+    
         const flushList = () => {
             if (currentListItems.length > 0) {
                 elements.push(
                     <ul key={`list-${elements.length}`} className="list-disc pl-6 mb-4 space-y-2 marker:text-blue-400">
                         {currentListItems.map((item, i) => (
-                            <li key={i} className="text-gray-100">{item}</li>
+                            <li key={i} className="text-gray-100 text-lg">{item}</li>
                         ))}
                     </ul>
                 );
                 currentListItems = [];
             }
         };
-
+    
+        const renderTable = () => {
+            if (tableRows.length > 0) {
+                elements.push(
+                    <div key={`table-${elements.length}`} className="mb-6 overflow-x-auto">
+                        <table className="min-w-full border-collapse border border-gray-600 text-lg">
+                            <thead>
+                                <tr className="bg-gray-800">
+                                    {tableHeaders.map((header, idx) => (
+                                        <th key={idx} className="border border-gray-600 px-4 py-3 text-left font-semibold text-white">
+                                            {header}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tableRows.map((row, rowIndex) => (
+                                    <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
+                                        {row.map((cell, cellIndex) => (
+                                            <td key={cellIndex} className="border border-gray-600 px-4 py-3 text-gray-100">
+                                                {cell}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                );
+            }
+            tableHeaders = [];
+            tableRows = [];
+            inTable = false;
+        };
+    
         lines.forEach((line, index) => {
             const trimmedLine = line.trim();
-
+    
+            // Check if this is a table header separator (|---|)
+            if (trimmedLine.match(/^\|(\s*\-+\s*\|)+$/)) {
+                if (tableHeaders.length > 0 && !inTable) {
+                    inTable = true;
+                }
+                return;
+            }
+    
+            // Check if this is a table row
+            if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
+                if (!inTable && tableHeaders.length === 0) {
+                    // This is the header row
+                    tableHeaders = trimmedLine.split('|')
+                        .filter(cell => cell.trim() !== '')
+                        .map(cell => cell.trim());
+                } else if (inTable) {
+                    // This is a data row
+                    const rowData = trimmedLine.split('|')
+                        .filter(cell => cell.trim() !== '')
+                        .map(cell => cell.trim());
+                    
+                    // Skip empty rows or separator rows
+                    if (rowData.length > 0 && !rowData.every(cell => cell.match(/^\-+$/))) {
+                        tableRows.push(rowData);
+                    }
+                }
+                return;
+            }
+    
+            // If we were in a table and encounter a non-table line, render the table
+            if (inTable && !trimmedLine.startsWith('|')) {
+                renderTable();
+            }
+    
             if (!trimmedLine) {
                 flushList();
                 elements.push(<br key={`br-${index}`} />);
                 return;
             }
-
-            // Detect main headings (short, important-looking lines)
-            if (trimmedLine.length < 60 && /^[A-Z][a-zA-Z\s]+$/.test(trimmedLine) && !trimmedLine.includes('?')) {
+    
+            // Detect main headings (lines with numbers or that look like titles)
+            if ((trimmedLine.match(/^\d+\)/) || /^[A-Z][A-Za-z\s]+[:\-—]/.test(trimmedLine)) && trimmedLine.length < 80) {
                 flushList();
+                inEmphasizedSection = true;
                 elements.push(
-                    <h1 key={`h1-${index}`} className="text-2xl font-bold mb-4 text-white border-b border-gray-600 pb-2">
-                        {trimmedLine}
-                    </h1>
-                );
-                return;
-            }
-
-            // Detect subheadings (lines that are questions or end with colon)
-            if ((trimmedLine.endsWith('?') || trimmedLine.endsWith(':')) && trimmedLine.length < 100) {
-                flushList();
-                elements.push(
-                    <h2 key={`h2-${index}`} className="text-xl font-semibold mb-3 text-white">
+                    <h2 key={`h2-${index}`} className="text-2xl font-bold mb-4 text-white mt-6 first:mt-0">
                         {trimmedLine}
                     </h2>
                 );
                 return;
             }
-
+    
+            // Detect subheadings (lines with emoji or that indicate categories)
+            if (trimmedLine.includes('➤') || trimmedLine.includes('💷') || trimmedLine.includes('—')) {
+                flushList();
+                elements.push(
+                    <h3 key={`h3-${index}`} className="text-xl font-semibold mb-3 text-blue-300 mt-4">
+                        {trimmedLine}
+                    </h3>
+                );
+                return;
+            }
+    
             // Detect options (A), B), C), etc.)
             if (/^[A-Z]\)\s/.test(trimmedLine)) {
                 flushList();
                 elements.push(
-                    <div key={`option-${index}`} className="flex items-start mb-2">
-                        <span className="font-bold text-blue-300 mr-2 flex-shrink-0">
+                    <div key={`option-${index}`} className="flex items-start mb-3">
+                        <span className="font-bold text-blue-300 mr-2 flex-shrink-0 text-xl">
                             {trimmedLine.substring(0, 2)}
                         </span>
-                        <span className="text-gray-100">{trimmedLine.substring(3)}</span>
+                        <span className="text-gray-100 text-lg">{trimmedLine.substring(3)}</span>
                     </div>
                 );
                 return;
             }
-
+    
             // Detect list items (lines starting with •, -, *, or numbers)
             if (/^[•\-*]\s/.test(trimmedLine) || /^\d+\.\s/.test(trimmedLine)) {
                 currentListItems.push(trimmedLine.replace(/^[•\-*]\s/, '').replace(/^\d+\.\s/, ''));
                 return;
             }
-
-            // Detect bold patterns (text between ** or words in ALL CAPS for emphasis)
-            if (trimmedLine.includes('**') || /[A-Z]{3,}/.test(trimmedLine)) {
+    
+            // Detect bold patterns (text between **)
+            if (trimmedLine.includes('**')) {
                 flushList();
-                const boldLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                const boldLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-white text-lg">$1</strong>');
                 elements.push(
                     <p
                         key={`bold-${index}`}
-                        className="mb-3 leading-relaxed text-gray-100"
+                        className="mb-3 leading-relaxed text-gray-100 text-lg"
                         dangerouslySetInnerHTML={{ __html: boldLine }}
                     />
                 );
                 return;
             }
-
+    
+            // Detect italic patterns (text between _)
+            if (trimmedLine.includes('_')) {
+                flushList();
+                const italicLine = trimmedLine.replace(/_(.*?)_/g, '<em class="italic text-gray-300 text-lg">$1</em>');
+                elements.push(
+                    <p
+                        key={`italic-${index}`}
+                        className="mb-3 leading-relaxed text-gray-100 text-lg"
+                        dangerouslySetInnerHTML={{ __html: italicLine }}
+                    />
+                );
+                return;
+            }
+    
+            // Text in emphasized sections (after headings)
+            if (inEmphasizedSection) {
+                flushList();
+                elements.push(
+                    <p key={`p-${index}`} className="mb-3 leading-relaxed text-gray-200 text-lg font-medium">
+                        {trimmedLine}
+                    </p>
+                );
+                return;
+            }
+    
             // Regular paragraphs
             flushList();
             elements.push(
-                <p key={`p-${index}`} className="mb-3 leading-relaxed text-gray-100">
+                <p key={`p-${index}`} className="mb-3 leading-relaxed text-gray-100 text-lg">
                     {trimmedLine}
                 </p>
             );
         });
-
+    
+        // Render any remaining table at the end
+        if (inTable) {
+            renderTable();
+        }
+    
         flushList(); // Flush any remaining list items
-
+    
         return elements;
     };
     return (
@@ -1144,7 +1316,27 @@ const Assistant = () => {
 
 
             {/* Main chat area */}
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col relative">
+                {newResponseArrived && (
+                    <button
+                        onClick={scrollToTopOfResponse}
+                        className="fixed  mt-1 right-12 bottom-28 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg z-10 transition-all duration-300"
+                        style={{ animation: 'bounce 2s infinite' }}
+                    >
+                        <ArrowUp className="w-5 h-5" />
+                        <span className="sr-only">Scroll to new response</span>
+                    </button>
+                )}
+                {/* Scroll to bottom button (appears when user scrolls up) */}
+                {showScrollToBottom && (
+                    <button
+                        onClick={scrollToBottom}
+                        className="fixed -mb-2 right-12 bottom-20 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg z-10 transition-all duration-300"
+                    >
+                        <ArrowDown className="w-5 h-5" />
+                        <span className="sr-only">Scroll to bottom</span>
+                    </button>
+                )}
 
 
                 <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
@@ -1228,7 +1420,7 @@ const Assistant = () => {
 
                                                 {/* Document Titles - Grouped summary */}
                                                 {selectedDocTitles.length > 0 && (
-                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 !py-0 rounded-full w-[260px]">
+                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 !py-0 rounded-full whitespace-nowrap">
                                                         Context ({selectedDocTitles.length} Document{selectedDocTitles.length !== 1 ? 's' : ''})
                                                         <button
                                                             onClick={() => {
@@ -1261,7 +1453,7 @@ const Assistant = () => {
                                                 ))} */}
                                                 {/* Source Titles Group by */}
                                                 {selectedSourceTitles.length > 0 && (
-                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 !py-0 rounded-full w-[250px]">
+                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 !py-0 rounded-full whitespace-nowrap">
                                                         Library ({selectedSourceTitles.length} Document{selectedSourceTitles.length !== 1 ? 's' : ''})
                                                         <button
                                                             onClick={() => {
@@ -1276,6 +1468,7 @@ const Assistant = () => {
                                                         </button>
                                                     </span>
                                                 )}
+
 
                                                 {/* Source Titles */}
                                                 {/* {selectedSourceTitles.map(source => (
@@ -1432,7 +1625,7 @@ const Assistant = () => {
 
                                             // Clear text value and reset height after a small delay
                                             setTimeout(() => {
-                                                setSearchQuery("");
+                                                // setSearchQuery("");
                                                 textarea.style.height = 'auto';
                                                 setIsExpanded(false);
                                             }, 100);
@@ -1500,9 +1693,8 @@ const Assistant = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {/* Toggle Switch */}
-                                <div
-                                    className="relative group cursor-pointer"
+                                {/* Toggle Switch Tooltip - Updated */}
+                                <div className="relative group cursor-pointer"
                                     onClick={() => setIsPromptMode((prev) => !prev)}
                                 >
                                     <div
@@ -1513,9 +1705,13 @@ const Assistant = () => {
                                         ></div>
                                     </div>
 
-                                    {/* Tooltip on hover */}
-                                    <div className="absolute top-10 left-1/2 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        Randomness
+                                    {/* Updated Tooltip */}
+                                    <div className="absolute left-1/2 -translate-x-1/2 top-9 mt-0.5 w-48 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+                                        <div className="bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-[120px]">
+                                            <p className="mb-0">Randomness</p>
+                                        </div>
+                                        {/* Tooltip arrow */}
+                                        <div className="absolute -top-[9px] left-1/2 -translate-x-1/2 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
                                     </div>
                                 </div>
 
@@ -1523,17 +1719,21 @@ const Assistant = () => {
                             </div>
 
                             <div className="relative group">
-                                {/* Tooltip */}
+                                {/* Updated Tooltip */}
                                 {!searchQuery && (
-                                    <div className="absolute -top-0 -right-10 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        Please input text
+                                    <div className="absolute -right-10 top-1 w-48 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ">
+                                        <div className="bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-[150px]">
+                                            <p className="mb-0">Please input text</p>
+                                        </div>
+                                        {/* Tooltip arrow */}
+                                        <div className="absolute -top-[10px] right-14 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
                                     </div>
                                 )}
                                 {/* Submit Button */}
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isLoading || !isSubmitEnabled || !searchQuery}
-                                    className="absolute right-2 -top-[46px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
+                                    className="absolute right-3 -top-[47px] bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer"
                                 >
                                     {isLoading ? (
                                         <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -2031,7 +2231,7 @@ const Assistant = () => {
                     className="w-30 h-6 object-contain"
                 />
             </div>
-        </div>
+        </div >
     );
 };
 
