@@ -139,6 +139,7 @@ const Assistant = () => {
     const [addOns, setAddOns] = useState({
         industry: [],
         audience: [],
+        audienceTitles: [],
         tone: [],
         objective: '',
         advice: {
@@ -702,10 +703,12 @@ const Assistant = () => {
                 return { ...prev, advice: newAdvice };
             }
 
-            // For industry, audience, tone
+            // ✅ For arrays like industry, audienceTitles, tone
+            const current = Array.isArray(prev[type]) ? prev[type] : [];
             const newArray = isChecked
-                ? [...prev[type], value]
-                : prev[type].filter(item => item !== value);
+                ? [...current, value]
+                : current.filter(item => item !== value);
+
             return { ...prev, [type]: newArray };
         });
     };
@@ -787,6 +790,7 @@ const Assistant = () => {
                 ...addOns,
                 industry: addOns?.industry?.length > 0 ? addOns.industry : undefined,
                 audience: addOns?.audience?.length > 0 ? addOns.audience : undefined,
+                audienceTitles: addOns?.audienceTitles?.length > 0 ? addOns.audienceTitles : undefined,
                 tone: addOns?.tone?.length > 0 ? addOns.tone : undefined,
                 objective: addOns?.objective || undefined,
                 advice
@@ -860,6 +864,7 @@ const Assistant = () => {
             setAddOns({
                 industry: [],
                 audience: [],
+                audienceTitles: [],
                 tone: [],
                 objective: '',
                 advice: {
@@ -939,15 +944,17 @@ const Assistant = () => {
     const getAddOnsCount = () => {
         const industry = addOns.industry.length;
         const audience = addOns.audience.length;
+        const titles = addOns.audienceTitles.length;
         const tone = addOns.tone.length;
         const objective = addOns.objective ? 1 : 0;
         const dos = addOns.advice.do.length;
         const donts = addOns.advice.dont.length;
-        const total = industry + audience + tone + objective + dos + donts;
+        const total = industry + audience + titles + tone + objective + dos + donts;
 
         return {
             industry,
             audience,
+            titles,
             tone,
             objective,
             dos,
@@ -955,7 +962,13 @@ const Assistant = () => {
             total
         };
     };
+    const [expandedGroups, setExpandedGroups] = useState([]);
 
+    const handleGroupToggle = (group) => {
+        setExpandedGroups(prev =>
+            prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]
+        );
+    };
     // Add this component to display add-on counts
     const AddOnsIndicator = () => {
         const counts = getAddOnsCount();
@@ -968,17 +981,23 @@ const Assistant = () => {
                 <div className="relative">
                     <div className="overflow-x-auto whitespace-nowrap no-scrollbar pb-2 -mb-2">
                         <div className="inline-flex gap-2 min-w-min">
-                            {/* Industry */}
+                            {/* Audience Industry */}
                             {counts.industry > 0 && (
                                 <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
-                                    Industry: +{counts.industry}
+                                    Audience-Industry: +{counts.industry}
                                 </span>
                             )}
 
-                            {/* Audience */}
+                            {/* Audience Department */}
                             {counts.audience > 0 && (
                                 <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
-                                    Audience: +{counts.audience}
+                                    Audience-Dpartments: +{counts.audience}
+                                </span>
+                            )}
+                            {/* Audience Titles*/}
+                            {counts.titles > 0 && (
+                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+                                    Audience-Titles: +{counts.titles}
                                 </span>
                             )}
 
@@ -1037,7 +1056,7 @@ const Assistant = () => {
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
     const formatPlainTextWithStyling = (text) => {
-        const lines = text.split('\n');
+        const lines = text?.split('\n');
         const elements = [];
         let currentListItems = [];
         let inEmphasizedSection = false;
@@ -1059,7 +1078,7 @@ const Assistant = () => {
         };
 
         const renderTable = () => {
-            if (tableRows.length > 0) {
+            if (tableRows?.length > 0) {
                 elements.push(
                     <div key={`table-${elements.length}`} className="mb-6 overflow-x-auto">
                         <table className="min-w-full border-collapse border border-gray-600 text-lg">
@@ -1073,7 +1092,7 @@ const Assistant = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {tableRows.map((row, rowIndex) => (
+                                {tableRows?.map((row, rowIndex) => (
                                     <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
                                         {row.map((cell, cellIndex) => (
                                             <td key={cellIndex} className="border border-gray-600 px-4 py-3 text-gray-100">
@@ -1093,10 +1112,10 @@ const Assistant = () => {
         };
 
         lines.forEach((line, index) => {
-            const trimmedLine = line.trim();
+            const trimmedLine = line?.trim();
 
             // Check if this is a table header separator (|---|)
-            if (trimmedLine.match(/^\|(\s*\-+\s*\|)+$/)) {
+            if (trimmedLine?.match(/^\|(\s*\-+\s*\|)+$/)) {
                 if (tableHeaders.length > 0 && !inTable) {
                     inTable = true;
                 }
@@ -1104,15 +1123,15 @@ const Assistant = () => {
             }
 
             // Check if this is a table row
-            if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
+            if (trimmedLine?.startsWith('|') && trimmedLine.endsWith('|')) {
                 if (!inTable && tableHeaders.length === 0) {
                     // This is the header row
-                    tableHeaders = trimmedLine.split('|')
+                    tableHeaders = trimmedLine?.split('|')
                         .filter(cell => cell.trim() !== '')
                         .map(cell => cell.trim());
                 } else if (inTable) {
                     // This is a data row
-                    const rowData = trimmedLine.split('|')
+                    const rowData = trimmedLine?.split('|')
                         .filter(cell => cell.trim() !== '')
                         .map(cell => cell.trim());
 
@@ -1136,7 +1155,7 @@ const Assistant = () => {
             }
 
             // Detect main headings (lines with numbers or that look like titles)
-            if ((trimmedLine.match(/^\d+\)/) || /^[A-Z][A-Za-z\s]+[:\-—]/.test(trimmedLine)) && trimmedLine.length < 80) {
+            if ((trimmedLine?.match(/^\d+\)/) || /^[A-Z][A-Za-z\s]+[:\-—]/.test(trimmedLine)) && trimmedLine.length < 80) {
                 flushList();
                 inEmphasizedSection = true;
                 elements.push(
@@ -1148,7 +1167,7 @@ const Assistant = () => {
             }
 
             // Detect subheadings (lines with emoji or that indicate categories)
-            if (trimmedLine.includes('➤') || trimmedLine.includes('💷') || trimmedLine.includes('—')) {
+            if (trimmedLine?.includes('➤') || trimmedLine.includes('💷') || trimmedLine.includes('—')) {
                 flushList();
                 elements.push(
                     <h3 key={`h3-${index}`} className="text-xl font-semibold mb-3 text-blue-300 mt-4">
@@ -1258,6 +1277,7 @@ const Assistant = () => {
                             setAddOns({
                                 industry: [],
                                 audience: [],
+                                audienceTitles: [],
                                 tone: [],
                                 objective: "",
                                 advice: { do: [], dont: [] },
@@ -2059,38 +2079,646 @@ const Assistant = () => {
                             </div>
                             <hr className='-mx-6 -mt-2' />
                             <div className="space-y-6 mt-4">
-                                {/* Industry */}
                                 <div>
-                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Industry:</label>
-                                    <div className="grid grid-cols-2 gap-3 mb-3">
-                                        {['Technology', 'Healthcare', 'Finance', 'Retail', 'Other'].map((item) => (
-                                            <label key={item} className="flex items-center space-x-3">
+                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience Industries:</label>
+                                    <div className="space-y-3 max-h-64 overflow-y-auto p-2 rounded-md">
+                                        {/* Professional Services */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={addOns.industry.includes(item.toLowerCase())}
-                                                    onChange={(e) => handleAddOnChange('industry', item.toLowerCase(), e.target.checked)}
+                                                    checked={expandedGroups.includes("professional-services")}
+                                                    onChange={() => handleGroupToggle("professional-services")}
                                                     className="w-4 h-4"
                                                 />
-                                                <span>{item}</span>
+                                                <span className="font-medium">Professional Services</span>
                                             </label>
-                                        ))}
+                                            {expandedGroups.includes("professional-services") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Consulting', 'Legal Services', 'Accounting', 'Staffing & Recruiting', 'Business Consulting, HR & Admin Services'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/,/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Manufacturing */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("manufacturing")}
+                                                    onChange={() => handleGroupToggle("manufacturing")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Manufacturing</span>
+                                            </label>
+                                            {expandedGroups.includes("manufacturing") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Industrial Automation', 'Automotive & Aerospace', 'Chemicals & Plastics', 'Electrical/Electronic Manufacturing', 'Machinery'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Technology, Information & Media */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("technology-information-media")}
+                                                    onChange={() => handleGroupToggle("technology-information-media")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Technology, Information & Media</span>
+                                            </label>
+                                            {expandedGroups.includes("technology-information-media") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['SaaS / Computer Software', 'IT Services & IT Consulting', 'Internet, Cloud, AI, Cybersecurity', 'Telecommunications', 'Publishing, Broadcast, Digital Media'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Government Administration */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("government-administration")}
+                                                    onChange={() => handleGroupToggle("government-administration")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Government Administration</span>
+                                            </label>
+                                            {expandedGroups.includes("government-administration") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Federal & Local Government', 'Public Policy / NGOs', 'International Affairs & Development'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Financial Services */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("financial-services")}
+                                                    onChange={() => handleGroupToggle("financial-services")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Financial Services</span>
+                                            </label>
+                                            {expandedGroups.includes("financial-services") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Banking', 'Insurance', 'Investment Management / Private Equity / Venture Capital', 'FinTech'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Accommodation & Food Services */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("accommodation-food-services")}
+                                                    onChange={() => handleGroupToggle("accommodation-food-services")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Accommodation & Food Services</span>
+                                            </label>
+                                            {expandedGroups.includes("accommodation-food-services") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Hotels & Hospitality', 'Restaurants / Food & Beverage', 'Travel Services'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Hospitals & Health Care */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("hospitals-health-care")}
+                                                    onChange={() => handleGroupToggle("hospitals-health-care")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Hospitals & Health Care</span>
+                                            </label>
+                                            {expandedGroups.includes("hospitals-health-care") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Hospitals', 'Pharmaceuticals', 'Biotechnology', 'Medical Devices', 'Mental Health & Wellness'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Education */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("education")}
+                                                    onChange={() => handleGroupToggle("education")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Education</span>
+                                            </label>
+                                            {expandedGroups.includes("education") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Higher Education', 'E-Learning & Training', 'Research Institutions'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Entertainment & Media */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("entertainment-media")}
+                                                    onChange={() => handleGroupToggle("entertainment-media")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Entertainment & Media</span>
+                                            </label>
+                                            {expandedGroups.includes("entertainment-media") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Film, Television, Music', 'Sports & Events', 'Gaming & Interactive Media'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/,/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Retail & Consumer Goods */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("retail-consumer-goods")}
+                                                    onChange={() => handleGroupToggle("retail-consumer-goods")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Retail & Consumer Goods</span>
+                                            </label>
+                                            {expandedGroups.includes("retail-consumer-goods") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['General Retail', 'Apparel & Fashion', 'Consumer Products & Personal Care', 'Luxury Goods'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Administrative & Support Services */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("administrative-support-services")}
+                                                    onChange={() => handleGroupToggle("administrative-support-services")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Administrative & Support Services</span>
+                                            </label>
+                                            {expandedGroups.includes("administrative-support-services") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Facilities Services', 'Outsourcing & BPO', 'HR Support'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Construction */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("construction")}
+                                                    onChange={() => handleGroupToggle("construction")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Construction</span>
+                                            </label>
+                                            {expandedGroups.includes("construction") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Civil Engineering', 'Architecture & Planning', 'Residential & Commercial Construction'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Transportation, Logistics & Supply Chain */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("transportation-logistics-supply-chain")}
+                                                    onChange={() => handleGroupToggle("transportation-logistics-supply-chain")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Transportation, Logistics & Supply Chain</span>
+                                            </label>
+                                            {expandedGroups.includes("transportation-logistics-supply-chain") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Airlines & Aviation', 'Shipping & Ports', 'Trucking & Freight', 'Warehousing & Distribution'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Consumer Services */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("consumer-services")}
+                                                    onChange={() => handleGroupToggle("consumer-services")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Consumer Services</span>
+                                            </label>
+                                            {expandedGroups.includes("consumer-services") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Personal Services', 'Customer Service Operations', 'Repair & Maintenance'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Real Estate & Equipment Rental Services */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("real-estate-equipment-rental-services")}
+                                                    onChange={() => handleGroupToggle("real-estate-equipment-rental-services")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Real Estate & Equipment Rental Services</span>
+                                            </label>
+                                            {expandedGroups.includes("real-estate-equipment-rental-services") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Real Estate Development', 'Commercial & Residential Property Management', 'Leasing & Rental Services'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Oil, Gas, and Mining */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("oil-gas-mining")}
+                                                    onChange={() => handleGroupToggle("oil-gas-mining")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Oil, Gas, and Mining</span>
+                                            </label>
+                                            {expandedGroups.includes("oil-gas-mining") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Oil & Gas', 'Mining & Metals', 'Renewables (often cross-listed here or under "Utilities")'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\(|\)|"/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Wholesale & Trade */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("wholesale-trade")}
+                                                    onChange={() => handleGroupToggle("wholesale-trade")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Wholesale & Trade</span>
+                                            </label>
+                                            {expandedGroups.includes("wholesale-trade") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Wholesale Distribution', 'Import/Export'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\//g, '-');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Agriculture, Farming & Forestry */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("agriculture-farming-forestry")}
+                                                    onChange={() => handleGroupToggle("agriculture-farming-forestry")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Agriculture, Farming & Forestry</span>
+                                            </label>
+                                            {expandedGroups.includes("agriculture-farming-forestry") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Farming & Ranching', 'Agribusiness', 'Forestry & Fisheries'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Utilities */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("utilities")}
+                                                    onChange={() => handleGroupToggle("utilities")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Utilities</span>
+                                            </label>
+                                            {expandedGroups.includes("utilities") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Power Generation & Distribution', 'Water & Waste Management', 'Renewable Energy'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Holding Companies / Conglomerates */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("holding-companies-conglomerates")}
+                                                    onChange={() => handleGroupToggle("holding-companies-conglomerates")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Holding Companies / Conglomerates</span>
+                                            </label>
+                                            {expandedGroups.includes("holding-companies-conglomerates") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Parent Orgs & Investment Holdings'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.industry.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <input
                                         type="text"
-                                        placeholder="Add custom industry..."
-                                        className="w-full px-4 py-2 text-white bg-[#3b3b5b] border border-white/20 rounded-md"
+                                        placeholder="Add custom audience industry..."
+                                        className="w-full px-4 py-2 text-white bg-[#3b3b5b] border border-white/20 rounded-md mt-3"
                                         onBlur={(e) => handleCustomAddOn('industry', e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleCustomAddOn('industry', e.target.value)}
                                     />
                                 </div>
-
-                                {/* Audience */}
+                                {/* Audience Department */}
                                 <div>
-                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience:</label>
+                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience Departments:</label>
                                     <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto mb-3">
                                         {[
-                                            'C-Suite', 'Sales', 'Marketing', 'IT', 'Operations',
-                                            'Finance', 'Customer Support', 'Prospect', 'Customer', 'Thought Leader'
+                                            'Marketing', 'Sales', 'Customer Success', 'Product', 'Operations',
+                                            'Finance', 'Human Resources (HR)', 'Revenue Operations (RevOps)',
+                                            'Partner / Channel', 'Executive Leadership', 'Information Technology (IT)',
+                                            'Legal', 'Research & Development (R&D)', 'Procurement / Supply Chain', 'C-Suite'
                                         ].map((aud) => (
                                             <label key={aud} className="flex items-center space-x-3">
                                                 <input
@@ -2105,23 +2733,418 @@ const Assistant = () => {
                                     </div>
                                     <input
                                         type="text"
-                                        placeholder="Add custom audience..."
+                                        placeholder="Add custom audience departments..."
                                         className="w-full px-4 py-2 bg-[#3b3b5b] border border-white/20 text-white rounded-md"
                                         onBlur={(e) => handleCustomAddOn('audience', e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleCustomAddOn('audience', e.target.value)}
                                     />
                                 </div>
 
-                                {/* Tone */}
+                                {/* Audience Titles - Nested Structure */}
                                 <div>
-                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Tone:</label>
+                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience Titles:</label>
+                                    <div className="space-y-3 max-h-64 overflow-y-auto p-2 rounded-md">
+                                        {/* Executive */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("executive")}
+                                                    onChange={() => handleGroupToggle("executive")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Executive</span>
+                                            </label>
+                                            {expandedGroups.includes("executive") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {[
+                                                        "Chief Executive Officer",
+                                                        "Chief Revenue Officer",
+                                                        "Chief Sales Officer",
+                                                        "Chief Marketing Officer",
+                                                        "Chief Product Officer",
+                                                        "Chief Financial Officer",
+                                                        "Chief Customer Officer",
+                                                    ].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, "-");
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) =>
+                                                                        handleAddOnChange("audienceTitles", key, e.target.checked)
+                                                                    }
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Marketing */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("marketing")}
+                                                    onChange={() => handleGroupToggle("marketing")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Marketing</span>
+                                            </label>
+                                            {expandedGroups.includes("marketing") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Marketing Manager', 'Senior Marketing Manager', 'Head of Marketing', 'Director of Marketing', 'VP of Marketing', 'Chief Marketing Officer (CMO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Sales */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("sales")}
+                                                    onChange={() => handleGroupToggle("sales")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Sales</span>
+                                            </label>
+                                            {expandedGroups.includes("sales") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Sales Manager', 'Regional Sales Manager', 'Director of Sales', 'VP of Sales', 'Head of Sales / Sales Leader', 'Chief Revenue Officer (CRO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Customer Success */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("customer-success")}
+                                                    onChange={() => handleGroupToggle("customer-success")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Customer Success</span>
+                                            </label>
+                                            {expandedGroups.includes("customer-success") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Customer Success Manager (CSM)', 'Senior Customer Success Manager', 'Head of Customer Success', 'Director of Customer Success', 'VP of Customer Success', 'Chief Customer Officer (CCO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Customer Experience (CX) */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("customer-experience")}
+                                                    onChange={() => handleGroupToggle("customer-experience")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Customer Experience (CX)</span>
+                                            </label>
+                                            {expandedGroups.includes("customer-experience") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Customer Experience Manager', 'CX Program Manager', 'Director of Customer Experience', 'VP of Customer Experience', 'Head of Customer Experience', 'Chief Experience Officer (CXO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Technology / IT */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("technology-it")}
+                                                    onChange={() => handleGroupToggle("technology-it")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Technology / IT</span>
+                                            </label>
+                                            {expandedGroups.includes("technology-it") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['IT Manager / Infrastructure Manager', 'Engineering Manager', 'Director of IT / Director of Engineering', 'VP of IT / VP of Engineering', 'Head of Technology', 'Chief Technology Officer (CTO)', 'Chief Information Officer (CIO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Finance */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("finance")}
+                                                    onChange={() => handleGroupToggle("finance")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Finance</span>
+                                            </label>
+                                            {expandedGroups.includes("finance") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Finance Manager', 'Senior Finance Manager', 'Controller', 'Director of Finance', 'VP of Finance', 'Head of Finance', 'Chief Financial Officer (CFO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Product */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("product")}
+                                                    onChange={() => handleGroupToggle("product")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Product</span>
+                                            </label>
+                                            {expandedGroups.includes("product") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Product Manager', 'Senior Product Manager', 'Group Product Manager', 'Director of Product Management', 'VP of Product', 'Head of Product', 'Chief Product Officer (CPO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Human Resources (HR / People Ops) */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("human-resources")}
+                                                    onChange={() => handleGroupToggle("human-resources")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Human Resources (HR / People Ops)</span>
+                                            </label>
+                                            {expandedGroups.includes("human-resources") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['HR Manager', 'Talent Acquisition Manager', 'People Operations Manager', 'Director of HR / Director of People', 'VP of HR / VP of People', 'Head of People / Head of HR', 'Chief Human Resources Officer (CHRO)', 'Chief People Officer (CPO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Legal */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("legal")}
+                                                    onChange={() => handleGroupToggle("legal")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Legal</span>
+                                            </label>
+                                            {expandedGroups.includes("legal") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Legal Counsel (Manager-level equivalent)', 'Legal Manager / Senior Legal Manager', 'Director of Legal', 'VP of Legal', 'General Counsel', 'Chief Legal Officer (CLO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Procurement / Supply Chain */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("procurement-supply-chain")}
+                                                    onChange={() => handleGroupToggle("procurement-supply-chain")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Procurement / Supply Chain</span>
+                                            </label>
+                                            {expandedGroups.includes("procurement-supply-chain") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Procurement Manager', 'Strategic Sourcing Manager', 'Supply Chain Manager', 'Director of Procurement', 'Director of Supply Chain', 'VP of Procurement / VP of Supply Chain', 'Head of Procurement', 'Chief Procurement Officer (CPO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Operations */}
+                                        <div className="border-b border-white/10 pb-2">
+                                            <label className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={expandedGroups.includes("operations")}
+                                                    onChange={() => handleGroupToggle("operations")}
+                                                    className="w-4 h-4"
+                                                />
+                                                <span className="font-medium">Operations</span>
+                                            </label>
+                                            {expandedGroups.includes("operations") && (
+                                                <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
+                                                    {['Operations Manager', 'Business Operations Manager', 'Director of Operations', 'VP of Operations', 'Head of Operations', 'Chief Operating Officer (COO)'].map((item) => {
+                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        return (
+                                                            <label key={item} className="flex items-center space-x-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={addOns.audienceTitles.includes(key)}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    className="w-4 h-4"
+                                                                />
+                                                                <span className="text-sm">{item}</span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Add custom audience title..."
+                                        className="w-full px-4 py-2 text-white bg-[#3b3b5b] border border-white/20 rounded-md mt-3"
+                                        onBlur={(e) => handleCustomAddOn('audienceTitles', e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleCustomAddOn('audienceTitles', e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Audience Tones */}
+                                <div>
+                                    <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience Tones:</label>
                                     <div className="grid grid-cols-2 gap-3 mb-3">
-                                        {['Professional', 'Casual', 'Friendly', 'Formal', 'Technical'].map((tone) => (
+                                        {['Executive-Ready', 'Professional & Polished', 'Conversational & Relatable', 'Insightful & Analytical', 'Challenger / Contrarian', 'Persuasive & Compelling', 'Visionary / Futuristic', 'Trusted Advisor', 'Storytelling / Narrative', 'Succinct & Direct', 'Optimistic & Inspiring', 'Consultative', 'Data-Backed / Research-Driven', 'Peer-to-Peer', 'Urgent & Action-Oriented'].map((tone) => (
                                             <label key={tone} className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={addOns.tone.includes(tone.toLowerCase())}
-                                                    onChange={(e) => handleAddOnChange('tone', tone.toLowerCase(), e.target.checked)}
+                                                    checked={addOns.tone.includes(tone.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-'))}
+                                                    onChange={(e) => handleAddOnChange('tone', tone.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-'), e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span>{tone}</span>
