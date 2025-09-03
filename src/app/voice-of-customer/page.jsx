@@ -73,27 +73,30 @@ const Dashboard = () => {
     { label: "Avatar", id: "Avatar" },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
-    {
-      label: "Episode Title",
-      id: "episode_title",
-      render: (row) => {
-        const detailsData = parseEpisodeDetails(row);
-        return detailsData.length > 0 ? detailsData[0]["Episode Title"] || "-" : "-";
-      }
-    },
-    {
-      label: "Date Recorded",
-      id: "date_recorded",
-      render: (row) => {
-        const detailsData = parseEpisodeDetails(row);
-        const dateRecorded = detailsData.length > 0
-          ? detailsData[0]["Date Recorded"]
-          : null;
-        return dateRecorded
-          ? new Date(dateRecorded).toLocaleDateString()
-          : "-";
-      }
-    },
+    { label: "Category", id: "category" },
+        { label: "Description", id: "description" },
+    
+    // {
+    //   label: "Episode Title",
+    //   id: "episode_title",
+    //   render: (row) => {
+    //     const detailsData = parseEpisodeDetails(row);
+    //     return detailsData.length > 0 ? detailsData[0]["Episode Title"] || "-" : "-";
+    //   }
+    // },
+    // {
+    //   label: "Date Recorded",
+    //   id: "date_recorded",
+    //   render: (row) => {
+    //     const detailsData = parseEpisodeDetails(row);
+    //     const dateRecorded = detailsData.length > 0
+    //       ? detailsData[0]["Date Recorded"]
+    //       : null;
+    //     return dateRecorded
+    //       ? new Date(dateRecorded).toLocaleDateString()
+    //       : "-";
+    //   }
+    // },
     // { label: "Guest", id: "Guest" },
     // { label: "Content Type", id: "Video Type" },
     // { label: "Date Recorded", id: "Date_Recorded" },

@@ -41,18 +41,18 @@ const VoiceOfMarket = () => {
     const [loadingMore, setLoadingMore] = useState(false);
 
     const columns = [
-        { label: "Thumbnail", id: "thumbnail" },
+        { label: "Avatar", id: "thumbnail" },
         { label: "File Name", id: "file_name" },
         { label: "Likes", id: "Likes" },
         { label: "Comments", id: "Comments" },
         // { label: "File", id: "file" },
-        { label: "File Type", id: "file_type" },
+        { label: "Formate", id: "file_type" },
         { label: "Category", id: "category" },
-        { label: "Market Categories", id: "market_categories" },
-        { label: "Content Categories", id: "content_categories" },
+        // { label: "Market Categories", id: "market_categories" },
+        // { label: "Content Categories", id: "content_categories" },
         { label: "Description", id: "description" },
-        { label: "Tag", id: "tags" },
-        { label: "Actions", id: "action" },
+        // { label: "Tag", id: "tags" },
+        // { label: "Actions", id: "action" }
     ];
 
     const arrayFields = ["category", "file_type", "tags", "market_categories", "content_categories"];
