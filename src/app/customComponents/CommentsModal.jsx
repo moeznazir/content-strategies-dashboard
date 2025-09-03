@@ -11,7 +11,7 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-const CommentModal = ({ row, onClose }) => {
+const CommentModal = ({ row, onClose,commentsTableName }) => {
     const [newComment, setNewComment] = useState("");
     const [comments, setComments] = useState([]);
     const [editingComment, setEditingComment] = useState(null);
@@ -37,7 +37,7 @@ const CommentModal = ({ row, onClose }) => {
     useEffect(() => {
         const fetchComments = async () => {
             const { data, error } = await supabase
-                .from("record_comments")
+                .from(commentsTableName)
                 .select("*")
                 .eq("Record_ID", row.id);
 
@@ -57,7 +57,7 @@ const CommentModal = ({ row, onClose }) => {
     const handleCommentSubmit = async () => {
         if (!newComment.trim()) return;
 
-        const { data, error } = await supabase.from("record_comments").insert([
+        const { data, error } = await supabase.from(commentsTableName).insert([
             {
                 Record_ID: row.id,
                 Comment: newComment,
@@ -92,7 +92,7 @@ const CommentModal = ({ row, onClose }) => {
                     onPress: async () => {
                         if (id) {
                             const { error } = await supabase
-                                .from("record_comments")
+                                .from(commentsTableName)
                                 .delete()
                                 .eq("id", id);
 
@@ -122,7 +122,7 @@ const CommentModal = ({ row, onClose }) => {
 
     const handleUpdate = async (id) => {
         const { error } = await supabase
-            .from("record_comments")
+            .from(commentsTableName)
             .update({ Comment: editedText })
             .eq("id", id);
 

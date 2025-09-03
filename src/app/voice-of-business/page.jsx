@@ -43,13 +43,15 @@ const FileManagement = () => {
     const columns = [
         { label: "Thumbnail", id: "thumbnail" },
         { label: "File Name", id: "file_name" },
+        { label: "Likes", id: "Likes" },
+        { label: "Comments", id: "Comments" },
         // { label: "File", id: "file" },
 
         { label: "File Type", id: "file_type" },
         { label: "Category", id: "category" },
         { label: "Description", id: "description" },
 
-        { label: "Tag", id: "tags" },
+        // { label: "Tag", id: "tags" },
         { label: "Actions", id: "action" },
     ];
 
@@ -213,7 +215,7 @@ const FileManagement = () => {
         try {
             const { data, error } = await supabase.rpc('get_filter_counts_voice_of_business', {
                 current_user_id: localStorage.getItem('current_user_id'),
-                input_company_id: localStorage.getItem('company_id'), 
+                input_company_id: localStorage.getItem('company_id'),
             });
 
             if (error) {
@@ -367,15 +369,15 @@ const FileManagement = () => {
 
     const handleShareSignupLink = async () => {
         try {
-          const slug = await fetchUserCompanySlug();
-          const url = `${window.location.origin}/${slug}/sign-up`;
-    
-          await navigator.clipboard.writeText(url);
-          ShowCustomToast("Signup Url copied to clipboard!", 'success', 2000); 
+            const slug = await fetchUserCompanySlug();
+            const url = `${window.location.origin}/${slug}/sign-up`;
+
+            await navigator.clipboard.writeText(url);
+            ShowCustomToast("Signup Url copied to clipboard!", 'success', 2000);
         } catch (error) {
-          ShowCustomToast("Failed to generate signup Url.",'error',2000);
+            ShowCustomToast("Failed to generate signup Url.", 'error', 2000);
         }
-      };
+    };
 
     const clearSearch = async () => {
         setSearchText("");
@@ -436,13 +438,13 @@ const FileManagement = () => {
 
                             {/* Right-aligned action buttons */}
                             <div className="flex gap-2">
-                                {["Search By Date",'Share Signup Url',"Upload File"].map((text, i) => {
+                                {["Search By Date", 'Share Signup Url', "Upload File"].map((text, i) => {
                                     const getIcon = (label) => {
                                         switch (label) {
                                             case "Search By Date": return <FaClock className="w-4 h-4" />;
-                                      
+
                                             case "Upload File": return <FaUpload className="w-3 h-3" />;
-                                                  case "Share Signup Url": return <FaLink className="w-3 h-3" />;
+                                            case "Share Signup Url": return <FaLink className="w-3 h-3" />;
                                             default: return null;
                                         }
                                     };
@@ -591,6 +593,9 @@ const FileManagement = () => {
                             loadingMore={loadingMore}
                             alignRecord={false}
                             loadingRecord={true}
+                            likesTableName={'user_likes_voice_of_business'}
+                            commentsTableName={'record_comments_voice_of_business'}
+
                         />
                     </div>
 

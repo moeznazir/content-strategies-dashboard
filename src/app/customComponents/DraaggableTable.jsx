@@ -3996,7 +3996,9 @@ const DraggableTable = ({
     loadingRecord,
     themesRank,
     handleAddFromRow,
-    appliedFilters
+    appliedFilters,
+    likesTableName,
+    commentsTableName
 }) => {
     const [columns, setColumns] = useState(initialColumns);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -6244,7 +6246,7 @@ const DraggableTable = ({
                                                         ))}
                                                 </div>
                                             ) : column.id === "Likes" ? (
-                                                <LikeButton user_name={row?.Guest} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
+                                                <LikeButton user_name={row?.Guest} likesTableName= {likesTableName} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
                                             ) : column.id === "Comments" ? (
                                                 <div onClick={() => setCommentRow(row)} className="text-blue-500">
                                                     <FaCommentDots size={18} />
@@ -6420,7 +6422,7 @@ const DraggableTable = ({
             )}
 
             {/* Comment Modal (For Comments) */}
-            {commentRow && <CommentModal row={commentRow} onClose={() => setCommentRow(null)} />}
+            {commentRow && <CommentModal row={commentRow} commentsTableName={commentsTableName} onClose={() => setCommentRow(null)} />}
 
             {/* Ranking Modal (For Ranks) */}
             {selectedVideoType && (

@@ -43,6 +43,8 @@ const VoiceOfMarket = () => {
     const columns = [
         { label: "Thumbnail", id: "thumbnail" },
         { label: "File Name", id: "file_name" },
+        { label: "Likes", id: "Likes" },
+        { label: "Comments", id: "Comments" },
         // { label: "File", id: "file" },
         { label: "File Type", id: "file_type" },
         { label: "Category", id: "category" },
@@ -639,6 +641,8 @@ const VoiceOfMarket = () => {
                             loadingMore={loadingMore}
                             alignRecord={false}
                             loadingRecord={true}
+                            likesTableName={'user_likes_voice_of_market'}
+                            commentsTableName={'record_comments_voice_of_market'}
                         />
                     </div>
 

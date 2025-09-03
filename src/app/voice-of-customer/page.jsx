@@ -741,12 +741,12 @@ const Dashboard = () => {
         current_user_id: localStorage.getItem('current_user_id'),
         input_company_id: localStorage.getItem('company_id'),
       });
-  
+
       if (error) {
         console.log("Error fetching filter counts:", error);
         return;
       }
-  
+
       // Initialize counts object
       const counts = {
         "Video Type": {},
@@ -757,7 +757,7 @@ const Dashboard = () => {
         "Challenges": {},
         "Sales Insights": {}
       };
-  
+
       // Process the counts data
       data.forEach(({ category, value, count, avg_ranking }) => {
         if (counts[category]) {
@@ -767,22 +767,22 @@ const Dashboard = () => {
           };
         }
       });
-  
+
       setFilterCounts(counts);
-  
+
       // Update the filter options with counts
       const updatedOptions = { ...filterOptions };
       for (const filterType in updatedOptions) {
         updatedOptions[filterType] = updatedOptions[filterType].map(option => {
           const countData = counts[filterType]?.[option.value] || { count: 0 };
-          
+
           // For Video Type, only show counts for "My Liked" and "All Liked"
           // For other options, set count to null so it won't display
           let displayCount = countData.count;
           if (filterType === "Video Type" && !["My Liked", "All Liked"].includes(option.value)) {
             displayCount = null; // This will prevent the count from being displayed
           }
-          
+
           return {
             ...option,
             count: displayCount,
@@ -790,7 +790,7 @@ const Dashboard = () => {
           };
         });
       }
-  
+
       setFilterOptionsWithCounts(updatedOptions);
     } catch (err) {
       console.log("Error calculating filter counts:", err);
@@ -1146,6 +1146,8 @@ const Dashboard = () => {
               loadingRecord={true}
               handleAddFromRow={handleAddFromRow}
               appliedFilters={selectedFilters} // Pass the applied filters
+              likesTableName={'user_likes'}
+              commentsTableName={'record_comments'}
             />
           </div>
 
