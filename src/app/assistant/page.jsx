@@ -1044,7 +1044,7 @@ const Assistant = () => {
         let inTable = false;
         let tableRows = [];
         let tableHeaders = [];
-    
+
         const flushList = () => {
             if (currentListItems.length > 0) {
                 elements.push(
@@ -1057,7 +1057,7 @@ const Assistant = () => {
                 currentListItems = [];
             }
         };
-    
+
         const renderTable = () => {
             if (tableRows.length > 0) {
                 elements.push(
@@ -1091,10 +1091,10 @@ const Assistant = () => {
             tableRows = [];
             inTable = false;
         };
-    
+
         lines.forEach((line, index) => {
             const trimmedLine = line.trim();
-    
+
             // Check if this is a table header separator (|---|)
             if (trimmedLine.match(/^\|(\s*\-+\s*\|)+$/)) {
                 if (tableHeaders.length > 0 && !inTable) {
@@ -1102,7 +1102,7 @@ const Assistant = () => {
                 }
                 return;
             }
-    
+
             // Check if this is a table row
             if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
                 if (!inTable && tableHeaders.length === 0) {
@@ -1115,7 +1115,7 @@ const Assistant = () => {
                     const rowData = trimmedLine.split('|')
                         .filter(cell => cell.trim() !== '')
                         .map(cell => cell.trim());
-                    
+
                     // Skip empty rows or separator rows
                     if (rowData.length > 0 && !rowData.every(cell => cell.match(/^\-+$/))) {
                         tableRows.push(rowData);
@@ -1123,18 +1123,18 @@ const Assistant = () => {
                 }
                 return;
             }
-    
+
             // If we were in a table and encounter a non-table line, render the table
             if (inTable && !trimmedLine.startsWith('|')) {
                 renderTable();
             }
-    
+
             if (!trimmedLine) {
                 flushList();
                 elements.push(<br key={`br-${index}`} />);
                 return;
             }
-    
+
             // Detect main headings (lines with numbers or that look like titles)
             if ((trimmedLine.match(/^\d+\)/) || /^[A-Z][A-Za-z\s]+[:\-—]/.test(trimmedLine)) && trimmedLine.length < 80) {
                 flushList();
@@ -1146,7 +1146,7 @@ const Assistant = () => {
                 );
                 return;
             }
-    
+
             // Detect subheadings (lines with emoji or that indicate categories)
             if (trimmedLine.includes('➤') || trimmedLine.includes('💷') || trimmedLine.includes('—')) {
                 flushList();
@@ -1157,7 +1157,7 @@ const Assistant = () => {
                 );
                 return;
             }
-    
+
             // Detect options (A), B), C), etc.)
             if (/^[A-Z]\)\s/.test(trimmedLine)) {
                 flushList();
@@ -1171,13 +1171,13 @@ const Assistant = () => {
                 );
                 return;
             }
-    
+
             // Detect list items (lines starting with •, -, *, or numbers)
             if (/^[•\-*]\s/.test(trimmedLine) || /^\d+\.\s/.test(trimmedLine)) {
                 currentListItems.push(trimmedLine.replace(/^[•\-*]\s/, '').replace(/^\d+\.\s/, ''));
                 return;
             }
-    
+
             // Detect bold patterns (text between **)
             if (trimmedLine.includes('**')) {
                 flushList();
@@ -1191,7 +1191,7 @@ const Assistant = () => {
                 );
                 return;
             }
-    
+
             // Detect italic patterns (text between _)
             if (trimmedLine.includes('_')) {
                 flushList();
@@ -1205,7 +1205,7 @@ const Assistant = () => {
                 );
                 return;
             }
-    
+
             // Text in emphasized sections (after headings)
             if (inEmphasizedSection) {
                 flushList();
@@ -1216,7 +1216,7 @@ const Assistant = () => {
                 );
                 return;
             }
-    
+
             // Regular paragraphs
             flushList();
             elements.push(
@@ -1225,14 +1225,14 @@ const Assistant = () => {
                 </p>
             );
         });
-    
+
         // Render any remaining table at the end
         if (inTable) {
             renderTable();
         }
-    
+
         flushList(); // Flush any remaining list items
-    
+
         return elements;
     };
     return (
@@ -1317,7 +1317,7 @@ const Assistant = () => {
 
             {/* Main chat area */}
             <div className="flex-1 flex flex-col relative">
-                {newResponseArrived && (
+                {/* {newResponseArrived && (
                     <button
                         onClick={scrollToTopOfResponse}
                         className="fixed  mt-1 right-12 bottom-28 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg z-10 transition-all duration-300"
@@ -1326,18 +1326,19 @@ const Assistant = () => {
                         <ArrowUp className="w-5 h-5" />
                         <span className="sr-only">Scroll to new response</span>
                     </button>
-                )}
+                )} */}
                 {/* Scroll to bottom button (appears when user scrolls up) */}
-                {showScrollToBottom && (
-                    <button
-                        onClick={scrollToBottom}
-                        className="fixed -mb-2 right-12 bottom-20 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg z-10 transition-all duration-300"
-                    >
-                        <ArrowDown className="w-5 h-5" />
-                        <span className="sr-only">Scroll to bottom</span>
-                    </button>
-                )}
-
+                {/* {showScrollToBottom && (
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-50 mb-28">
+                        <button
+                            onClick={scrollToBottom}
+                            className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110"
+                        >
+                            <ArrowDown className="w-4 h-4" />
+                            <span className="sr-only">Scroll to bottom</span>
+                        </button>
+                    </div>
+                )} */}
 
                 <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
                     {/* Chat history container with scroll */}
@@ -1360,6 +1361,7 @@ const Assistant = () => {
                                 <div key={`${msg.id}-${index}`} className="w-full space-y-4 mb-6">
                                     <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                         <div className={`rounded-lg px-4 py-3 max-w-3xl break-words overflow-hidden ${msg.role === 'user' ? 'bg-white/10 text-white' : ' text-white'}`}>
+
                                             {msg.role === 'assistant' ? (
                                                 <div className="message-content">
                                                     {formatPlainTextWithStyling(msg.content)}
@@ -1390,6 +1392,18 @@ const Assistant = () => {
                         )}
                     </div>
 
+                    {/* Scroll to bottom button - positioned above the response text area */}
+                    {showScrollToBottom && (
+                        <div className=" bottom-48 -mt-12 left-1/2 transform -translate-x-1/2 z-10">
+                            <button
+                                onClick={scrollToBottom}
+                                className="bg-gray-500 hover:bg-gray-500 mb-2 text-white p-2 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110"
+                            >
+                                <ArrowDown className="w-4 h-4" />
+                                <span className="sr-only">Scroll to bottom</span>
+                            </button>
+                        </div>
+                    )}
                     {/* Input area - fixed at bottom */}
                     <div className="flex flex-col w-full max-w-4xl" style={{ height: "auto" }}>
                         {/* Add-ons indicators */}
@@ -1760,6 +1774,7 @@ const Assistant = () => {
                             </div>
                         </div>
                     </div>
+
 
                     {/* Tabs with hover tooltips */}
                     <div className="flex mt-4 flex-wrap justify-center gap-2 -mb-4">

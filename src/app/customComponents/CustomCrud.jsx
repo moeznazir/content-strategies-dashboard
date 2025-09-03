@@ -308,7 +308,13 @@ const FULL_EPISODE_VIDEO = [
     "Video File",
     "Audio File",
     "YouTube URL",
-    "Full Episode Details"
+    "Full Episode Details",
+    "Transcript",
+    "LinkedIn Post Text",
+    "LinkedIn Executive Comments",
+    "Emails Marketing",
+    "Emails Sales"
+
 ];
 const FULL_EPISODE_EXTENDED_CONTENT = [
     "Article URL",
@@ -318,14 +324,22 @@ const FULL_EPISODE_EXTENDED_CONTENT = [
     "YouTube Short Transcript",
     "LinkedIn Video File",
     "LinkedIn Video Transcript",
-    "Extended Content LinkedIn Comments & Hashtags",
+    "LinkedIn Post Text",
+    "LinkedIn Executive Comments",
+    "Emails Marketing",
+    "Emails Sales",
     "Quote Card"
 ];
 const FULL_EPISODE_HIGHLIGHT_VIDEO = [
     "Video File",
     "YouTube URL",
     "Transcript",
-    "Highlights Video Details"
+    "Highlights Video Details",
+    "LinkedIn Post Text",
+    "LinkedIn Executive Comments",
+    "Emails Marketing",
+    "Emails Sales"
+
 ];
 const FULL_EPISODE_INTRODUCTION_VIDEO = [
     "Video File",
@@ -345,7 +359,10 @@ const FULL_EPISODE_QA_VIDEOS = [
     "Extended Content YouTube Short Transcript",
     "Extended Content LinkedIn Video File",
     "Extended Content LinkedIn Video Transcript",
-    "QA Video LinkedIn Comments & Hashtags",
+    "LinkedIn Post Text",
+    "LinkedIn Executive Comments",
+    "Emails Marketing",
+    "Emails Sales",
     "Quote Card"
 ]
 
@@ -1700,7 +1717,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         "Video File": "",
         "Audio File": "",
         "YouTube URL": "",
-        "Full Episode Details": ""
+        "Full Episode Details": "",
+        "Transcript": "",
+        "LinkedIn Post Text": "",
+        "LinkedIn Executive Comments": "",
+        "Emails Marketing": "",
+        "Emails Sales": ""
     });
     const [fullEpisodeVideoEditIndex, setFullEpisodeVideoEditIndex] = useState(null);
 
@@ -1714,7 +1736,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         "YouTube Short Transcript": "",
         "LinkedIn Video File": "",
         "LinkedIn Video Transcript": "",
-        "Extended Content LinkedIn Comments & Hashtags": "",
+        "LinkedIn Post Text": "",
+        "LinkedIn Executive Comments": "",
+        "Emails Marketing": "",
+        "Emails Sales": "",
         "Quote Card": ""
     });
     const [fullEpisodeExtendedContentEditIndex, setFullEpisodeExtendedContentEditIndex] = useState(null);
@@ -1725,7 +1750,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         "Video File": "",
         "YouTube URL": "",
         "Transcript": "",
-        "Highlights Video Details": ""
+        "Highlights Video Details": "",
+        "LinkedIn Post Text": "",
+        "LinkedIn Executive Comments": "",
+        "Emails Marketing": "",
+        "Emails Sales": ""
+
     });
     const [fullEpisodeHighlightVideoEditIndex, setFullEpisodeHighlightVideoEditIndex] = useState(null);
 
@@ -1753,7 +1783,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         "Extended Content YouTube Short Transcript": "",
         "Extended Content LinkedIn Video File": "",
         "Extended Content LinkedIn Video Transcript": "",
-        "QA Video LinkedIn Comments & Hashtags": "",
+        "LinkedIn Post Text": "",
+        "LinkedIn Executive Comments": "",
+        "Emails Marketing": "",
+        "Emails Sales": "",
         "Quote Card": ""
     });
     const [fullEpisodeQAVideosEditIndex, setFullEpisodeQAVideosEditIndex] = useState(null);
@@ -2249,7 +2282,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Video File": item["Video File"] || "",
                 "Audio File": item["Audio File"] || "",
                 "YouTube URL": item["YouTube URL"] || "",
-                "Full Episode Details": item["Full Episode Details"] || ""
+                "Full Episode Details": item["Full Episode Details"] || "",
+                "Transcript": item["Transcript"] || "",
+                "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
+                "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
+                "Emails Marketing": item["Emails Marketing"] || "",
+                "Emails Sales": item["Emails Sales"] || ""
             }));
         }
         if (typeof data === 'object') {
@@ -2257,7 +2295,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Video File": data["Video File"] || "",
                 "Audio File": data["Audio File"] || "",
                 "YouTube URL": data["YouTube URL"] || "",
-                "Full Episode Details": data["Full Episode Details"] || ""
+                "Full Episode Details": data["Full Episode Details"] || "",
+                "Transcript": data["Transcript"] || "",
+                "LinkedIn Post Text": data["LinkedIn Post Text"] || "",
+                "LinkedIn Executive Comments": data["LinkedIn Executive Comments"] || "",
+                "Emails Marketing": data["Emails Marketing"] || "",
+                "Emails Sales": data["Emails Sales"] || ""
             }];
         }
         return [];
@@ -2282,7 +2325,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "YouTube Short Transcript": item["YouTube Short Transcript"] || "",
                 "LinkedIn Video File": item["LinkedIn Video File"] || "",
                 "LinkedIn Video Transcript": item["LinkedIn Video Transcript"] || "",
-                "Extended Content LinkedIn Comments & Hashtags": item["Extended Content LinkedIn Comments & Hashtags"] || "",
+                "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
+                "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
+                "Emails Marketing": item["Emails Marketing"] || "",
+                "Emails Sales": item["Emails Sales"] || "",
                 "Quote Card": item["Quote Card"] || ""
             }));
         }
@@ -2295,7 +2341,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "YouTube Short Transcript": data["YouTube Short Transcript"] || "",
                 "LinkedIn Video File": data["LinkedIn Video File"] || "",
                 "LinkedIn Video Transcript": data["LinkedIn Video Transcript"] || "",
-                "Extended Content LinkedIn Comments & Hashtags": data["Extended Content LinkedIn Comments & Hashtags"] || "",
+                "LinkedIn Post Text": data["LinkedIn Post Text"] || "",
+                "LinkedIn Executive Comments": data["LinkedIn Executive Comments"] || "",
+                "Emails Marketing": data["Emails Marketing"] || "",
+                "Emails Sales": data["Emails Sales"] || "",
                 "Quote Card": data["Quote Card"] || ""
             }];
         }
@@ -2317,7 +2366,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Video File": item["Video File"] || "",
                 "YouTube URL": item["YouTube URL"] || "",
                 "Transcript": item["Transcript"] || "",
-                "Highlights Video Details": item["Highlights Video Details"] || ""
+                "Highlights Video Details": item["Highlights Video Details"] || "",
+                "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
+                "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
+                "Emails Marketing": item["Emails Marketing"] || "",
+                "Emails Sales": item["Emails Sales"] || ""
             }));
         }
         if (typeof data === 'object') {
@@ -2325,7 +2378,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Video File": data["Video File"] || "",
                 "YouTube URL": data["YouTube URL"] || "",
                 "Transcript": data["Transcript"] || "",
-                "Highlights Video Details": data["Highlights Video Details"] || ""
+                "Highlights Video Details": data["Highlights Video Details"] || "",
+                "LinkedIn Post Text": data["LinkedIn Post Text"] || "",
+                "LinkedIn Executive Comments": data["LinkedIn Executive Comments"] || "",
+                "Emails Marketing": data["Emails Marketing"] || "",
+                "Emails Sales": data["Emails Sales"] || ""
             }];
         }
         return [];
@@ -2383,7 +2440,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Extended Content YouTube Short Transcript": item["Extended Content YouTube Short Transcript"] || "",
                 "Extended Content LinkedIn Video File": item["Extended Content LinkedIn Video File"] || "",
                 "Extended Content LinkedIn Video Transcript": item["Extended Content LinkedIn Video Transcript"] || "",
-                "QA Video LinkedIn Comments & Hashtags": item["QA Video LinkedIn Comments & Hashtags"] || "",
+                "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
+                "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
+                "Emails Marketing": item["Emails Marketing"] || "",
+                "Emails Sales": item["Emails Sales"] || "",
                 "Quote Card": item["Quote Card"] || ""
             }));
         }
@@ -2400,7 +2460,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Extended Content YouTube Short Transcript": data["Extended Content YouTube Short Transcript"] || "",
                 "Extended Content LinkedIn Video File": data["Extended Content LinkedIn Video File"] || "",
                 "Extended Content LinkedIn Video Transcript": data["Extended Content LinkedIn Video Transcript"] || "",
-                "QA Video LinkedIn Comments & Hashtags": data["QA Video LinkedIn Comments & Hashtags"] || "",
+                "LinkedIn Post Text": data["LinkedIn Post Text"] || "",
+                "LinkedIn Executive Comments": data["LinkedIn Executive Comments"] || "",
+                "Emails Marketing": data["Emails Marketing"] || "",
+                "Emails Sales": data["Emails Sales"] || "",
                 "Quote Card": data["Quote Card"] || ""
             }];
         }
@@ -4363,7 +4426,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Video File": "",
             "Audio File": "",
             "YouTube URL": "",
-            "Full Episode Details": ""
+            "Full Episode Details": "",
+            "Transcript": "",
+            "LinkedIn Post Text": "",
+            "LinkedIn Executive Comments": "",
+            "Emails Marketing": "",
+            "Emails Sales": ""
         });
     };
 
@@ -4373,7 +4441,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Video File": entry["Video File"] || "",
             "Audio File": entry["Audio File"] || "",
             "YouTube URL": entry["YouTube URL"] || "",
-            "Full Episode Details": entry["Full Episode Details"] || ""
+            "Full Episode Details": entry["Full Episode Details"] || "",
+            "Transcript": entry["Transcript"] || "",
+            "LinkedIn Post Text": entry["LinkedIn Post Text"] || "",
+            "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
+            "Emails Marketing": entry["Emails Marketing"] || "",
+            "Emails Sales": entry["Emails Sales"] || ""
         });
         setFullEpisodeVideoEditIndex(index);
     };
@@ -4386,7 +4459,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Video File": "",
                 "Audio File": "",
                 "YouTube URL": "",
-                "Full Episode Details": ""
+                "Full Episode Details": "",
+                "Transcript": "",
+                "LinkedIn Post Text": "",
+                "LinkedIn Executive Comments": "",
+                "Emails Marketing": "",
+                "Emails Sales": ""
             });
             setFullEpisodeVideoEditIndex(null);
         } else if (fullEpisodeVideoEditIndex > index) {
@@ -4423,7 +4501,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "YouTube Short Transcript": "",
             "LinkedIn Video File": "",
             "LinkedIn Video Transcript": "",
-            "Extended Content LinkedIn Comments & Hashtags": "",
+            "LinkedIn Post Text": "",
+            "LinkedIn Executive Comments": "",
+            "Emails Marketing": "",
+            "Emails Sales": "",
             "Quote Card": ""
         });
     };
@@ -4438,7 +4519,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "YouTube Short Transcript": entry["YouTube Short Transcript"] || "",
             "LinkedIn Video File": entry["LinkedIn Video File"] || "",
             "LinkedIn Video Transcript": entry["LinkedIn Video Transcript"] || "",
-            "Extended Content LinkedIn Comments & Hashtags": entry["Extended Content LinkedIn Comments & Hashtags"] || "",
+            "LinkedIn Post Text": entry["LinkedIn Post Text"] || "",
+            "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
+            "Emails Marketing": entry["Emails Marketing"] || "",
+            "Emails Sales": entry["Emails Sales"] || "",
             "Quote Card": entry["Quote Card"] || ""
         });
         setFullEpisodeExtendedContentEditIndex(index);
@@ -4456,7 +4540,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "YouTube Short Transcript": "",
                 "LinkedIn Video File": "",
                 "LinkedIn Video Transcript": "",
-                "Extended Content LinkedIn Comments & Hashtags": "",
+                "LinkedIn Post Text": "",
+                "LinkedIn Executive Comments": "",
+                "Emails Marketing": "",
+                "Emails Sales": "",
                 "Quote Card": ""
             });
             setFullEpisodeExtendedContentEditIndex(null);
@@ -4490,7 +4577,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Video File": "",
             "YouTube URL": "",
             "Transcript": "",
-            "Highlights Video Details": ""
+            "Highlights Video Details": "",
+            "LinkedIn Post Text": "",
+            "LinkedIn Executive Comments": "",
+            "Emails Marketing": "",
+            "Emails Sales": ""
+
         });
     };
 
@@ -4500,7 +4592,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Video File": entry["Video File"] || "",
             "YouTube URL": entry["YouTube URL"] || "",
             "Transcript": entry["Transcript"] || "",
-            "Highlights Video Details": entry["Highlights Video Details"] || ""
+            "Highlights Video Details": entry["Highlights Video Details"] || "",
+            "LinkedIn Post Text": entry["LinkedIn Post Text"] || "",
+            "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
+            "Emails Marketing": entry["Emails Marketing"] || "",
+            "Emails Sales": entry["Emails Sales"] || ""
+
         });
         setFullEpisodeHighlightVideoEditIndex(index);
     };
@@ -4513,7 +4610,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Video File": "",
                 "YouTube URL": "",
                 "Transcript": "",
-                "Highlights Video Details": ""
+                "Highlights Video Details": "",
+                "LinkedIn Post Text": "",
+                "LinkedIn Executive Comments": "",
+                "Emails Marketing": "",
+                "Emails Sales": ""
+
             });
             setFullEpisodeHighlightVideoEditIndex(null);
         } else if (fullEpisodeHighlightVideoEditIndex > index) {
@@ -4606,7 +4708,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Extended Content YouTube Short Transcript": "",
             "Extended Content LinkedIn Video File": "",
             "Extended Content LinkedIn Video Transcript": "",
-            "QA Video LinkedIn Comments & Hashtags": "",
+            "LinkedIn Post Text": "",
+            "LinkedIn Executive Comments": "",
+            "Emails Marketing": "",
+            "Emails Sales": "",
             "Quote Card": ""
         });
     };
@@ -4625,7 +4730,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Extended Content YouTube Short Transcript": entry["Extended Content YouTube Short Transcript"] || "",
             "Extended Content LinkedIn Video File": entry["Extended Content LinkedIn Video File"] || "",
             "Extended Content LinkedIn Video Transcript": entry["Extended Content LinkedIn Video Transcript"] || "",
-            "QA Video LinkedIn Comments & Hashtags": entry["QA Video LinkedIn Comments & Hashtags"] || "",
+            "LinkedIn Post Text": entry["LinkedIn Post Text"] || "",
+            "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
+            "Emails Marketing": entry["Emails Marketing"] || "",
+            "Emails Sales": entry["Emails Sales"] || "",
             "Quote Card": entry["Quote Card"] || ""
         });
         setFullEpisodeQAVideosEditIndex(index);
@@ -4647,7 +4755,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Extended Content YouTube Short Transcript": "",
                 "Extended Content LinkedIn Video File": "",
                 "Extended Content LinkedIn Video Transcript": "",
-                "QA Video LinkedIn Comments & Hashtags": "",
+                "LinkedIn Post Text": "",
+                "LinkedIn Executive Comments": "",
+                "Emails Marketing": "",
+                "Emails Sales": "",
                 "Quote Card": ""
             });
             setFullEpisodeQAVideosEditIndex(null);
@@ -5147,8 +5258,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             type="button"
                                                             onClick={() => setCurrentStep(stepNumber)}
                                                             className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium ${currentStep === stepNumber
-                                                                    ? 'bg-blue-600 text-white'
-                                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                                ? 'bg-blue-600 text-white'
+                                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                                                 }`}
                                                         >
                                                             {stepNumber}
