@@ -40,16 +40,51 @@ const FileManagement = () => {
     const [openDropdown, setOpenDropdown] = useState(null);
     const [loadingMore, setLoadingMore] = useState(false);
 
+    const FILE_TYPE_ICONS = {
+        Document: "📄",
+        Spreadsheet: "📊",
+        Presentation: "📑",
+        PDF: "📕",
+        Image: "🖼️",
+        Video: "🎬",
+        Audio: "🎵",
+        Archive: "📦",
+        Code: "💻",
+        Executable: "⚙️",
+        ISO: "💿",
+        Other: "📁"
+    };
     const columns = [
-        { label: "Avatar", id: "thumbnail" },
+        // { label: "Avatar", id: "thumbnail" },
+        {
+            label: "Avatar",
+            id: "file_type_icon",
+            // Custom renderer for the icon column
+            render: (row) => {
+                const fileType = row.file_type;
+                // Handle both array and single value cases
+                const fileTypes = Array.isArray(fileType) ? fileType : [fileType];
+
+                return (
+                    <div className="flex items-center justify-center">
+                        {fileTypes.map((type, index) => (
+                            <span key={index} className="text-xl">
+                                {FILE_TYPE_ICONS[type] || FILE_TYPE_ICONS.Other}
+                            </span>
+                        ))}
+                    </div>
+                );
+            }
+        },
         { label: "File Name", id: "file_name" },
+        { label: "Formate", id: "file_type" },
+        { label: "Category", id: "category" },
+        { label: "Description", id: "description" },
         { label: "Likes", id: "Likes" },
         { label: "Comments", id: "Comments" },
         // { label: "File", id: "file" },
 
-        { label: "Formate", id: "file_type" },
-        { label: "Category", id: "category" },
-        { label: "Description", id: "description" },
+
 
         // { label: "Tag", id: "tags" },
         // { label: "Actions", id: "action" }

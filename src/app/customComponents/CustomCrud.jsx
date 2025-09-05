@@ -301,6 +301,9 @@ const DETAILS_FULL_EPISODES = [
     "Episode Number",
     "Episode Title",
     "Date Recorded",
+    "Category",
+    "Description",
+    "Formate",
     "Short and Long-Tail SEO Keywords",
     "All Asset Folder"
 ];
@@ -1706,6 +1709,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         "Episode Number": "",
         "Episode Title": "",
         "Date Recorded": "",
+        "Category": "Podcast",
+        "Description": "",
+        "Formate": "Multi-Media",
         "Short and Long-Tail SEO Keywords": "",
         "All Asset Folder": ""
     });
@@ -2250,6 +2256,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Episode Number": item["Episode Number"] || "",
                 "Episode Title": item["Episode Title"] || "",
                 "Date Recorded": item["Date Recorded"] || "",
+                "Category": item["Category"] || "",
+                "Description": item["Description"] || "",
+                "Formate": item["Formate"] || "",
                 "Short and Long-Tail SEO Keywords": item["Short and Long-Tail SEO Keywords"] || "",
                 "All Asset Folder": item["All Asset Folder"] || ""
             }));
@@ -2260,6 +2269,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Episode Number": data["Episode Number"] || "",
                 "Episode Title": data["Episode Title"] || "",
                 "Date Recorded": data["Date Recorded"] || "",
+                "Category": data["Category"] || "",
+                "Description": data["Description"] || "",
+                "Formate": data["Formate"] || "",
                 "Short and Long-Tail SEO Keywords": data["Short and Long-Tail SEO Keywords"] || "",
                 "All Asset Folder": data["All Asset Folder"] || ""
             }];
@@ -4367,6 +4379,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Episode Number": "",
             "Episode Title": "",
             "Date Recorded": "",
+            "Category": "",
+            "Description": "",
+            "Formate": "",
             "Short and Long-Tail SEO Keywords": "",
             "All Asset Folder": ""
         });
@@ -4379,6 +4394,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Episode Number": entry["Episode Number"] || "",
             "Episode Title": entry["Episode Title"] || "",
             "Date Recorded": entry["Date Recorded"] || "",
+            "Category": entry["Category"] || "",
+            "Description": entry["Description"] || "",
+            "Formate": entry["Formate"] || "",
             "Short and Long-Tail SEO Keywords": entry["Short and Long-Tail SEO Keywords"] || "",
             "All Asset Folder": entry["All Asset Folder"] || ""
         });
@@ -4394,6 +4412,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Episode Number": "",
                 "Episode Title": "",
                 "Date Recorded": "",
+                "Category": "",
+                "Description": "",
+                "Formate": "",
                 "Short and Long-Tail SEO Keywords": "",
                 "All Asset Folder": ""
             });

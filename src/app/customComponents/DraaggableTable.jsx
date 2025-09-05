@@ -206,14 +206,14 @@ const GuestDetailsModal = ({ guests, onClose }) => {
                     <hr className="border-b border-gray-300 mb-4 -mt-[15px] -mx-6" />
 
                     {normalizedGuests.length > 0 ? (
-                        <div className={`grid gap-2 ${normalizedGuests.length === 1 ? 'grid-cols-1' : normalizedGuests.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                        <div className={`bg-whitw/20 grid gap-2 ${normalizedGuests.length === 1 ? 'grid-cols-1' : normalizedGuests.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
                             {normalizedGuests.map((guest, index) => (
                                 <div
                                     key={index}
                                     className="border rounded-lg p-4 flex flex-col items-center"
                                     style={{ backgroundColor: appColors.primaryColor }}
                                 >
-                               <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden mb-4">
+                                    <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center overflow-hidden mb-4">
                                         {guest.Avatar ? (
                                             <img
                                                 src={guest.Avatar}
@@ -3928,39 +3928,48 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
         <th
             ref={(node) => ref(drop(node))}
             className={`
-            px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
-          ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
-          ${(column.id === 'company_specific') ? 'left-0 px-6 z-25' : ''}
-          ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
-          ${column.id === 'file_name' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
-          ${column.id === 'Guest' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
-          ${column.id == 'email' ? ' px-[25px] z-20 bg-[#1a1b41] w-[200px]' : ''}
-        `}
+    px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-white
+    ${(column.id === 'Avatar') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+    ${(column.id === 'file_type_icon') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+    ${(column.id === 'company_specific') ? 'left-0 px-6 z-25' : ''}
+    ${(column.id === 'thumbnail') ? 'sticky left-0 px-6 z-25 bg-[#1a1b41]' : ''}
+    ${column.id === 'file_name' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41] w-[125px]' : ''}
+    ${column.id === 'Guest' ? 'sticky left-[130px] -px-[60px] z-20 bg-[#1a1b41]' : ''}
+    ${column.id == 'email' ? 'px-[25px] z-20 bg-[#1a1b41] w-[200px]' : ''}
+    border-r border-gray-600
+  `}
             style={{
-
                 overflow: 'visible',
-                cursor: isResizing ? "col-resize" : "",
+                cursor: isResizing ? 'col-resize' : '',
                 opacity: isDragging ? 0.5 : 1,
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                borderBottom: "2px solid #4B5563",
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                borderBottom: '2px solid #4B5563',
                 zIndex: 50,
             }}
         >
-
             <ResizableBox
-                width={(column.id === 'Avatar' || column.id === 'Likes' || column.id === 'Comments' || column.id == 'action' || column.id == 'thumbnail') ? 120 : 250}
+                width={
+                    (column.id === 'Avatar' ||
+                        column.id === 'Likes' ||
+                        column.id === 'file_type_icon' ||
+                        column.id === 'Comments' ||
+                        column.id === 'action' ||
+                        column.id === 'thumbnail')
+                        ? 120
+                        : 200
+                }
                 height={20}
                 minConstraints={[50]}
                 maxConstraints={[1000]}
-                resizeHandles={shouldResizeColumn(column.id) ? ["e"] : []}
+                resizeHandles={shouldResizeColumn(column.id) ? ['e'] : []}
                 axis="x"
                 onResizeStart={() => setIsResizing(true)}
                 onResizeStop={() => setIsResizing(false)}
                 handle={
                     <span
-                        className="absolute top-0 right-0 h-[50px] -mt-4 w-[5px] cursor-col-resize z-10 bg-transparent border-r-4 border-gray-600"
-                        style={{ marginRight: "-25px" }}
+                        className="absolute top-0 right-0 h-[50px] -mt-4 w-[8px] cursor-col-resize z-10 bg-transparent"
+                        style={{ marginRight: '-28px' }}
                     />
                 }
             >
@@ -3968,16 +3977,18 @@ const DraggableHeader = ({ column, index, moveColumn }) => {
                     <span className="truncate w-full">{column.label}</span>
 
                     {/* Tooltip */}
-                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max max-w-xs 
-                  bg-black text-white text-xs rounded px-2 py-1 
-                  opacity-0 group-hover:opacity-100 
-                  whitespace-normal break-words shadow-lg pointer-events-none z-50">
+                    <div
+                        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max max-w-xs 
+          bg-black text-white text-xs rounded px-2 py-1 
+          opacity-0 group-hover:opacity-100 
+          whitespace-normal break-words shadow-lg pointer-events-none z-50"
+                    >
                         {column.label}
                     </div>
                 </div>
-
             </ResizableBox>
         </th>
+
     );
 };
 
@@ -5503,11 +5514,12 @@ const DraggableTable = ({
                                             key={column.id}
                                             className={`
                                        px-6 py-1 text-sm divide-y divide-gray-600 whitespace-nowrap
-                                       ${['Objections', 'Tags', 'Themes', 'Validations', 'Challenges', 'Sales Insights', 'Case_Study_Other_Video', 'Video Type'].includes(column.label)
+                                       ${['Objections', 'Tags', 'Themes', 'Guest', 'Validations', 'Challenges', 'Sales Insights', 'Case_Study_Other_Video', 'Video Type'].includes(column.label)
                                                     ? `w-auto max-w-max`
                                                     : 'max-w-[250px] overflow-hidden text-ellipsis'
                                                 }
                                                 ${(column.id === 'Avatar') ? 'sticky left-0 px-4 z-25 bg-[#1a1b41]' : ''}
+                                                ${(column.id === 'file_type_icon') ? 'sticky left-0 px-4 z-25 bg-[#1a1b41]' : ''}
                                                 ${(column.id === 'company_specific') ? 'left-0  px-6 z-25' : ''}
                                                 ${(column.id === 'thumbnail') ? 'sticky left-0  px-6  z-25 bg-[#1a1b41]' : ''}
                                                 ${column.id === 'file_name' ? 'sticky left-[130px] w-[200px]  px-6 bg-[#1a1b41]' : ''}
@@ -5630,38 +5642,28 @@ const DraggableTable = ({
                                                     )}
                                                 </div>
                                             ) : column.id === "Guest" ? (
-                                                <div className="flex flex-col gap-1">
-                                                    {(Array.isArray(row.Guest) || (typeof row.Guest === 'string' && row.Guest.startsWith('['))) ? (
-                                                        // JSON array format
-                                                        (Array.isArray(row.Guest) ? row.Guest : JSON.parse(row.Guest || '[]'))
-                                                            .slice(0, 3)
-                                                            .map((guest, idx) => (
-                                                                <div key={idx} className="flex items-center gap-2">
-                                                                    {(typeof guest === 'object' ? guest["Guest Title"] : guest) && (
-                                                                        <span className="font-medium">
-                                                                            {typeof guest === 'object' ? guest["Guest Title"] : guest}
-                                                                        </span>
-                                                                    )}
-                                                                    {(typeof guest === 'object' && guest["Guest Company"]) && (
-                                                                        <span className="text-xs text-gray-400">
-                                                                            ({guest["Guest Company"]})
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            ))
-                                                    ) : (
-                                                        // Separate columns format
-                                                        row[column.id] && (
-                                                            <div className="flex items-center gap-2">
-                                                                {row["Guest Title"] && (
-                                                                    <span className="font-medium">{row["Guest Title"]}</span>
-                                                                )}
-                                                                {row["Guest Company"] && (
-                                                                    <span className="text-xs text-gray-400">({row["Guest Company"]})</span>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    )}
+                                                <div className="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar whitespace-nowrap max-w-xs">
+                                                    {(Array.isArray(row.Guest) || (typeof row.Guest === "string" && row.Guest.startsWith("[")))
+                                                        ? (Array.isArray(row.Guest) ? row.Guest : JSON.parse(row.Guest || "[]")).map((guest, idx) => {
+                                                            const guestName = typeof guest === "object" ? guest.Guest : guest; // ✅ Extract "Guest"
+                                                            return (
+                                                                guestName && (
+                                                                    <span
+                                                                        key={idx}
+                                                                        className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded-full ${getRandomColor()}`}
+                                                                    >
+                                                                        {guestName ? guestName : "-"}
+                                                                    </span>
+                                                                )
+                                                            );
+                                                        })
+                                                        : row.Guest && (
+                                                            <span
+                                                                className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded-full ${getRandomColor()}`}
+                                                            >
+                                                                {row.Guest ? row.Guest : "-"}
+                                                            </span>
+                                                        )}
                                                 </div>
                                             ) : column.id === "Prep_Call" ? (
                                                 <div className="flex gap-1">
@@ -5730,12 +5732,34 @@ const DraggableTable = ({
                                                         ) : null;
                                                     })()}
                                                 </div>
-                                            ) : column.id === "episode_title" ? (
+                                            ) : column.id === "file_type_icon" ? (
+                                                
+                                                <div className="flex justify-center">
+                                                     <button
+                                                        onClick={() => setFileRow(row)}
+                                                        className="text-blue-500 hover:text-blue-700 mr-2 transition-colors"
+                                                        title="Expand preview"
+                                                    >
+                                                        <FaExpandAlt size={18} />
+                                                    </button>
+                                                  {column.render ? column.render(row) : row[column.id] ?? "-"}
+                                                </div>
+                                              ): column.id === "Guest" ? (
                                                 <div className="flex gap-1">
 
                                                     {column.render ? column.render(row) : row[column.id] ?? "-"}
                                                 </div>
-                                            ) : column.id === "date_recorded" ? (
+                                            ) : column.id === "Category" ? (
+                                                <div className="flex gap-1">
+
+                                                    {column.render ? column.render(row) : row[column.id] ?? "-"}
+                                                </div>
+                                            ) : column.id === "Description" ? (
+                                                <div className="flex gap-1">
+
+                                                    {column.render ? column.render(row) : row[column.id] ?? "-"}
+                                                </div>
+                                            ) : column.id === "Formate" ? (
                                                 <div className="flex gap-1">
 
                                                     {column.render ? column.render(row) : row[column.id] ?? "-"}
@@ -6246,7 +6270,7 @@ const DraggableTable = ({
                                                         ))}
                                                 </div>
                                             ) : column.id === "Likes" ? (
-                                                <LikeButton user_name={row?.Guest} likesTableName= {likesTableName} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
+                                                <LikeButton user_name={row?.Guest} likesTableName={likesTableName} record_id={row?.id} current_user_id={localStorage.getItem("current_user_id")} user_email={localStorage.getItem("email")} />
                                             ) : column.id === "Comments" ? (
                                                 <div onClick={() => setCommentRow(row)} className="text-blue-500">
                                                     <FaCommentDots size={18} />

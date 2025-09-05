@@ -817,18 +817,20 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                             </div>
 
                             {/* Divider */}
-                            <div className="border-t my-2 -mx-6"></div>
+                            <div className="border-t border-gray-600 my-0 mt-3 -mx-6"></div>
 
                             {/* Title */}
-                            <h2 className="text-xl font-semibold text-center mb-3">
+                            <h2 className="text-xl font-semibold text-center mb-0 bg-[#2b2b4b] -mx-6 py-2">
                                 {currentStep === 1 ? 'Prompt Library' : currentStep === 2 ? 'Prompt Library' : 'Prompt Library'}
                             </h2>
-                            <div className="border-t my-2 -mx-6"></div>
+
+                            <div className="border-t my-0 border-gray-600 -mx-6"></div>
+
 
                             {/* Selected Template Display */}
-                            <div className="w-full px-4 mt-4 mb-2 -ml-4">
+                            <div className="w-full px-4 mt-2 mb-2 -ml-4">
                                 <div className="flex flex-wrap justify-between items-center gap-4">
-                                    <label className="text-sm font-medium leading-relaxed border p-2 py-1 rounded-md flex-shrink-0 min-w-[200px] max-w-full break-words">
+                                    <label className="text-sm font-medium leading-relaxed p-2 py-1 rounded-md flex-shrink-0 min-w-[200px] max-w-full break-words">
                                         <span className="font-semibold text-[15px]">Selected Template: </span>
                                         <span className='text-[12px] break-words'>
                                             {selectedTemplate ?
@@ -1032,28 +1034,49 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                             {currentStep === 2 && (
                                 <div className="p-4">
                                     <div className="p-6 rounded-lg border border-white/20">
-                                        {dynamicFields.length > 0 ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {dynamicFields.map((field, index) => (
-                                                    <div key={`field_${index}`}>
-                                                        <label className="block text-gray-300 text-sm mb-1">
-                                                            {field.label}
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={dynamicFieldValues[field.name] || ''}
-                                                            onChange={(e) => handleDynamicFieldChange(field.name, e.target.value)}
-                                                            className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white"
-                                                            placeholder={`Enter ${field.label.toLowerCase()}`}
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center text-gray-400 py-4">
-                                                No fields to display for this template
-                                            </div>
-                                        )}
+                                    {dynamicFields.length > 0 ? (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {dynamicFields.map((field, index) => {
+      const isDateField =
+        field.label.toLowerCase().includes("date") ||
+        field.name.toLowerCase().includes("date");
+
+      return (
+        <div key={`field_${index}`}>
+          <label className="block text-gray-300 text-sm mb-1">
+            {field.label}
+          </label>
+
+          {isDateField ? (
+            <input
+              type="date"
+              value={dynamicFieldValues[field.name] || ""}
+              onChange={(e) =>
+                handleDynamicFieldChange(field.name, e.target.value)
+              }
+              className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white [color-scheme:dark] cursor-pointer"
+            />
+          ) : (
+            <input
+              type="text"
+              value={dynamicFieldValues[field.name] || ""}
+              onChange={(e) =>
+                handleDynamicFieldChange(field.name, e.target.value)
+              }
+              className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white"
+              placeholder={`Enter ${field.label.toLowerCase()}`}
+            />
+          )}
+        </div>
+      );
+    })}
+  </div>
+) : (
+  <div className="text-center text-gray-400 py-4">
+    No fields to display for this template
+  </div>
+)}
+
                                     </div>
                                 </div>
                             )}

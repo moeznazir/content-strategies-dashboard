@@ -69,13 +69,41 @@ const Dashboard = () => {
     }
   };
 
+
   const columns = [
     { label: "Avatar", id: "Avatar" },
+    {label: "Guest Name",id: "Guest"},
+     {
+      label: "Formate",
+      id: "Formate",
+      render: (row) => {
+        const detailsData = parseEpisodeDetails(row);
+        return detailsData.length > 0 ? detailsData[0]["Formate"] || "-" : "-";
+      }
+    },
+  
+    // { label: "Category", id: "category" },
+    //     { label: "Description", id: "description" },
+
+    {
+      label: "Category",
+      id: "Category",
+      render: (row) => {
+        const detailsData = parseEpisodeDetails(row);
+        return detailsData.length > 0 ? detailsData[0]["Category"] || "-" : "-";
+      }
+    },
+   
+    {
+      label: "Description",
+      id: "Description",
+      render: (row) => {
+        const detailsData = parseEpisodeDetails(row);
+        return detailsData.length > 0 ? detailsData[0]["Description"] || "-" : "-";
+      }
+    },
     { label: "Likes", id: "Likes" },
     { label: "Comments", id: "Comments" },
-    { label: "Category", id: "category" },
-        { label: "Description", id: "description" },
-    
     // {
     //   label: "Episode Title",
     //   id: "episode_title",

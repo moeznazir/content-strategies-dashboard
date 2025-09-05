@@ -44,7 +44,7 @@ const CategoryManagement = () => {
         { label: "Scripts", id: "scripts" },
         { label: "Sales Call Recordings", id: "sales_call_recordings" },
         { label: "External Links", id: "external_links", type: 'url' },
-        { label: "Actions", id: "action" },
+        // { label: "Actions", id: "action" },
     ];
 
     const categoryCrudDetails = [
@@ -83,7 +83,7 @@ const CategoryManagement = () => {
                 from_date: fromDateISO,
                 to_date: toDateISO,
                 current_user_id: localStorage.getItem('current_user_id'),
-                current_company_id: localStorage.getItem('company_id'),
+                // current_company_id: localStorage.getItem('company_id'),
                 page_num: page,
                 page_size: ITEMS_PER_PAGE
             });
