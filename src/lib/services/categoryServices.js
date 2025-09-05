@@ -10,9 +10,10 @@ const supabase = createClient(
 export const fetchCategoryLabels = async () => {
   try {
 
-    const { data, error } = await supabase.rpc('get_category_labels', {
-      current_company_id: localStorage.getItem('company_id'),
-    });
+    const { data, error } = await supabase.rpc('get_category_labels');
+    // const { data, error } = await supabase.rpc('get_category_labels', {
+    //   current_company_id: localStorage.getItem('company_id'),
+    // });
 
     console.log("Raw RPC response:", { data, error });
 

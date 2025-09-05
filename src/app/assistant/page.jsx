@@ -137,9 +137,9 @@ const Assistant = () => {
 
     // const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
     const [addOns, setAddOns] = useState({
-        industry: [],
+        industry: {},
+        audienceTitles: {},
         audience: [],
-        audienceTitles: [],
         tone: [],
         objective: '',
         advice: {
@@ -687,7 +687,7 @@ const Assistant = () => {
         }
     };
     console.log("selectedFilesAfter", selectedFiles);
-    const handleAddOnChange = (type, value, isChecked) => {
+    const handleAddOnChange = (type, value, isChecked, category = null) => {
         setAddOns(prev => {
             if (type === 'objective') {
                 return { ...prev, objective: value };
@@ -703,12 +703,36 @@ const Assistant = () => {
                 return { ...prev, advice: newAdvice };
             }
 
-            // ✅ For arrays like industry, audienceTitles, tone
-            const current = Array.isArray(prev[type]) ? prev[type] : [];
-            const newArray = isChecked
-                ? [...current, value]
-                : current.filter(item => item !== value);
+            // For industry and audienceTitles (nested structure)
+            if (type === 'industry' || type === 'audienceTitles') {
+                const newCategory = { ...prev[type] };
 
+                if (category) {
+                    if (isChecked) {
+                        newCategory[category] = [...(newCategory[category] || []), value];
+                    } else {
+                        newCategory[category] = (newCategory[category] || []).filter(item => item !== value);
+                        // Remove empty categories
+                        if (newCategory[category].length === 0) {
+                            delete newCategory[category];
+                        }
+                    }
+                } else {
+                    // Handle category toggling
+                    if (isChecked) {
+                        newCategory[value] = newCategory[value] || [];
+                    } else {
+                        delete newCategory[value];
+                    }
+                }
+
+                return { ...prev, [type]: newCategory };
+            }
+
+            // For audience, tone (flat arrays)
+            const newArray = isChecked
+                ? [...prev[type], value]
+                : prev[type].filter(item => item !== value);
             return { ...prev, [type]: newArray };
         });
     };
@@ -788,12 +812,14 @@ const Assistant = () => {
             // Prepare add_ons object for API
             const add_ons = {
                 ...addOns,
-                industry: addOns?.industry?.length > 0 ? addOns.industry : undefined,
-                audience: addOns?.audience?.length > 0 ? addOns.audience : undefined,
-                audienceTitles: addOns?.audienceTitles?.length > 0 ? addOns.audienceTitles : undefined,
-                tone: addOns?.tone?.length > 0 ? addOns.tone : undefined,
-                objective: addOns?.objective || undefined,
-                advice
+                // Format industry as object with categories
+                industry: Object.keys(addOns.industry).length > 0 ? addOns.industry : undefined,
+                // Format audienceTitles as object with categories
+                audienceTitles: Object.keys(addOns.audienceTitles).length > 0 ? addOns.audienceTitles : undefined,
+                audience: addOns.audience.length > 0 ? addOns.audience : undefined,
+                tone: addOns.tone.length > 0 ? addOns.tone : undefined,
+                objective: addOns.objective || undefined,
+                advice: addOns.advice.do.length > 0 || addOns.advice.dont.length > 0 ? addOns.advice : undefined
             };
 
             // Remove undefined values
@@ -864,7 +890,6 @@ const Assistant = () => {
             setAddOns({
                 industry: [],
                 audience: [],
-                audienceTitles: [],
                 tone: [],
                 objective: '',
                 advice: {
@@ -942,32 +967,39 @@ const Assistant = () => {
         setPendingSubmit(false);
     };
     const getAddOnsCount = () => {
-        const industry = addOns.industry.length;
+        // Industry count (sum of all items in all categories)
+        const industryCount = addOns.industry
+            ? Object.values(addOns.industry).reduce(
+                (total, items) => total + (items?.length || 0),
+                0
+            )
+            : 0;
+        // Audience titles count (sum of all items in all categories)
+        let audienceTitlesCount = 0;
+        if (addOns.audienceTitles && typeof addOns.audienceTitles === 'object') {
+            audienceTitlesCount = Object.values(addOns.audienceTitles)
+                .filter(Array.isArray)
+                .reduce((total, items) => total + items.length, 0);
+        }
+
         const audience = addOns.audience.length;
-        const titles = addOns.audienceTitles.length;
         const tone = addOns.tone.length;
         const objective = addOns.objective ? 1 : 0;
         const dos = addOns.advice.do.length;
         const donts = addOns.advice.dont.length;
-        const total = industry + audience + titles + tone + objective + dos + donts;
+
+        const total = industryCount + audienceTitlesCount + audience + tone + objective + dos + donts;
 
         return {
-            industry,
+            industry: industryCount,
+            audienceTitles: audienceTitlesCount,
             audience,
-            titles,
             tone,
             objective,
             dos,
             donts,
             total
         };
-    };
-    const [expandedGroups, setExpandedGroups] = useState([]);
-
-    const handleGroupToggle = (group) => {
-        setExpandedGroups(prev =>
-            prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]
-        );
     };
     // Add this component to display add-on counts
     const AddOnsIndicator = () => {
@@ -988,16 +1020,17 @@ const Assistant = () => {
                                 </span>
                             )}
 
+                            {/* Audience Titles */}
+                            {counts.audienceTitles > 0 && (
+                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+                                    Audience-Titles: +{counts.audienceTitles}
+                                </span>
+                            )}
+
                             {/* Audience Department */}
                             {counts.audience > 0 && (
                                 <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
-                                    Audience-Dpartments: +{counts.audience}
-                                </span>
-                            )}
-                            {/* Audience Titles*/}
-                            {counts.titles > 0 && (
-                                <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
-                                    Audience-Titles: +{counts.titles}
+                                    Audience-Departments: +{counts.audience}
                                 </span>
                             )}
 
@@ -1056,7 +1089,7 @@ const Assistant = () => {
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
     const formatPlainTextWithStyling = (text) => {
-        const lines = text?.split('\n');
+        const lines = text.split('\n');
         const elements = [];
         let currentListItems = [];
         let inEmphasizedSection = false;
@@ -1078,7 +1111,7 @@ const Assistant = () => {
         };
 
         const renderTable = () => {
-            if (tableRows?.length > 0) {
+            if (tableRows.length > 0) {
                 elements.push(
                     <div key={`table-${elements.length}`} className="mb-6 overflow-x-auto">
                         <table className="min-w-full border-collapse border border-gray-600 text-lg">
@@ -1092,7 +1125,7 @@ const Assistant = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {tableRows?.map((row, rowIndex) => (
+                                {tableRows.map((row, rowIndex) => (
                                     <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
                                         {row.map((cell, cellIndex) => (
                                             <td key={cellIndex} className="border border-gray-600 px-4 py-3 text-gray-100">
@@ -1112,10 +1145,10 @@ const Assistant = () => {
         };
 
         lines.forEach((line, index) => {
-            const trimmedLine = line?.trim();
+            const trimmedLine = line.trim();
 
             // Check if this is a table header separator (|---|)
-            if (trimmedLine?.match(/^\|(\s*\-+\s*\|)+$/)) {
+            if (trimmedLine.match(/^\|(\s*\-+\s*\|)+$/)) {
                 if (tableHeaders.length > 0 && !inTable) {
                     inTable = true;
                 }
@@ -1123,15 +1156,15 @@ const Assistant = () => {
             }
 
             // Check if this is a table row
-            if (trimmedLine?.startsWith('|') && trimmedLine.endsWith('|')) {
+            if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
                 if (!inTable && tableHeaders.length === 0) {
                     // This is the header row
-                    tableHeaders = trimmedLine?.split('|')
+                    tableHeaders = trimmedLine.split('|')
                         .filter(cell => cell.trim() !== '')
                         .map(cell => cell.trim());
                 } else if (inTable) {
                     // This is a data row
-                    const rowData = trimmedLine?.split('|')
+                    const rowData = trimmedLine.split('|')
                         .filter(cell => cell.trim() !== '')
                         .map(cell => cell.trim());
 
@@ -1155,7 +1188,7 @@ const Assistant = () => {
             }
 
             // Detect main headings (lines with numbers or that look like titles)
-            if ((trimmedLine?.match(/^\d+\)/) || /^[A-Z][A-Za-z\s]+[:\-—]/.test(trimmedLine)) && trimmedLine.length < 80) {
+            if ((trimmedLine.match(/^\d+\)/) || /^[A-Z][A-Za-z\s]+[:\-—]/.test(trimmedLine)) && trimmedLine.length < 80) {
                 flushList();
                 inEmphasizedSection = true;
                 elements.push(
@@ -1167,7 +1200,7 @@ const Assistant = () => {
             }
 
             // Detect subheadings (lines with emoji or that indicate categories)
-            if (trimmedLine?.includes('➤') || trimmedLine.includes('💷') || trimmedLine.includes('—')) {
+            if (trimmedLine.includes('➤') || trimmedLine.includes('💷') || trimmedLine.includes('—')) {
                 flushList();
                 elements.push(
                     <h3 key={`h3-${index}`} className="text-xl font-semibold mb-3 text-blue-300 mt-4">
@@ -1277,7 +1310,6 @@ const Assistant = () => {
                             setAddOns({
                                 industry: [],
                                 audience: [],
-                                audienceTitles: [],
                                 tone: [],
                                 objective: "",
                                 advice: { do: [], dont: [] },
@@ -1860,6 +1892,8 @@ const Assistant = () => {
                     searchQueries={searchQuery}
                     setSearchQueries={setSearchQuery}
                     onClearSearchQuery={handleClearSearchQuery}
+                     searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
 
                 />
 
@@ -1876,6 +1910,8 @@ const Assistant = () => {
                     searchQueries={searchQuery}
                     setSearchQueries={setSearchQuery}
                     onClearSearchQuery={handleClearSearchQuery}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
                 />
 
                 {/* Optimization Modal */}
@@ -2079,7 +2115,8 @@ const Assistant = () => {
                             </div>
                             <hr className='-mx-6 -mt-2' />
                             <div className="space-y-6 mt-4">
-                                <div>
+                                {/* Audience Industries - Nested Structure */}
+                                <div className='border border-gray-600 p-2 rounded'>
                                     <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience Industries:</label>
                                     <div className="space-y-3 max-h-64 overflow-y-auto p-2 rounded-md">
                                         {/* Professional Services */}
@@ -2087,22 +2124,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("professional-services")}
-                                                    onChange={() => handleGroupToggle("professional-services")}
+                                                    checked={addOns.industry.hasOwnProperty('professional-services')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'professional-services', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Professional Services</span>
                                             </label>
-                                            {expandedGroups.includes("professional-services") && (
+                                            {addOns.industry.hasOwnProperty('professional-services') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Consulting', 'Legal Services', 'Accounting', 'Staffing & Recruiting', 'Business Consulting, HR & Admin Services'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/,/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/,/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['professional-services']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'professional-services')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2118,22 +2155,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("manufacturing")}
-                                                    onChange={() => handleGroupToggle("manufacturing")}
+                                                    checked={addOns.industry.hasOwnProperty('manufacturing')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'manufacturing', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Manufacturing</span>
                                             </label>
-                                            {expandedGroups.includes("manufacturing") && (
+                                            {addOns.industry.hasOwnProperty('manufacturing') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Industrial Automation', 'Automotive & Aerospace', 'Chemicals & Plastics', 'Electrical/Electronic Manufacturing', 'Machinery'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['manufacturing']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'manufacturing')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2149,22 +2186,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("technology-information-media")}
-                                                    onChange={() => handleGroupToggle("technology-information-media")}
+                                                    checked={addOns.industry.hasOwnProperty('technology-information-media')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'technology-information-media', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Technology, Information & Media</span>
                                             </label>
-                                            {expandedGroups.includes("technology-information-media") && (
+                                            {addOns.industry.hasOwnProperty('technology-information-media') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['SaaS / Computer Software', 'IT Services & IT Consulting', 'Internet, Cloud, AI, Cybersecurity', 'Telecommunications', 'Publishing, Broadcast, Digital Media'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['technology-information-media']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'technology-information-media')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2180,22 +2217,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("government-administration")}
-                                                    onChange={() => handleGroupToggle("government-administration")}
+                                                    checked={addOns.industry.hasOwnProperty('government-administration')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'government-administration', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Government Administration</span>
                                             </label>
-                                            {expandedGroups.includes("government-administration") && (
+                                            {addOns.industry.hasOwnProperty('government-administration') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Federal & Local Government', 'Public Policy / NGOs', 'International Affairs & Development'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['government-administration']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'government-administration')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2211,22 +2248,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("financial-services")}
-                                                    onChange={() => handleGroupToggle("financial-services")}
+                                                    checked={addOns.industry.hasOwnProperty('financial-services')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'financial-services', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Financial Services</span>
                                             </label>
-                                            {expandedGroups.includes("financial-services") && (
+                                            {addOns.industry.hasOwnProperty('financial-services') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Banking', 'Insurance', 'Investment Management / Private Equity / Venture Capital', 'FinTech'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['financial-services']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'financial-services')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2242,22 +2279,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("accommodation-food-services")}
-                                                    onChange={() => handleGroupToggle("accommodation-food-services")}
+                                                    checked={addOns.industry.hasOwnProperty('accommodation-food-services')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'accommodation-food-services', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Accommodation & Food Services</span>
                                             </label>
-                                            {expandedGroups.includes("accommodation-food-services") && (
+                                            {addOns.industry.hasOwnProperty('accommodation-food-services') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Hotels & Hospitality', 'Restaurants / Food & Beverage', 'Travel Services'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\//g, '-');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['accommodation-food-services']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'accommodation-food-services')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2273,22 +2310,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("hospitals-health-care")}
-                                                    onChange={() => handleGroupToggle("hospitals-health-care")}
+                                                    checked={addOns.industry.hasOwnProperty('hospitals-health-care')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'hospitals-health-care', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Hospitals & Health Care</span>
                                             </label>
-                                            {expandedGroups.includes("hospitals-health-care") && (
+                                            {addOns.industry.hasOwnProperty('hospitals-health-care') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Hospitals', 'Pharmaceuticals', 'Biotechnology', 'Medical Devices', 'Mental Health & Wellness'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['hospitals-health-care']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'hospitals-health-care')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2304,22 +2341,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("education")}
-                                                    onChange={() => handleGroupToggle("education")}
+                                                    checked={addOns.industry.hasOwnProperty('education')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'education', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Education</span>
                                             </label>
-                                            {expandedGroups.includes("education") && (
+                                            {addOns.industry.hasOwnProperty('education') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Higher Education', 'E-Learning & Training', 'Research Institutions'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['education']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'education')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2335,22 +2372,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("entertainment-media")}
-                                                    onChange={() => handleGroupToggle("entertainment-media")}
+                                                    checked={addOns.industry.hasOwnProperty('entertainment-media')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'entertainment-media', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Entertainment & Media</span>
                                             </label>
-                                            {expandedGroups.includes("entertainment-media") && (
+                                            {addOns.industry.hasOwnProperty('entertainment-media') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Film, Television, Music', 'Sports & Events', 'Gaming & Interactive Media'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/,/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/,/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['entertainment-media']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'entertainment-media')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2366,22 +2403,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("retail-consumer-goods")}
-                                                    onChange={() => handleGroupToggle("retail-consumer-goods")}
+                                                    checked={addOns.industry.hasOwnProperty('retail-consumer-goods')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'retail-consumer-goods', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Retail & Consumer Goods</span>
                                             </label>
-                                            {expandedGroups.includes("retail-consumer-goods") && (
+                                            {addOns.industry.hasOwnProperty('retail-consumer-goods') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['General Retail', 'Apparel & Fashion', 'Consumer Products & Personal Care', 'Luxury Goods'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['retail-consumer-goods']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'retail-consumer-goods')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2397,22 +2434,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("administrative-support-services")}
-                                                    onChange={() => handleGroupToggle("administrative-support-services")}
+                                                    checked={addOns.industry.hasOwnProperty('administrative-support-services')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'administrative-support-services', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Administrative & Support Services</span>
                                             </label>
-                                            {expandedGroups.includes("administrative-support-services") && (
+                                            {addOns.industry.hasOwnProperty('administrative-support-services') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Facilities Services', 'Outsourcing & BPO', 'HR Support'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['administrative-support-services']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'administrative-support-services')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2428,22 +2465,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("construction")}
-                                                    onChange={() => handleGroupToggle("construction")}
+                                                    checked={addOns.industry.hasOwnProperty('construction')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'construction', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Construction</span>
                                             </label>
-                                            {expandedGroups.includes("construction") && (
+                                            {addOns.industry.hasOwnProperty('construction') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Civil Engineering', 'Architecture & Planning', 'Residential & Commercial Construction'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['construction']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'construction')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2459,22 +2496,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("transportation-logistics-supply-chain")}
-                                                    onChange={() => handleGroupToggle("transportation-logistics-supply-chain")}
+                                                    checked={addOns.industry.hasOwnProperty('transportation-logistics-supply-chain')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'transportation-logistics-supply-chain', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Transportation, Logistics & Supply Chain</span>
                                             </label>
-                                            {expandedGroups.includes("transportation-logistics-supply-chain") && (
+                                            {addOns.industry.hasOwnProperty('transportation-logistics-supply-chain') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Airlines & Aviation', 'Shipping & Ports', 'Trucking & Freight', 'Warehousing & Distribution'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['transportation-logistics-supply-chain']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'transportation-logistics-supply-chain')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2490,22 +2527,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("consumer-services")}
-                                                    onChange={() => handleGroupToggle("consumer-services")}
+                                                    checked={addOns.industry.hasOwnProperty('consumer-services')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'consumer-services', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Consumer Services</span>
                                             </label>
-                                            {expandedGroups.includes("consumer-services") && (
+                                            {addOns.industry.hasOwnProperty('consumer-services') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Personal Services', 'Customer Service Operations', 'Repair & Maintenance'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['consumer-services']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'consumer-services')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2521,22 +2558,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("real-estate-equipment-rental-services")}
-                                                    onChange={() => handleGroupToggle("real-estate-equipment-rental-services")}
+                                                    checked={addOns.industry.hasOwnProperty('real-estate-equipment-rental-services')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'real-estate-equipment-rental-services', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Real Estate & Equipment Rental Services</span>
                                             </label>
-                                            {expandedGroups.includes("real-estate-equipment-rental-services") && (
+                                            {addOns.industry.hasOwnProperty('real-estate-equipment-rental-services') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Real Estate Development', 'Commercial & Residential Property Management', 'Leasing & Rental Services'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['real-estate-equipment-rental-services']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'real-estate-equipment-rental-services')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2552,22 +2589,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("oil-gas-mining")}
-                                                    onChange={() => handleGroupToggle("oil-gas-mining")}
+                                                    checked={addOns.industry.hasOwnProperty('oil-gas-mining')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'oil-gas-mining', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Oil, Gas, and Mining</span>
                                             </label>
-                                            {expandedGroups.includes("oil-gas-mining") && (
+                                            {addOns.industry.hasOwnProperty('oil-gas-mining') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Oil & Gas', 'Mining & Metals', 'Renewables (often cross-listed here or under "Utilities")'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\(|\)|"/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and').replace(/\(|\)|"/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['oil-gas-mining']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'oil-gas-mining')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2583,22 +2620,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("wholesale-trade")}
-                                                    onChange={() => handleGroupToggle("wholesale-trade")}
+                                                    checked={addOns.industry.hasOwnProperty('wholesale-trade')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'wholesale-trade', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Wholesale & Trade</span>
                                             </label>
-                                            {expandedGroups.includes("wholesale-trade") && (
+                                            {addOns.industry.hasOwnProperty('wholesale-trade') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Wholesale Distribution', 'Import/Export'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\//g, '-');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\//g, '-');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['wholesale-trade']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'wholesale-trade')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2614,22 +2651,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("agriculture-farming-forestry")}
-                                                    onChange={() => handleGroupToggle("agriculture-farming-forestry")}
+                                                    checked={addOns.industry.hasOwnProperty('agriculture-farming-forestry')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'agriculture-farming-forestry', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Agriculture, Farming & Forestry</span>
                                             </label>
-                                            {expandedGroups.includes("agriculture-farming-forestry") && (
+                                            {addOns.industry.hasOwnProperty('agriculture-farming-forestry') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Farming & Ranching', 'Agribusiness', 'Forestry & Fisheries'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['agriculture-farming-forestry']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'agriculture-farming-forestry')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2645,22 +2682,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("utilities")}
-                                                    onChange={() => handleGroupToggle("utilities")}
+                                                    checked={addOns.industry.hasOwnProperty('utilities')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'utilities', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Utilities</span>
                                             </label>
-                                            {expandedGroups.includes("utilities") && (
+                                            {addOns.industry.hasOwnProperty('utilities') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Power Generation & Distribution', 'Water & Waste Management', 'Renewable Energy'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['utilities']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'utilities')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2676,22 +2713,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("holding-companies-conglomerates")}
-                                                    onChange={() => handleGroupToggle("holding-companies-conglomerates")}
+                                                    checked={addOns.industry.hasOwnProperty('holding-companies-conglomerates')}
+                                                    onChange={(e) => handleAddOnChange('industry', 'holding-companies-conglomerates', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Holding Companies / Conglomerates</span>
                                             </label>
-                                            {expandedGroups.includes("holding-companies-conglomerates") && (
+                                            {addOns.industry.hasOwnProperty('holding-companies-conglomerates') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Parent Orgs & Investment Holdings'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/&/g, 'and');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.industry.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('industry', key, e.target.checked)}
+                                                                    checked={addOns.industry['holding-companies-conglomerates']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('industry', itemKey, e.target.checked, 'holding-companies-conglomerates')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2710,8 +2747,9 @@ const Assistant = () => {
                                         onKeyDown={(e) => e.key === 'Enter' && handleCustomAddOn('industry', e.target.value)}
                                     />
                                 </div>
+
                                 {/* Audience Department */}
-                                <div>
+                                <div className='border border-gray-600 p-2 rounded'>
                                     <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience Departments:</label>
                                     <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto mb-3">
                                         {[
@@ -2741,7 +2779,7 @@ const Assistant = () => {
                                 </div>
 
                                 {/* Audience Titles - Nested Structure */}
-                                <div>
+                                <div className='border border-gray-600 p-2 rounded'>
                                     <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience Titles:</label>
                                     <div className="space-y-3 max-h-64 overflow-y-auto p-2 rounded-md">
                                         {/* Executive */}
@@ -2749,32 +2787,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("executive")}
-                                                    onChange={() => handleGroupToggle("executive")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('executive')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'executive', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Executive</span>
                                             </label>
-                                            {expandedGroups.includes("executive") && (
+                                            {addOns.audienceTitles.hasOwnProperty('executive') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
-                                                    {[
-                                                        "Chief Executive Officer",
-                                                        "Chief Revenue Officer",
-                                                        "Chief Sales Officer",
-                                                        "Chief Marketing Officer",
-                                                        "Chief Product Officer",
-                                                        "Chief Financial Officer",
-                                                        "Chief Customer Officer",
-                                                    ].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, "-");
+                                                    {['Chief Executive Officer', 'Chief Revenue Officer', 'Chief Sales Officer', 'Chief Marketing Officer', 'Chief Product Officer', 'Chief Financial Officer', 'Chief Customer Officer'].map((item) => {
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) =>
-                                                                        handleAddOnChange("audienceTitles", key, e.target.checked)
-                                                                    }
+                                                                    checked={addOns.audienceTitles['executive']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'executive')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2790,22 +2818,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("marketing")}
-                                                    onChange={() => handleGroupToggle("marketing")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('marketing')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'marketing', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Marketing</span>
                                             </label>
-                                            {expandedGroups.includes("marketing") && (
+                                            {addOns.audienceTitles.hasOwnProperty('marketing') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Marketing Manager', 'Senior Marketing Manager', 'Head of Marketing', 'Director of Marketing', 'VP of Marketing', 'Chief Marketing Officer (CMO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['marketing']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'marketing')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2821,22 +2849,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("sales")}
-                                                    onChange={() => handleGroupToggle("sales")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('sales')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'sales', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Sales</span>
                                             </label>
-                                            {expandedGroups.includes("sales") && (
+                                            {addOns.audienceTitles.hasOwnProperty('sales') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Sales Manager', 'Regional Sales Manager', 'Director of Sales', 'VP of Sales', 'Head of Sales / Sales Leader', 'Chief Revenue Officer (CRO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['sales']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'sales')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2852,22 +2880,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("customer-success")}
-                                                    onChange={() => handleGroupToggle("customer-success")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('customer-success')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'customer-success', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Customer Success</span>
                                             </label>
-                                            {expandedGroups.includes("customer-success") && (
+                                            {addOns.audienceTitles.hasOwnProperty('customer-success') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Customer Success Manager (CSM)', 'Senior Customer Success Manager', 'Head of Customer Success', 'Director of Customer Success', 'VP of Customer Success', 'Chief Customer Officer (CCO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['customer-success']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'customer-success')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2883,22 +2911,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("customer-experience")}
-                                                    onChange={() => handleGroupToggle("customer-experience")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('customer-experience')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'customer-experience', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Customer Experience (CX)</span>
                                             </label>
-                                            {expandedGroups.includes("customer-experience") && (
+                                            {addOns.audienceTitles.hasOwnProperty('customer-experience') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Customer Experience Manager', 'CX Program Manager', 'Director of Customer Experience', 'VP of Customer Experience', 'Head of Customer Experience', 'Chief Experience Officer (CXO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['customer-experience']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'customer-experience')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2914,22 +2942,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("technology-it")}
-                                                    onChange={() => handleGroupToggle("technology-it")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('technology-it')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'technology-it', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Technology / IT</span>
                                             </label>
-                                            {expandedGroups.includes("technology-it") && (
+                                            {addOns.audienceTitles.hasOwnProperty('technology-it') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['IT Manager / Infrastructure Manager', 'Engineering Manager', 'Director of IT / Director of Engineering', 'VP of IT / VP of Engineering', 'Head of Technology', 'Chief Technology Officer (CTO)', 'Chief Information Officer (CIO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['technology-it']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'technology-it')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2945,22 +2973,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("finance")}
-                                                    onChange={() => handleGroupToggle("finance")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('finance')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'finance', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Finance</span>
                                             </label>
-                                            {expandedGroups.includes("finance") && (
+                                            {addOns.audienceTitles.hasOwnProperty('finance') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Finance Manager', 'Senior Finance Manager', 'Controller', 'Director of Finance', 'VP of Finance', 'Head of Finance', 'Chief Financial Officer (CFO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['finance']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'finance')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -2976,22 +3004,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("product")}
-                                                    onChange={() => handleGroupToggle("product")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('product')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'product', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Product</span>
                                             </label>
-                                            {expandedGroups.includes("product") && (
+                                            {addOns.audienceTitles.hasOwnProperty('product') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Product Manager', 'Senior Product Manager', 'Group Product Manager', 'Director of Product Management', 'VP of Product', 'Head of Product', 'Chief Product Officer (CPO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['product']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'product')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -3007,22 +3035,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("human-resources")}
-                                                    onChange={() => handleGroupToggle("human-resources")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('human-resources')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'human-resources', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Human Resources (HR / People Ops)</span>
                                             </label>
-                                            {expandedGroups.includes("human-resources") && (
+                                            {addOns.audienceTitles.hasOwnProperty('human-resources') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['HR Manager', 'Talent Acquisition Manager', 'People Operations Manager', 'Director of HR / Director of People', 'VP of HR / VP of People', 'Head of People / Head of HR', 'Chief Human Resources Officer (CHRO)', 'Chief People Officer (CPO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['human-resources']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'human-resources')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -3038,22 +3066,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("legal")}
-                                                    onChange={() => handleGroupToggle("legal")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('legal')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'legal', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Legal</span>
                                             </label>
-                                            {expandedGroups.includes("legal") && (
+                                            {addOns.audienceTitles.hasOwnProperty('legal') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Legal Counsel (Manager-level equivalent)', 'Legal Manager / Senior Legal Manager', 'Director of Legal', 'VP of Legal', 'General Counsel', 'Chief Legal Officer (CLO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['legal']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'legal')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -3069,22 +3097,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("procurement-supply-chain")}
-                                                    onChange={() => handleGroupToggle("procurement-supply-chain")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('procurement-supply-chain')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'procurement-supply-chain', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Procurement / Supply Chain</span>
                                             </label>
-                                            {expandedGroups.includes("procurement-supply-chain") && (
+                                            {addOns.audienceTitles.hasOwnProperty('procurement-supply-chain') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Procurement Manager', 'Strategic Sourcing Manager', 'Supply Chain Manager', 'Director of Procurement', 'Director of Supply Chain', 'VP of Procurement / VP of Supply Chain', 'Head of Procurement', 'Chief Procurement Officer (CPO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)|\//g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['procurement-supply-chain']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'procurement-supply-chain')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -3100,22 +3128,22 @@ const Assistant = () => {
                                             <label className="flex items-center space-x-3">
                                                 <input
                                                     type="checkbox"
-                                                    checked={expandedGroups.includes("operations")}
-                                                    onChange={() => handleGroupToggle("operations")}
+                                                    checked={addOns.audienceTitles.hasOwnProperty('operations')}
+                                                    onChange={(e) => handleAddOnChange('audienceTitles', 'operations', e.target.checked)}
                                                     className="w-4 h-4"
                                                 />
                                                 <span className="font-medium">Operations</span>
                                             </label>
-                                            {expandedGroups.includes("operations") && (
+                                            {addOns.audienceTitles.hasOwnProperty('operations') && (
                                                 <div className="ml-6 mt-2 grid grid-cols-1 gap-2">
                                                     {['Operations Manager', 'Business Operations Manager', 'Director of Operations', 'VP of Operations', 'Head of Operations', 'Chief Operating Officer (COO)'].map((item) => {
-                                                        const key = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
+                                                        const itemKey = item.toLowerCase().replace(/ /g, '-').replace(/\(|\)/g, '');
                                                         return (
                                                             <label key={item} className="flex items-center space-x-3">
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={addOns.audienceTitles.includes(key)}
-                                                                    onChange={(e) => handleAddOnChange('audienceTitles', key, e.target.checked)}
+                                                                    checked={addOns.audienceTitles['operations']?.includes(itemKey) || false}
+                                                                    onChange={(e) => handleAddOnChange('audienceTitles', itemKey, e.target.checked, 'operations')}
                                                                     className="w-4 h-4"
                                                                 />
                                                                 <span className="text-sm">{item}</span>
@@ -3136,7 +3164,7 @@ const Assistant = () => {
                                 </div>
 
                                 {/* Audience Tones */}
-                                <div>
+                                <div className='border border-gray-600 p-2 rounded'>
                                     <label className="block font-semibold mb-3 text-lg border-b pb-2">Audience Tones:</label>
                                     <div className="grid grid-cols-2 gap-3 mb-3">
                                         {['Executive-Ready', 'Professional & Polished', 'Conversational & Relatable', 'Insightful & Analytical', 'Challenger / Contrarian', 'Persuasive & Compelling', 'Visionary / Futuristic', 'Trusted Advisor', 'Storytelling / Narrative', 'Succinct & Direct', 'Optimistic & Inspiring', 'Consultative', 'Data-Backed / Research-Driven', 'Peer-to-Peer', 'Urgent & Action-Oriented'].map((tone) => (
@@ -3154,7 +3182,7 @@ const Assistant = () => {
                                 </div>
 
                                 {/* Objective */}
-                                <div>
+                                <div className='border border-gray-600 p-2 rounded'>
                                     <label className="block font-semibold mb-3 text-lg border-b pb-2">Objective:</label>
                                     <input
                                         type="text"
@@ -3166,7 +3194,7 @@ const Assistant = () => {
                                 </div>
 
                                 {/* Dos & Don'ts */}
-                                <div>
+                                <div className='border border-gray-600 p-2 rounded'>
                                     <label className="block font-semibold mb-3 text-lg border-b pb-2">Dos & Don'ts:</label>
                                     <div className="grid grid-cols-2 gap-6">
                                         <div>

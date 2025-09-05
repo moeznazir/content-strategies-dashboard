@@ -61,6 +61,14 @@ export const sanitizeFileName = (name) => {
     .replace(/[^a-zA-Z0-9._-]/g, ''); // remove special chars
 };
 
+export const getNestedCount = (obj) => {
+  if (!obj || typeof obj !== 'object') return 0;
+  
+  return Object.values(obj)
+    .filter(Array.isArray)
+    .reduce((total, items) => total + items.length, 0);
+};
+
 // Add this utility function at the top of the file
 export const extractFieldsFromTemplate = (templateText) => {
   const fieldRegex = /{([^}]+)}/g;
