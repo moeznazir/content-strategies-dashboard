@@ -1870,9 +1870,229 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     });
     const [fullEpisodeChallengeQuestionsEditIndex, setFullEpisodeChallengeQuestionsEditIndex] = useState(null);
 
+    const [currentRowId, setCurrentRowId] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+
     const avatarInputRef = useRef(null);
     const [currentStep, setCurrentStep] = useState(1);
-    const totalSteps = 4;
+    const totalSteps = 3;
+
+    const handleNextStep = async (nextStep) => {
+        setIsSaving(true);
+
+        try {
+            let rowId = currentRowId;
+
+            // If we don't have a row ID yet, create a new record
+            if (!rowId) {
+                const { data, error } = await supabase
+                    .from(tableName)
+                    .insert([{
+                        company_id: localStorage.getItem('company_id'),
+
+                    }])
+                    .select('id')
+                    .single();
+
+                if (error) throw error;
+
+                rowId = data.id;
+                setCurrentRowId(rowId);
+            }
+
+            // Save current step data to the row
+            await saveStepData(rowId);
+
+            // Move to the next step
+            setCurrentStep(nextStep);
+        } catch (error) {
+            console.error("Error saving step data:", error);
+            ShowCustomToast("Error saving data: " + error.message, "error");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+    const FULL_EPISODE_KEYS = [
+        "DETAILS_FULL_EPISODES",
+        "FULL_EPISODE_VIDEO",
+        "FULL_EPISODE_EXTENDED_CONTENT",
+        "FULL_EPISODE_HIGHLIGHT_VIDEO",
+        "FULL_EPISODE_INTRODUCTION_VIDEO",
+        "FULL_EPISODE_QA_VIDEOS",
+        "FULL_EPISODE_PODBOOK",
+        "FULL_EPISODE_FULL_CASE_STUDY",
+        "FULL_EPISODE_ONE_PAGE_CASE_STUDY",
+        "FULL_EPISODE_OTHER_CASE_STUDY",
+        "FULL_EPISODE_ICP_ADVICE",
+        "FULL_EPISODE_CHALLENGE_QUESTIONS"
+    ];
+
+    const saveStepData = async (rowId) => {
+        let stepData = {};
+
+        switch (currentStep) {
+            case 1: // Guest step
+                if (guestEntries.length > 0) {
+                    stepData.Guest = guestEntries;
+                }
+                // Also save any current guest data that hasn't been added yet
+                if (Object.values(currentGuest).some(val => val !== "")) {
+                    const newGuestEntries = [...guestEntries, currentGuest];
+                    handleAddGuest();
+                    stepData.Guest = newGuestEntries;
+                }
+                break;
+
+            case 2: // Prep Call step
+                if (prepCallEntries.length > 0) {
+                    stepData.Prep_Call = prepCallEntries;
+                }
+                // Also save any current prep call data that hasn't been added yet
+                if (Object.values(currentPrepCall).some(val => val !== "")) {
+                    const newPrepCallEntries = [...prepCallEntries, currentPrepCall];
+                    handleAddPrepCall();
+                    stepData.Prep_Call = newPrepCallEntries;
+                }
+                break;
+
+            case 3: // Full Episodes step
+                // Save all full episode sections
+                if (fullEpisodeDetailsEntries.length > 0) {
+                    stepData.DETAILS_FULL_EPISODES = fullEpisodeDetailsEntries;
+                }
+                if (Object.values(currentFullEpisodeDetails).some(val => val !== "")) {
+                    const newFullEpisodeDetailsEntries = [...fullEpisodeDetailsEntries, currentFullEpisodeDetails];
+                    handleAddFullEpisodeDetails();
+                    stepData.DETAILS_FULL_EPISODES = newFullEpisodeDetailsEntries;
+                }
+
+                if (fullEpisodeVideoEntries.length > 0) {
+                    stepData.FULL_EPISODE_VIDEO = fullEpisodeVideoEntries;
+                }
+                if (Object.values(currentFullEpisodeVideo).some(val => val !== "")) {
+                    const newFullEpisodeVideoEntries = [...fullEpisodeVideoEntries, currentFullEpisodeVideo];
+                    handleAddFullEpisodeVideo();
+                    stepData.FULL_EPISODE_VIDEO = newFullEpisodeVideoEntries;
+                }
+
+                if (fullEpisodeExtendedContentEntries.length > 0) {
+                    stepData.FULL_EPISODE_EXTENDED_CONTENT = fullEpisodeExtendedContentEntries;
+                }
+                if (Object.values(currentFullEpisodeExtendedContent).some(val => val !== "")) {
+                    const newFullEpisodeExtendedContentEntries = [...fullEpisodeExtendedContentEntries, currentFullEpisodeExtendedContent];
+                    handleAddFullEpisodeExtendedContent();
+                    stepData.FULL_EPISODE_EXTENDED_CONTENT = newFullEpisodeExtendedContentEntries;
+                }
+
+                if (fullEpisodeHighlightVideoEntries.length > 0) {
+                    stepData.FULL_EPISODE_HIGHLIGHT_VIDEO = fullEpisodeHighlightVideoEntries;
+                }
+                if (Object.values(currentFullEpisodeHighlightVideo).some(val => val !== "")) {
+                    const newFullEpisodeHighlightVideoEntries = [...fullEpisodeHighlightVideoEntries, currentFullEpisodeHighlightVideo];
+                    handleAddFullEpisodeHighlightVideo();
+                    stepData.FULL_EPISODE_HIGHLIGHT_VIDEO = newFullEpisodeHighlightVideoEntries;
+                }
+
+                if (fullEpisodeIntroductionVideoEntries.length > 0) {
+                    stepData.FULL_EPISODE_INTRODUCTION_VIDEO = fullEpisodeIntroductionVideoEntries;
+                }
+                if (Object.values(currentFullEpisodeIntroductionVideo).some(val => val !== "")) {
+                    const newFullEpisodeIntroductionVideoEntries = [...fullEpisodeIntroductionVideoEntries, currentFullEpisodeIntroductionVideo];
+                    handleAddFullEpisodeIntroductionVideo();
+                    stepData.FULL_EPISODE_INTRODUCTION_VIDEO = newFullEpisodeIntroductionVideoEntries;
+                }
+
+                if (fullEpisodeQAVideosEntries.length > 0) {
+                    stepData.FULL_EPISODE_QA_VIDEOS = fullEpisodeQAVideosEntries;
+                }
+                if (Object.values(currentFullEpisodeQAVideos).some(val => val !== "")) {
+                    const newFullEpisodeQAVideosEntries = [...fullEpisodeQAVideosEntries, currentFullEpisodeQAVideos];
+                    handleAddFullEpisodeQAVideos();
+                    stepData.FULL_EPISODE_QA_VIDEOS = newFullEpisodeQAVideosEntries;
+                }
+
+                if (fullEpisodePodbookEntries.length > 0) {
+                    stepData.FULL_EPISODE_PODBOOK = fullEpisodePodbookEntries;
+                }
+                if (Object.values(currentFullEpisodePodbook).some(val => val !== "")) {
+                    const newFullEpisodePodbookEntries = [...fullEpisodePodbookEntries, currentFullEpisodePodbook];
+                    handleAddFullEpisodePodbook();
+                    stepData.FULL_EPISODE_PODBOOK = newFullEpisodePodbookEntries;
+                }
+
+                if (fullEpisodeFullCaseStudyEntries.length > 0) {
+                    stepData.FULL_EPISODE_FULL_CASE_STUDY = fullEpisodeFullCaseStudyEntries;
+                }
+                if (Object.values(currentFullEpisodeFullCaseStudy).some(val => val !== "")) {
+                    const newFullEpisodeFullCaseStudyEntries = [...fullEpisodeFullCaseStudyEntries, currentFullEpisodeFullCaseStudy];
+                    handleAddFullEpisodeFullCaseStudy();
+                    stepData.FULL_EPISODE_FULL_CASE_STUDY = newFullEpisodeFullCaseStudyEntries;
+                }
+
+                if (fullEpisodeOnePageCaseStudyEntries.length > 0) {
+                    stepData.FULL_EPISODE_ONE_PAGE_CASE_STUDY = fullEpisodeOnePageCaseStudyEntries;
+                }
+                if (Object.values(currentFullEpisodeOnePageCaseStudy).some(val => val !== "")) {
+                    const newFullEpisodeOnePageCaseStudyEntries = [...fullEpisodeOnePageCaseStudyEntries, currentFullEpisodeOnePageCaseStudy];
+                    handleAddFullEpisodeOnePageCaseStudy();
+                    stepData.FULL_EPISODE_ONE_PAGE_CASE_STUDY = newFullEpisodeOnePageCaseStudyEntries;
+                }
+
+                if (fullEpisodeOtherCaseStudyEntries.length > 0) {
+                    stepData.FULL_EPISODE_OTHER_CASE_STUDY = fullEpisodeOtherCaseStudyEntries;
+                }
+                if (Object.values(currentFullEpisodeOtherCaseStudy).some(val => val !== "")) {
+                    const newFullEpisodeOtherCaseStudyEntries = [...fullEpisodeOtherCaseStudyEntries, currentFullEpisodeOtherCaseStudy];
+                    handleAddFullEpisodeOtherCaseStudy();
+                    stepData.FULL_EPISODE_OTHER_CASE_STUDY = newFullEpisodeOtherCaseStudyEntries;
+                }
+
+                if (fullEpisodeICPAdviceEntries.length > 0) {
+                    stepData.FULL_EPISODE_ICP_ADVICE = fullEpisodeICPAdviceEntries;
+                }
+                if (Object.values(currentFullEpisodeICPAdvice).some(val => val !== "")) {
+                    const newFullEpisodeICPAdviceEntries = [...fullEpisodeICPAdviceEntries, currentFullEpisodeICPAdvice];
+                    handleAddFullEpisodeICPAdvice();
+                    stepData.FULL_EPISODE_ICP_ADVICE = newFullEpisodeICPAdviceEntries;
+                }
+
+                if (fullEpisodeChallengeQuestionsEntries.length > 0) {
+                    stepData.FULL_EPISODE_CHALLENGE_QUESTIONS = fullEpisodeChallengeQuestionsEntries;
+                }
+                if (Object.values(currentFullEpisodeChallengeQuestions).some(val => val !== "")) {
+                    const newFullEpisodeChallengeQuestionsEntries = [...fullEpisodeChallengeQuestionsEntries, currentFullEpisodeChallengeQuestions];
+                    handleAddFullEpisodeChallengeQuestions();
+                    stepData.FULL_EPISODE_CHALLENGE_QUESTIONS = newFullEpisodeChallengeQuestionsEntries;
+                }
+                break;
+
+            case 4: // Additional Projects step
+                if (additionalProjectEntries.length > 0) {
+                    stepData.Additional_Guest_Projects = additionalProjectEntries;
+                }
+                // Also save any current additional project data that hasn't been added yet
+                if (Object.values(currentAdditionalProject).some(val => val !== "")) {
+                    const newAdditionalProjectEntries = [...additionalProjectEntries, currentAdditionalProject];
+                    handleAddAdditionalProject();
+                    stepData.Additional_Guest_Projects = newAdditionalProjectEntries;
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        // Only update if we have data to save
+        if (Object.keys(stepData).length > 0) {
+            const { error } = await supabase
+                .from(tableName)
+                .update(stepData)
+                .eq('id', rowId);
+
+            if (error) throw error;
+        }
+    };
+
     const nextStep = () => {
         if (currentStep < totalSteps) {
             setCurrentStep(currentStep + 1);
@@ -3463,12 +3683,20 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                         .from(tableName)
                         .update(formattedValues)
                         .eq("id", entityData.id);
+                }
+
+                if (currentRowId) {
+                    // Update existing record
+                    response = await supabase
+                        .from(tableName)
+                        .update(formattedValues)
+                        .eq("id", currentRowId);
                 } else {
+                    // Create new record (fallback)
                     response = await supabase
                         .from(tableName)
                         .insert([formattedValues]);
                 }
-
                 if (response.error) throw response.error;
                 console.log("Creating record with values:", formattedValues);
 
@@ -3505,9 +3733,25 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             } catch (error) {
                 console.log("Error saving data:", error);
                 ShowCustomToast("Error saving data: " + error.message, "error");
+            } finally {
+                setIsSaving(false);
             }
         },
     });
+    useEffect(() => {
+        if (isEditMode && entityData && entityData.id) {
+            setCurrentRowId(entityData.id);
+
+            // Load existing data into state
+            if (entityData.guests) {
+                setGuestEntries(entityData.guests);
+            }
+            if (entityData.prep_call) {
+                setPrepCallEntries([entityData.prep_call]);
+            }
+            // Load other data similarly
+        }
+    }, [isEditMode, entityData]);
     const handleAddMentionedQuote = () => {
         if (!currentMentionedQuote.trim()) return;
 
@@ -4357,11 +4601,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Full Episode Video Handlers
 
     const handleAddFullEpisodeDetails = () => {
-        if (!currentFullEpisodeDetails["Episode ID"] &&
-            !currentFullEpisodeDetails["Episode Title"]) {
-            ShowCustomToast("Please fill at least Episode ID or Title", "error");
-            return;
-        }
+        // if (!currentFullEpisodeDetails["Episode ID"] &&
+        //     !currentFullEpisodeDetails["Episode Title"]) {
+        //     ShowCustomToast("Please fill at least Episode ID or Title", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeDetails };
 
@@ -5273,7 +5517,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             {/* Step indicator - moved outside and only shown once */}
                                             <div className="flex justify-center sticky top-0 z-[9999]">
                                                 <div className="flex space-x-4 -mb-2">
-                                                    {[1, 2, 3, 4, 5].map((stepNumber) => (
+                                                    {[1, 2, 3, 4].map((stepNumber) => (
                                                         <button
                                                             key={stepNumber}
                                                             type="button"
@@ -5360,16 +5604,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 </div>
                                                             ))}
 
-                                                            <div className="flex justify-end">
-                                                                <CustomButton
-                                                                    type="button"
-                                                                    onClick={handleAddGuest}
-                                                                    className="flex items-center gap-1"
-                                                                >
-                                                                    <PlusIcon className="h-4 w-4" />
-                                                                    {guestEditIndex !== null ? "Update Guest" : "Add Guest"}
-                                                                </CustomButton>
-                                                            </div>
+
                                                         </div>
 
                                                         {guestEntries.length > 0 && (
@@ -5386,15 +5621,30 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 ))}
                                                             </div>
                                                         )}
-                                                        <div className="flex justify-between -mt-4 -mb-4">
-                                                            <div></div>
-                                                            <div className="space-x-2">
+                                                        <div className="flex justify-between items-center mt-2 -mb-4 py-2">
+                                                            <div className="flex items-center">
+                                                                {guestEntries.length > 0 && (
+                                                                    <span className="text-sm text-gray-500 mr-3">
+                                                                        {guestEntries.length} guest(s) added
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center space-x-2">
                                                                 <CustomButton
                                                                     type="button"
-                                                                    onClick={() => setCurrentStep(2)}
-                                                                    className=" text-white px-4 py-2 rounded"
+                                                                    onClick={handleAddGuest}
+                                                                    className="flex items-center w-[170px] gap-1 text-sm py-1 px-3"
                                                                 >
-                                                                    Next: Prep Call
+                                                                    <PlusIcon className="h-3 w-3" />
+                                                                    {guestEditIndex !== null ? "Update Guest" : "Add Another Guest"}
+                                                                </CustomButton>
+                                                                <CustomButton
+                                                                    type="button"
+                                                                    onClick={() => handleNextStep(2)}
+                                                                    disabled={isSaving}
+                                                                    className="text-white px-4 py-2 rounded"
+                                                                >
+                                                                    {isSaving ? 'Saving...' : 'Next: Prep Call'}
                                                                 </CustomButton>
                                                             </div>
                                                         </div>
@@ -5427,7 +5677,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 </div>
                                                             ))}
 
-                                                            {(prepCallEntries.length === 0 || prepCallEditIndex !== null) && (
+                                                            {/* {(prepCallEntries.length === 0 || prepCallEditIndex !== null) && (
                                                                 <div className="flex justify-end">
                                                                     <CustomButton
                                                                         type="button"
@@ -5438,7 +5688,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                         {prepCallEditIndex !== null ? "Update Prep Call" : "Add Prep Call"}
                                                                     </CustomButton>
                                                                 </div>
-                                                            )}
+                                                            )} */}
 
                                                         </div>
 
@@ -5456,7 +5706,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 ))}
                                                             </div>
                                                         )}
-                                                        <div className="flex justify-end w-full gap-2 -mt-4 -mb-4">
+                                                        <div className="flex justify-end w-full gap-2 mt-4 -mb-4">
                                                             <CustomButton
                                                                 type="button"
                                                                 onClick={() => setCurrentStep(1)}
@@ -5467,10 +5717,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             <div className="space-x-2">
                                                                 <CustomButton
                                                                     type="button"
-                                                                    onClick={() => setCurrentStep(3)}
-                                                                    className=" text-white px-4 py-2 rounded"
+                                                                    onClick={() => handleNextStep(3)}
+                                                                    disabled={isSaving}
+                                                                    className="text-white px-4 py-2 rounded"
                                                                 >
-                                                                    Next: Full Episodes
+                                                                    {isSaving ? 'Saving...' : 'Next: Full Episodes'}
                                                                 </CustomButton>
                                                             </div>
                                                         </div>
@@ -6153,10 +6404,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             <div className="space-x-2">
                                                                 <CustomButton
                                                                     type="button"
-                                                                    onClick={() => setCurrentStep(4)}
+                                                                    onClick={() => handleNextStep(4)}
                                                                     className=" text-white px-4 py-2 rounded"
                                                                 >
-                                                                    Next: Additional Projects
+                                                                    {isSaving ? 'Saving...' : '  Next: Additional Projects'}
                                                                 </CustomButton>
                                                             </div>
                                                         </div>
@@ -6188,7 +6439,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                     />
                                                                 </div>
                                                             ))}
-                                                            {(additionalProjectEntries.length === 0 || additionalProjectEditIndex !== null) && (
+                                                            {/* {(additionalProjectEntries.length === 0 || additionalProjectEditIndex !== null) && (
                                                                 <div className="flex justify-end">
                                                                     <CustomButton
                                                                         type="button"
@@ -6199,7 +6450,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                         {additionalProjectEditIndex !== null ? "Update Additional Guest Project" : "Add Additional Guest Project"}
                                                                     </CustomButton>
                                                                 </div>
-                                                            )}
+                                                            )} */}
                                                         </div>
 
                                                         {additionalProjectEntries.length > 0 && (
@@ -6217,7 +6468,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             </div>
                                                         )}
 
-                                                        <div className="flex justify-end w-full gap-2 -mt-4 -mb-4">
+                                                        <div className="flex justify-end w-full gap-2 -mb-4">
                                                             <CustomButton
                                                                 type="button"
                                                                 onClick={() => setCurrentStep(3)}
@@ -6228,10 +6479,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             <div className="space-x-2">
                                                                 <CustomButton
                                                                     type="button"
-                                                                    onClick={() => setCurrentStep(5)}
+                                                                    onClick={() => handleNextStep(4)}
                                                                     className=" text-white px-4 py-2 rounded"
                                                                 >
-                                                                    Next: Emails
+                                                                    {isSaving ? 'Saving...' : 'Save'}
                                                                 </CustomButton>
                                                             </div>
                                                         </div>
@@ -6241,7 +6492,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             )}
 
                                             {/* Step 5: Emails */}
-                                            {currentStep === 5 && (
+                                            {/* {currentStep === 5 && (
                                                 <div>
                                                     <h3 className="text-lg font-semibold mb-2 -mt-4">Email Details:</h3>
                                                     <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -6304,7 +6555,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                     </div>
                                                 </div>
 
-                                            )}
+                                            )} */}
                                         </div>
                                     </>
                                 )}

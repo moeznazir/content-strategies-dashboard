@@ -85,7 +85,7 @@ const VoiceOfMarket = () => {
         { label: "Likes", id: "Likes" },
         { label: "Comments", id: "Comments" },
         // { label: "File", id: "file" },
-     
+
         // { label: "Tag", id: "tags" },
         // { label: "Actions", id: "action" }
     ];
@@ -137,7 +137,7 @@ const VoiceOfMarket = () => {
         ]
     });
     const fileCrudDetails = [
-        { label: "Thumbnail", key: "thumbnail", placeholder: "Upload thumbnail (optional)", type: "image" },
+        // { label: "Thumbnail", key: "thumbnail", placeholder: "Upload thumbnail (optional)", type: "image" },
         { label: "File Name", key: "file_name", placeholder: "Enter file name", type: "text", required: true },
         { label: "File", key: "file", placeholder: "Select file to upload", type: "file", required: true },
         { label: "File Link", key: "file_link", placeholder: "Enter file link to upload", type: "file", required: true },

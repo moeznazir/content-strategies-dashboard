@@ -1892,7 +1892,7 @@ const Assistant = () => {
                     searchQueries={searchQuery}
                     setSearchQueries={setSearchQuery}
                     onClearSearchQuery={handleClearSearchQuery}
-                     searchQuery={searchQuery}
+                    searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
 
                 />

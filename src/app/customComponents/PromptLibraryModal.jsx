@@ -13,7 +13,7 @@ const supabase = createClient(
 
 const ITEMS_PER_PAGE = 1000000000;
 
-const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSourceSelect, onLibraryDocsSelect, selectedLibraryDocs, currentSteps, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery }) => {
+const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSourceSelect, onLibraryDocsSelect, selectedLibraryDocs, currentSteps, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery ,searchQuery, setSearchQuery }) => {
 
     console.log("searchQueryyyyyyyyyyy", searchQueries);
     // State for data from Supabase
@@ -40,7 +40,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
     // New state for multi-step flow
     const [currentStep, setCurrentStep] = useState(1);
     const [searchMethod, setSearchMethod] = useState('ai');
-    const [searchQuery, setSearchQuery] = useState('');
+    // const [searchQuery, setSearchQuery] = useState('');
     const [searchQueryStep1, setSearchQueryStep1] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitEnabled, setIsSubmitEnabled] = useState(true);
@@ -710,6 +710,11 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
     const getFilteredDocuments = () => {
         let filtered = libraryDocuments;
 
+        // If no filters are applied, show all documents
+        if (!selectedDepartment && !selectedTemplate && !searchQueryStep1.trim()) {
+            return filtered;
+        }
+
         // Filter by department and template if selected
         if (selectedTemplate) {
             filtered = filtered.filter(doc => doc.template_id === selectedTemplate);
@@ -809,6 +814,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                     onClick={() => {
                                         setShowLibraryDropdown(false);
                                         setIsLoading(false);
+                                        clearAllSelections();
                                     }}
                                     className="text-white -mt-14  hover:text-gray-300 text-2xl"
                                 >
@@ -833,13 +839,13 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                     <label className="text-sm font-medium leading-relaxed p-2 py-1 rounded-md flex-shrink-0 min-w-[200px] max-w-full break-words">
                                         <span className="font-semibold text-[15px]">Selected Template: </span>
                                         <span className='text-[12px] break-words'>
-                                            {selectedTemplate ?
-                                                templateLibraries[selectedDepartment]?.find(t => t.id === selectedTemplate)?.name :
-                                                'None selected'}
+                                            {selectedLibraryStep1Documents.length > 0
+                                                ? libraryDocuments.find(d => d.id === selectedLibraryStep1Documents[0])?.title
+                                                : selectedTemplate
+                                                    ? templateLibraries[selectedDepartment]?.find(t => t.id === selectedTemplate)?.name
+                                                    : 'All Templates'}
                                         </span>
                                     </label>
-
-
                                 </div>
                             </div>
 
@@ -914,51 +920,53 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                     </div>
 
                                                     {/* Template Filter */}
-                                                    {selectedDepartment && (
-                                                        <div className="border border-white/20 rounded-md overflow-hidden">
-                                                            <button
-                                                                className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
-                                                                onClick={() => setTemplateOpen(!templateOpen)}
-                                                            >
-                                                                <span>Templates</span>
-                                                                <span>{templateOpen ? '▼' : '◀'}</span>
-                                                            </button>
-                                                            {templateOpen && (
-                                                                <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20">
-                                                                    {isLoadingData ? (
-                                                                        <div className="flex justify-center items-center h-20">
-                                                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <>
-                                                                            <label className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                        <button
+                                                            className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
+                                                            onClick={() => setTemplateOpen(!templateOpen)}
+                                                        >
+                                                            <span>Templates</span>
+                                                            <span>{templateOpen ? '▼' : '◀'}</span>
+                                                        </button>
+                                                        {templateOpen && (
+                                                            <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20">
+                                                                {isLoadingData ? (
+                                                                    <div className="flex justify-center items-center h-20">
+                                                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <label className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                name="template"
+                                                                                className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                                checked={!selectedTemplate}
+                                                                                onChange={() => setSelectedTemplate('')}
+                                                                            />
+                                                                            All Templates
+                                                                        </label>
+                                                                        {/* Show templates based on selected department or all templates if no department selected */}
+                                                                        {(selectedDepartment ? templateLibraries[selectedDepartment] || [] :
+                                                                            // If no department selected, show all templates from all departments
+                                                                            Object.values(templateLibraries).flat()
+                                                                        ).map((template) => (
+                                                                            <label key={template.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
                                                                                 <input
                                                                                     type="checkbox"
                                                                                     name="template"
                                                                                     className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                    checked={!selectedTemplate}
-                                                                                    onChange={() => setSelectedTemplate('')}
+                                                                                    checked={selectedTemplate === template.id}
+                                                                                    onChange={() => handleTemplateSelect(template.id)}
                                                                                 />
-                                                                                All Templates
+                                                                                {template.name}
                                                                             </label>
-                                                                            {templateLibraries[selectedDepartment]?.map((template) => (
-                                                                                <label key={template.id} className="flex items-center text-xs py-1 px-2 rounded hover:bg-white/10 cursor-pointer">
-                                                                                    <input
-                                                                                        type="checkbox"
-                                                                                        name="template"
-                                                                                        className="mr-2 h-3 w-3 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                                                        checked={selectedTemplate === template.id}
-                                                                                        onChange={() => handleTemplateSelect(template.id)}
-                                                                                    />
-                                                                                    {template.name}
-                                                                                </label>
-                                                                            ))}
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                                                        ))}
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
 
                                                 {/* Right Results */}
@@ -1034,48 +1042,48 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                             {currentStep === 2 && (
                                 <div className="p-4">
                                     <div className="p-6 rounded-lg border border-white/20">
-                                    {dynamicFields.length > 0 ? (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {dynamicFields.map((field, index) => {
-      const isDateField =
-        field.label.toLowerCase().includes("date") ||
-        field.name.toLowerCase().includes("date");
+                                        {dynamicFields.length > 0 ? (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {dynamicFields.map((field, index) => {
+                                                    const isDateField =
+                                                        field.label.toLowerCase().includes("date") ||
+                                                        field.name.toLowerCase().includes("date");
 
-      return (
-        <div key={`field_${index}`}>
-          <label className="block text-gray-300 text-sm mb-1">
-            {field.label}
-          </label>
+                                                    return (
+                                                        <div key={`field_${index}`}>
+                                                            <label className="block text-gray-300 text-sm mb-1">
+                                                                {field.label}
+                                                            </label>
 
-          {isDateField ? (
-            <input
-              type="date"
-              value={dynamicFieldValues[field.name] || ""}
-              onChange={(e) =>
-                handleDynamicFieldChange(field.name, e.target.value)
-              }
-              className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white [color-scheme:dark] cursor-pointer"
-            />
-          ) : (
-            <input
-              type="text"
-              value={dynamicFieldValues[field.name] || ""}
-              onChange={(e) =>
-                handleDynamicFieldChange(field.name, e.target.value)
-              }
-              className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white"
-              placeholder={`Enter ${field.label.toLowerCase()}`}
-            />
-          )}
-        </div>
-      );
-    })}
-  </div>
-) : (
-  <div className="text-center text-gray-400 py-4">
-    No fields to display for this template
-  </div>
-)}
+                                                            {isDateField ? (
+                                                                <input
+                                                                    type="date"
+                                                                    value={dynamicFieldValues[field.name] || ""}
+                                                                    onChange={(e) =>
+                                                                        handleDynamicFieldChange(field.name, e.target.value)
+                                                                    }
+                                                                    className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white [color-scheme:dark] cursor-pointer"
+                                                                />
+                                                            ) : (
+                                                                <input
+                                                                    type="text"
+                                                                    value={dynamicFieldValues[field.name] || ""}
+                                                                    onChange={(e) =>
+                                                                        handleDynamicFieldChange(field.name, e.target.value)
+                                                                    }
+                                                                    className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white"
+                                                                    placeholder={`Enter ${field.label.toLowerCase()}`}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center text-gray-400 py-4">
+                                                No fields to display for this template
+                                            </div>
+                                        )}
 
                                     </div>
                                 </div>
@@ -1159,10 +1167,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                             {/* STEP 1 - AI Search */}
                                             {searchMethod === 'ai' && (
                                                 <div className="mt-6">
-                                                    <h3 className="text-lg text-center font-semibold mb-2">Search and select a Resource</h3>
+                                                    {/* <h3 className="text-lg text-center font-semibold mb-2">Search and select a Resource</h3> */}
 
                                                     {/* INPUT FIELD */}
-                                                    <div className="flex items-center gap-2">
+                                                    {/* <div className="flex items-center gap-2">
                                                         <div className="relative w-full">
                                                             <input
                                                                 type="text"
@@ -1203,7 +1211,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </div> */}
 
 
                                                     {/* Documents */}

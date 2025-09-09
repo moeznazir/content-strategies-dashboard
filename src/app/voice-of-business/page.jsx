@@ -106,7 +106,7 @@ const FileManagement = () => {
         category: []
     });
     const fileCrudDetails = [
-        { label: "Thumbnail", key: "thumbnail", placeholder: "Upload thumbnail (optional)", type: "image" },
+        // { label: "Thumbnail", key: "thumbnail", placeholder: "Upload thumbnail (optional)", type: "image" },
         { label: "File Name", key: "file_name", placeholder: "Enter file name", type: "text", required: true },
         { label: "File", key: "file", placeholder: "Select file to upload", type: "file", required: true },
         { label: "File Link", key: "file_link", placeholder: "Enter file link to upload", type: "file", required: true },
