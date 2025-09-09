@@ -74,7 +74,7 @@ const Dashboard = () => {
     { label: "Avatar", id: "Avatar" },
     {label: "Guest Name",id: "Guest"},
      {
-      label: "Formate",
+      label: "Format",
       id: "Formate",
       render: (row) => {
         const detailsData = parseEpisodeDetails(row);

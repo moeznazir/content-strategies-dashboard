@@ -77,7 +77,7 @@ const FileManagement = () => {
             }
         },
         { label: "File Name", id: "file_name" },
-        { label: "Formate", id: "file_type" },
+        { label: "Format", id: "file_type" },
         { label: "Category", id: "category" },
         { label: "Description", id: "description" },
         { label: "Likes", id: "Likes" },
@@ -110,7 +110,7 @@ const FileManagement = () => {
         { label: "File Name", key: "file_name", placeholder: "Enter file name", type: "text", required: true },
         { label: "File", key: "file", placeholder: "Select file to upload", type: "file", required: true },
         { label: "File Link", key: "file_link", placeholder: "Enter file link to upload", type: "file", required: true },
-        { label: "File Type", key: "file_type", placeholder: "Select file type", type: "select", required: true },
+        { label: "Format", key: "file_type", placeholder: "Select file type", type: "select", required: true },
         { label: "Category", key: "category", placeholder: "Select category", type: "select", required: true, options: filterOptions.category },
         { label: "Date Recorded", key: "uploaded_at", placeholder: "Select date", type: "date", required: true },
         { label: "Description", key: "description", placeholder: "Enter file description", type: "textarea", required: true },
