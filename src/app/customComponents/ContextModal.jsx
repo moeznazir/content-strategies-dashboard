@@ -18,9 +18,11 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
     const [selectedDocuments, setSelectedDocuments] = useState([]);
     const [searchMethod, setSearchMethod] = useState('ai'); // 'ai' or 'manual'
     const [hasSearchedAISearch, setHasSearchedAISearch] = useState(false);
+    const [hasSearchedManualSearch, setHasSearchedManualSearch] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
+    const [searchResultsAI, setSearchResultsAI] = useState([]);
     const [isSearchResultsOpen, setIsSearchResultsOpen] = useState(true);
-    // const [searchQuery, setSearchQuery] = useState('');
+    const [searchQueryManual, setSearchQueryManual] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showInfo, setShowInfo] = useState(true);
     const isSubmitEnabled = searchQuery.trim();
@@ -188,7 +190,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             const response = await createSearchContextandSource(payload);
 
             if (response.status === 200 && Array.isArray(response.data)) {
-                setSearchResults(response.data.map(item => ({
+                setSearchResultsAI(response.data.map(item => ({
                     id: item.id,
                     title: item.title,
                     type: item.type
@@ -199,7 +201,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             }
         } catch (error) {
             console.log('Search Error:', error);
-            setSearchResults([
+            setSearchResultsAI([
                 { id: 'ai1', title: 'Sample Result 1: ' + searchQuery, type: 'voc' },
                 { id: 'ai2', title: 'Sample Result 2: ' + searchQuery, type: 'doc' }
             ]);
@@ -219,13 +221,15 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             }
             return newFilters;
         });
+
+
     };
 
     const handleManualSearchSubmit = async () => {
         // Clear results if no search query and no filters are selected
-        if (!searchQuery && Object.values(selectedFilters).every(arr => arr.length === 0)) {
+        if (!searchQueryManual && Object.values(selectedFilters).every(arr => arr.length === 0)) {
             setSearchResults([]);
-            setHasSearchedAISearch(false);
+            setHasSearchedManualSearch(false);
             return;
         }
 
@@ -239,7 +243,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
 
             if (contentSource === 'voc') {
                 response = await supabase.rpc('simplified_voc_search', {
-                    search_term: searchQuery.trim() || null,
+                    search_term: searchQueryManual.trim() || null,
                     video_types_json: selectedFilters["Video Type"]?.length ? selectedFilters["Video Type"] : null,
                     classifications_json: selectedFilters["Classifications"]?.length ? selectedFilters["Classifications"] : null,
                     current_user_id: currentUserId,
@@ -257,7 +261,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                 })));
             } else if (contentSource === 'vob') {
                 response = await supabase.rpc('simplified_vob_search', {
-                    search_term: searchQuery.trim() || null,
+                    search_term: searchQueryManual.trim() || null,
                     categories_json: selectedFilters["category"]?.length ? selectedFilters["category"] : null,
                     current_user_id: currentUserId,
                     current_company_id: currentCompanyId,
@@ -274,7 +278,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                 })));
             } else {
                 response = await supabase.rpc('simplified_vom_search', {
-                    search_term: searchQuery.trim() || null,
+                    search_term: searchQueryManual.trim() || null,
                     market_categories_json: selectedFilters["market_categories"]?.length ? selectedFilters["market_categories"] : null,
                     content_categories_json: selectedFilters["content_categories"]?.length ? selectedFilters["content_categories"] : null,
                     current_user_id: currentUserId,
@@ -292,7 +296,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                 })));
             }
 
-            setHasSearchedAISearch(true);
+            setHasSearchedManualSearch(true);
         } catch (error) {
             console.log('Search Error:', error);
             setSearchResults([]);
@@ -304,11 +308,10 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
         if (showContextModal && searchQueries.trim() === '') {
             setShowContextModal(false);
             setShowReplaceConfirmation(true);
-
         } else {
             handleSubmitAISearch();
         }
-    }, [searchQueries, showContextModal]);
+    }, [searchQueries, searchQuery, showContextModal]);
 
 
     // const handleReplace = () => {
@@ -324,27 +327,31 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
     };
     // Trigger search when filters change (for manual search)
     useEffect(() => {
-        if (searchMethod === 'manual') {
-            const timer = setTimeout(() => {
-                // Only trigger search if there's a query or at least one filter is selected
-                if (searchQuery || Object.values(selectedFilters).some(arr => arr.length > 0)) {
-                    handleManualSearchSubmit();
-                } else {
-                    // Clear results if no query and no filters
-                    setSearchResults([]);
-                    setHasSearchedAISearch(false);
-                }
-            }, 500);
+        setTimeout(() => {
+            if (searchMethod === 'manual') {
+                // Check if any filters are selected or if there's a search query
+                const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0);
+                const hasSearchQuery = searchQueryManual.trim() !== '';
 
-            return () => clearTimeout(timer);
-        }
-    }, [selectedFilters, contentSource, searchQuery, searchMethod]);
+                if (!hasActiveFilters && !hasSearchQuery) {
+                    // Clear results if no filters and no search query
+                    setSearchResults([]);
+                    setHasSearchedManualSearch(false);
+                } else {
+                    // Perform search if there are active filters or search query
+                    handleManualSearchSubmit();
+                }
+            }
+        }, 0);
+    }, [selectedFilters, contentSource, searchQueryManual, searchMethod]);
 
     const clearSearchState = () => {
         setSearchQuery('');
         setSearchResults([]);
+        setSearchResultsAI([]);
         setSelectedDocuments([]);
         setHasSearchedAISearch(false);
+        setHasSearchedManualSearch(false);
         setSelectedFilters({
             "Video Type": [],
             "Classifications": [],
@@ -378,7 +385,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
         if (selectAll && wasSelected) {
             // If we're deselecting one item while select all is active, turn off select all
             setSelectAll(false);
-        } else if (!selectAll && selectedDocuments.length + 1 === searchResults.length) {
+        } else if (!selectAll && selectedDocuments.length + 1 === searchResultsAI.length) {
             // If we're about to select the last item, enable selectAll
             setSelectAll(true);
         }
@@ -386,32 +393,32 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
 
     // Update the useEffect for select all to handle the sync better
     useEffect(() => {
-        if (selectAll && searchResults.length > 0) {
-            const allDocIds = searchResults.map(doc => doc.id);
+        if (selectAll && searchResultsAI.length > 0) {
+            const allDocIds = searchResultsAI.map(doc => doc.id);
 
             // Only update if not already all selected
             if (!arraysEqual(selectedDocuments, allDocIds)) {
                 setSelectedDocuments(allDocIds);
 
                 // Add all docs to parent that aren't already selected
-                searchResults.forEach(doc => {
+                searchResultsAI.forEach(doc => {
                     if (onDocSelect && !selectedDocuments.includes(doc.id)) {
                         onDocSelect(doc.id, doc.title || "Untitled Document");
                     }
                 });
             }
-        } else if (!selectAll && selectedDocuments.length === searchResults.length && searchResults.length > 0) {
+        } else if (!selectAll && selectedDocuments.length === searchResultsAI.length && searchResultsAI.length > 0) {
             // If all are selected but selectAll is false, clear selection
             setSelectedDocuments([]);
 
             // Remove all search results from parent
-            searchResults.forEach(doc => {
+            searchResultsAI.forEach(doc => {
                 if (onDocSelect) {
                     onDocSelect(doc.id, doc.title || "Untitled Document");
                 }
             });
         }
-    }, [selectAll, searchResults]);
+    }, [selectAll, searchResultsAI]);
 
     // Add this helper function to compare arrays
     function arraysEqual(a, b) {
@@ -434,12 +441,12 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
         setSelectedDocuments(parentSelectedIds);
 
         // Also update selectAll state based on whether all search results are selected
-        if (searchResults.length > 0) {
-            const allSearchResultIds = searchResults.map(doc => doc.id);
+        if (searchResultsAI.length > 0) {
+            const allSearchResultIds = searchResultsAI.map(doc => doc.id);
             const allSelected = allSearchResultIds.every(id => parentSelectedIds.includes(id));
             setSelectAll(allSelected);
         }
-    }, [selectedDocTitles, searchResults]);
+    }, [selectedDocTitles, searchResultsAI]);
 
     return (
         <div className="relative ml-[5%] mb-4 w-[220px] no-scrollbar">
@@ -580,7 +587,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                         checked={searchMethod === 'ai'}
                                                         onChange={() => {
                                                             setSearchMethod('ai');
-                                                            clearSearchState();
+                                                            // clearSearchState();
                                                         }}
                                                         className="h-4 w-4"
                                                     />
@@ -593,7 +600,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                         checked={searchMethod === 'manual'}
                                                         onChange={() => {
                                                             setSearchMethod('manual');
-                                                            clearSearchState();
+                                                            // clearSearchState();
                                                         }}
                                                         className="h-4 w-4"
                                                     />
@@ -665,7 +672,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                         <span className="text-blue-700 text-sm">{isSearchResultsOpen ? '▼' : '▶'}</span>
                                                         <h3 className="font-medium ml-2  text-sm text-blue-400">Context Documents</h3>
                                                         <span className="ml-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                                                            {searchResults.length} docs
+                                                            {searchResultsAI.length} docs
                                                         </span>
                                                         {isLoading && (
                                                             <span className="ml-2">
@@ -679,7 +686,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
 
                                                     {isSearchResultsOpen && (
                                                         <div className="ml-4 mr-4">
-                                                            {searchResults.length === 0 ? (
+                                                            {searchResultsAI.length === 0 ? (
                                                                 // Show message when no documents found
                                                                 <div className="p-4 bg-white/5 rounded-md text-center">
                                                                     <svg
@@ -714,7 +721,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
 
                                                                     {/* Documents list */}
                                                                     <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
-                                                                        {searchResults.map((doc) => (
+                                                                        {searchResultsAI.map((doc) => (
                                                                             <div
                                                                                 key={`search-result-${doc.id}-${doc.type}`}
                                                                                 className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
@@ -795,20 +802,22 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                         <input
                                                             type="text"
                                                             placeholder="Search..."
-                                                            value={searchQuery}
+                                                            value={searchQueryManual}
                                                             onChange={(e) => {
-                                                                setSearchQuery(e.target.value);
-                                                                if (e.target.value === '' && Object.values(selectedFilters).every(arr => arr.length === 0)) {
+                                                                setSearchQueryManual(e.target.value);
+                                                                if (searchQueryManual === '' && Object.values(selectedFilters).every(arr => arr.length === 0)) {
                                                                     setSearchResults([]);
-                                                                    setHasSearchedAISearch(false);
+                                                                    setHasSearchedManualSearch(false);
                                                                 }
+
                                                             }}
                                                             className="w-full pt-3 pb-3 h-[40px] p-3 pr-[80px] rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                             style={{ backgroundColor: appColors.primaryColor }}
                                                             onKeyDown={(e) => e.key === 'Enter' && handleManualSearchSubmit()}
+                                                        // onKeyDown={ handleManualSearchSubmit()}
                                                         />
                                                         <div className="relative group">
-                                                            {!searchQuery && Object.values(selectedFilters).every(arr => arr.length === 0) && (
+                                                            {!searchQueryManual && Object.values(selectedFilters).every(arr => arr.length === 0) && (
                                                                 <div className="absolute -top-0 -right-14 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                                     Please input text or select filters
                                                                 </div>
@@ -1019,7 +1028,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                                 ))
                                                             ) : (
                                                                 <div className="text-center text-gray-400 text-xs p-4 h-full -mt-1 flex items-center justify-center">
-                                                                    {hasSearchedAISearch ? 'No results found' : 'Perform a search or apply filters to see results'}
+                                                                    {hasSearchedManualSearch ? 'No results found' : 'Perform a search or apply filters to see results'}
                                                                 </div>
                                                             )}
                                                         </div>
