@@ -5745,7 +5745,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                     {DETAILS_FULL_EPISODES.map(fieldKey => (
                                                                         <div key={fieldKey}>
                                                                             <label className="block font-semibold text-sm mb-1">
-                                                                                {fieldKey}:
+                                                                                {fieldKey === "Formate" ? "Format" : fieldKey}:
                                                                             </label>
                                                                             {fieldKey === 'Date Recorded' ? (
                                                                                 <CustomInput

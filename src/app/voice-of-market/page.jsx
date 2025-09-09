@@ -77,7 +77,7 @@ const VoiceOfMarket = () => {
             }
         },
         { label: "File Name", id: "file_name" },
-        { label: "Formate", id: "file_type" },
+        { label: "Format", id: "file_type" },
         { label: "Category", id: "category" },
         // { label: "Market Categories", id: "market_categories" },
         // { label: "Content Categories", id: "content_categories" },
@@ -141,7 +141,7 @@ const VoiceOfMarket = () => {
         { label: "File Name", key: "file_name", placeholder: "Enter file name", type: "text", required: true },
         { label: "File", key: "file", placeholder: "Select file to upload", type: "file", required: true },
         { label: "File Link", key: "file_link", placeholder: "Enter file link to upload", type: "file", required: true },
-        { label: "File Type", key: "file_type", placeholder: "Select file type", type: "select", required: true },
+        { label: "Format", key: "file_type", placeholder: "Select file type", type: "select", required: true },
         { label: "Category", key: "category", placeholder: "Select category", type: "select", required: true, options: filterOptions.category },
         { label: "Market Categories", key: "market_categories", placeholder: "Select market categories", type: "select", required: true },
         { label: "Content Categories", key: "content_categories", placeholder: "Select content_categories", type: "select", required: true },
