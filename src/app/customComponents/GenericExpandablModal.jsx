@@ -1,4 +1,4 @@
-import { FaTimes, FaCopy, FaChevronDown, FaChevronUp, FaEye, FaDownload } from "react-icons/fa";
+import { FaTimes, FaCopy, FaChevronDown, FaChevronUp, FaEye, FaDownload, FaChevronRight } from "react-icons/fa";
 import { appColors } from "@/lib/theme";
 import { useState, useEffect } from "react";
 
@@ -96,109 +96,25 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         'employee_count'
     ];
 
+
+
+
+
     const FULL_EPISODE_FIELD_GROUPS = {
-        DETAILS_FULL_EPISODES: [
-            "Episode ID",
-            "Episode Number",
-            "Episode Title",
-            "Date Recorded",
-            "Short and Long-Tail SEO Keywords",
-            "All Asset Folder"
-        ],
-        FULL_EPISODE_VIDEO: [
-            "Video File",
-            "Audio File",
-            "YouTube URL",
-            "Full Episode Details"
-        ],
-        FULL_EPISODE_EXTENDED_CONTENT: [
-            "Article URL",
-            "Article Text",
-            "YouTube Short Video File",
-            "YouTube Short URL",
-            "YouTube Short Transcript",
-            "LinkedIn Video File",
-            "LinkedIn Video Transcript",
-            "Extended Content LinkedIn Comments & Hashtags",
-            "Quote Card"
-        ],
-        FULL_EPISODE_HIGHLIGHT_VIDEO: [
-            "Video File",
-            "YouTube URL",
-            "Transcript",
-            "Highlights Video Details"
-        ],
-        FULL_EPISODE_INTRODUCTION_VIDEO: [
-            "Video File",
-            "YouTube URL",
-            "Transcript",
-            "Instruction Video Details"
-        ],
-        FULL_EPISODE_QA_VIDEOS: [
-            "QAV1 Video File",
-            "QAV1 YouTube URL",
-            "QAV1 Transcript",
-            "QAV1 QA Video Details",
-            "Extended Content Article URL",
-            "Extended Content Article Text",
-            "Extended Content YouTube Short Video File",
-            "Extended Content YouTube Short URL",
-            "Extended Content YouTube Short Transcript",
-            "Extended Content LinkedIn Video File",
-            "Extended Content LinkedIn Video Transcript",
-            "QA Video LinkedIn Comments & Hashtags",
-            "Quote Card"
-        ],
-        FULL_EPISODE_PODBOOK: [
-            "Interactive Experience",
-            "Website URL",
-            "Embed Code",
-            "Loom Folder"
-        ],
-        FULL_EPISODE_FULL_CASE_STUDY: [
-            "Interactive Experience",
-            "Case Study Text",
-            "Sales Email",
-            "Problem Section Video",
-            "Problem Section Video Length",
-            "Problem Section Video Transcript",
-            "Solutions Section Video",
-            "Solutions Section Video Length",
-            "Solutions Section Video Transcript",
-            "Results Section Video",
-            "Results Section Video Length",
-            "Results Section Video Transcript"
-        ],
-        FULL_EPISODE_ONE_PAGE_CASE_STUDY: [
-            "Interactive Experience",
-            "One Page Text",
-            "Sales Email",
-            "One Page Video",
-            "Length",
-            "Transcript"
-        ],
-        FULL_EPISODE_OTHER_CASE_STUDY: [
-            "Other Case Study Interactive Experience",
-            "Case Study Text",
-            "Sales Email",
-            "Other Case Study Video",
-            "Other Case Study Video Length",
-            "Other Case Study Video Transcript"
-        ],
-        FULL_EPISODE_ICP_ADVICE: [
-            "Post-Podcast Video",
-            "Unedited Post-Podcast Video Length",
-            "Unedited Post-Podcast Transcript",
-            "Post-Podcast Insights Report",
-            "Post-Podcast Vision Report"
-        ],
-        FULL_EPISODE_CHALLENGE_QUESTIONS: [
-            "Unedited Challenge Question Video",
-            "Unedited Challenge Question Video Length",
-            "Unedited Challenge Question Transcript",
-            "Challenge Report"
-        ]
+        DETAILS_FULL_EPISODES: ['DETAILS_FULL_EPISODES'],
+        FULL_EPISODE_VIDEO: ['FULL_EPISODE_VIDEO'],
+        FULL_EPISODE_HIGHLIGHT_VIDEO: ['FULL_EPISODE_HIGHLIGHT_VIDEO'],
+        FULL_EPISODE_QA_VIDEOS: ['FULL_EPISODE_QA_VIDEOS'],
+        FULL_EPISODE_INTRODUCTION_VIDEO: ['FULL_EPISODE_INTRODUCTION_VIDEO'],
+        FULL_EPISODE_PODBOOK: ['FULL_EPISODE_PODBOOK'],
+        FULL_EPISODE_FULL_CASE_STUDY: ['FULL_EPISODE_FULL_CASE_STUDY'],
+        FULL_EPISODE_ONE_PAGE_CASE_STUDY: ['FULL_EPISODE_ONE_PAGE_CASE_STUDY'],
+        FULL_EPISODE_OTHER_CASE_STUDY: ['FULL_EPISODE_OTHER_CASE_STUDY'],
+        FULL_EPISODE_ICP_ADVICE: ['FULL_EPISODE_ICP_ADVICE'],
+        FULL_EPISODE_CHALLENGE_QUESTIONS: ['FULL_EPISODE_CHALLENGE_QUESTIONS'],
+        FULL_EPISODE_EXTENDED_CONTENT: ['FULL_EPISODE_EXTENDED_CONTENT'],
     };
+
 
 
     // ---------- Helpers ----------
@@ -242,14 +158,9 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         return str.replace(/_/g, " ").replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
     };
 
-    const formatFullEpisodeSubLabel = (key) => {
-        // remove prefix and convert to "Episode Xxxx"
-        const tail = key.replace(/^FULL_EPISODE_/, "").replace(/_/g, " ");
-        const label = titleCase(tail);
-        return `Episode ${label}`;
-    };
 
     // ---------- Sections detection (with JSON parsing) ----------
+    // Update the detectSections function to handle Full Episode filtering properly
     const detectSections = () => {
         const sections = {};
         const videoTypeFilters = appliedFilters?.["Video Type"] || [];
@@ -264,21 +175,64 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
 
             // 🔹 Detect if key belongs to FULL_EPISODE groups
             let foundInGroup = false;
+            let matchedGroupKey = null;
 
             // First, check if this key belongs to any Full Episode group
             for (const [groupKey, fields] of Object.entries(FULL_EPISODE_FIELD_GROUPS)) {
                 if (fields.includes(key)) {
                     foundInGroup = true;
-                    const parsed = safeParseJSON(data[key]);
+                    matchedGroupKey = groupKey;
 
-                    // Use the group title from the field groups
-                    let groupTitle = groupKey.replace(/_/g, " ");
+                    // If filters are active and this group doesn't match any filter, skip it
+                    if (videoTypeFilters.length > 0) {
+                        const normalizedGroupKey = groupKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        const hasMatch = videoTypeFilters.some(filter => {
+                            const normalizedFilter = filter.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            return normalizedGroupKey.includes(normalizedFilter) || normalizedFilter.includes(normalizedGroupKey);
+                        });
 
-                    if (!fullEpisodeSections[groupKey]) {
-                        fullEpisodeSections[groupKey] = { title: groupTitle, data: [] };
+                        // If no match found and filters are active, skip this group
+                        if (!hasMatch) {
+                            foundInGroup = false;
+                            matchedGroupKey = null;
+                            return; // Skip this key entirely
+                        }
                     }
 
-                    fullEpisodeSections[groupKey].data.push({ [key]: parsed });
+                    const specialTitles = {
+                        "QA VIDEOS": "QA Videos",
+                        "ICP ADVICE": "ICP Advice",
+                        "DETAILS_FULL_EPISODES": "Details"
+                    };
+
+                    let groupTitle = titleCase(
+                        groupKey.replace(/^FULL_EPISODE_/, '').replace(/_/g, ' ')
+                    );
+                    if (groupKey === "DETAILS_FULL_EPISODES") {
+                        groupTitle = "Details";
+                    }
+                    if (specialTitles[groupTitle.toUpperCase()]) {
+                        groupTitle = specialTitles[groupTitle.toUpperCase()];
+                    }
+
+                    if (!fullEpisodeSections[groupKey]) {
+                        fullEpisodeSections[groupKey] = { title: groupTitle, data: [], collapsed: true };
+                    }
+
+                    const parsed = safeParseJSON(data[key]);
+
+                    if (Array.isArray(parsed)) {
+                        if (parsed.length > 0) {
+                            fullEpisodeSections[groupKey].data.push(...parsed);
+                        } else {
+                            fullEpisodeSections[groupKey].data.push({ message: "No data found" });
+                        }
+                    } else if (parsed) {
+                        fullEpisodeSections[groupKey].data.push(parsed);
+                    } else {
+                        fullEpisodeSections[groupKey].data.push({ message: "No data found" });
+                    }
+
                     break;
                 }
             }
@@ -303,7 +257,6 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
 
             // Handle filters - if video type filters are active, only show matching sections
             if (videoTypeFilters.length > 0) {
-                // Check if this key matches any of the video type filters
                 const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
                 const hasMatch = videoTypeFilters.some(filter => {
                     const normalizedFilter = filter.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -328,17 +281,17 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         });
 
         // 🔹 Finally, wrap ALL Full Episodes under one main section
+        // But only if there are any Full Episode sections to show
         if (Object.keys(fullEpisodeSections).length > 0) {
-            sections["DETAILS_FULL_EPISODES"] = {
-                title: "Details Full Episodes",
+            sections["FULL_EPISODES_SECTION"] = {
+                title: "Full Episodes",
                 children: fullEpisodeSections
             };
         }
 
-        console.log("Final sections structure:", sections); // Debug log
+        console.log("Final sections structure:", sections);
         return sections;
     };
-    // initialize filtered sections and collapsed state
     // initialize filtered sections and collapsed state
     useEffect(() => {
         const sections = detectSections();
@@ -465,86 +418,12 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
             </div>
         );
     };
-    const renderSectionContent = (sectionData, sectionId) => {
-        const hasData = Array.isArray(sectionData.data)
-            ? sectionData.data.some(item => hasValidData(item))
-            : false;
 
-        if (!hasData) {
-            return (
-                <div className="p-4 rounded-lg border border-gray-600 bg-gray-800/40 text-gray-400 text-center shadow-inner">
-                    No data available
-                </div>
-            );
-        }
-
-        return sectionData.data.map((item, idx) => {
-            if (!hasValidData(item)) return null;
-
-            return (
-                <div
-                    key={`${sectionId}-${idx}`}
-                    className="p-4 rounded-lg border border-gray-600 bg-gray-800/40 shadow-md hover:shadow-lg transition-shadow duration-200"
-                >
-                    {Object.entries(item).map(([fieldKey, fieldValue]) => {
-                        if (sectionId.toLowerCase().includes('emails') && fieldKey.toLowerCase() === 'category') {
-                            return null;
-                        }
-
-                        const fieldId = `${sectionId}-${fieldKey}-${idx}`;
-                        const showPreview = shouldShowPreviewIcon(fieldKey) && typeof fieldValue === 'string' && fieldValue.trim().length > 0;
-
-                        return (
-                            <div key={fieldKey} className="mb-4 last:mb-0 group">
-                                <div className="flex justify-between items-center mb-1">
-                                    <label className="font-medium text-gray-300 flex items-center gap-2">
-                                        <span className="px-2 py-0.5 rounded text-sm bold">
-                                            {sectionId === "DETAILS_FULL_EPISODES"
-                                                ? formatFullEpisodeSubLabel(fieldKey)
-                                                : titleCase(fieldKey)}
-                                        </span>
-                                    </label>
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {copiedField === fieldId && (
-                                            <span className="text-xs text-green-400 animate-pulse">Copied!</span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                    <div className="flex-1 border border-gray-600 p-3 rounded shadow-inner">
-                                        {renderFieldValue(fieldValue, fieldId, fieldKey)}
-                                    </div>
-                                    <div className="flex flex-col gap-2 mt-1">
-                                        <button
-                                            onClick={() => copyToClipboard(fieldValue, fieldId)}
-                                            className="p-1 text-yellow-300 hover:text-white bg-yellow-600/20 rounded hover:bg-yellow-600/40 transition-colors"
-                                            title="Copy"
-                                        >
-                                            <FaCopy size={14} />
-                                        </button>
-                                        {showPreview && (
-                                            <button
-                                                onClick={() => handlePreview(fieldValue)}
-                                                className="p-1 text-blue-300 hover:text-white bg-blue-600/20 rounded hover:bg-blue-600/40 transition-colors"
-                                                title="Preview"
-                                            >
-                                                <FaEye size={14} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            );
-        });
-    };
     const renderSection = (sectionId, sectionData) => {
         console.log("Rendering section:", sectionId, "with data:", sectionData); // Debug log
 
         // If this is the Details Full Episodes section with children
-        if (sectionId === "DETAILS_FULL_EPISODES" && sectionData.children) {
+        if (sectionId === "FULL_EPISODES_SECTION" && sectionData.children) {
             console.log("Found DETAILS_FULL_EPISODES with children"); // Debug log
             const hasData = Object.values(sectionData.children).some(child =>
                 Array.isArray(child.data) && child.data.some(item => hasValidData(item))
@@ -583,7 +462,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
                                                 className={`flex justify-between items-center cursor-pointer p-3 rounded-lg border border-gray-600 transition-all duration-200 ${collapsedSections[childId] ? "bg-gray-800/50" : "bg-gray-800/70 shadow-md"}`}
                                                 onClick={() => toggleSection(childId)}
                                             >
-                                                <h3 className="text-lg font-semibold text-gray-200">
+                                                <h3 className="text-sm font-semibold text-gray-200">
                                                     {childData.title}
                                                 </h3>
                                                 {collapsedSections[childId] ? (
@@ -925,7 +804,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
                     )}
 
                     {/* Main Content */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 mb-4">
                         {/* Guest Cards - Collapsible Section */}
                         {guestCards.length > 0 && (
                             <div className="mb-6">
@@ -934,7 +813,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
                                     onClick={() => setIsGuestSectionCollapsed(!isGuestSectionCollapsed)}
                                 >
                                     <h3 className="text-lg font-semibold text-gray-200 flex items-center gap-2">
-                                        <span className=" px-2 py-1 rounded-md text-sm">
+                                        <span className="px-2 py-1 rounded-md text-sm">
                                             Guests
                                         </span>
                                     </h3>
@@ -946,30 +825,28 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
                                 </div>
 
                                 {!isGuestSectionCollapsed && (
-                                  <div className="mt-3 space-y-4 pl-4 border-l-2 border-gray-600 ml-3">
-                                  <div
-                                      className={`flex flex-wrap gap-4 ${guestCards.length === 1 ? "justify-start" : ""} max-h-[420px] overflow-y-auto pr-2`}
-                                  >
-                                      {guestCards.map((g, index) => (
-                                          <div
-                                              key={g.id}
-                                              className={`border border-gray-600 bg-gray-800/60 rounded-lg p-4 flex flex-col ${guestCards.length === 1 ? "w-auto" : "w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.5rem)]"}`}
-                                          >
-                                              {/* Profile Image - Centered */}
-                                              <div className="flex justify-center mb-4">
-                                                  {g.image ? (
-                                                      <img
-                                                          src={g.image}
-                                                          alt={g.name}
-                                                          className="w-24 h-24 rounded-full object-cover"
-                                                      />
-                                                  ) : (
-                                                      <div className="w-24 h-24 rounded-full bg-gray-500" />
-                                                  )}
-                                              </div>
+                                    <div className="mt-3 space-y-4 pl-4 border-l-2 border-gray-600 ml-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[420px] overflow-y-auto pr-2">
+                                            {guestCards.map((g, index) => (
+                                                <div
+                                                    key={g.id}
+                                                    className="border border-gray-600 bg-gray-800/60 rounded-lg p-4 flex flex-col w-full min-w-0" // Added min-w-0 for proper text wrapping
+                                                >
+                                                    {/* Profile Image - Centered */}
+                                                    <div className="flex justify-center mb-4">
+                                                        {g.image ? (
+                                                            <img
+                                                                src={g.image}
+                                                                alt={g.name}
+                                                                className="w-24 h-24 rounded-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-24 h-24 rounded-full bg-gray-500" />
+                                                        )}
+                                                    </div>
 
                                                     {/* Guest Details */}
-                                                    <div className="text-left text-sm space-y-1 w-full">
+                                                    <div className="text-left text-sm space-y-1 w-full min-w-0"> {/* Added min-w-0 for proper text wrapping */}
                                                         {/* Persona */}
                                                         <div className="flex items-start gap-2 mb-1">
                                                             <span className="font-semibold text-gray-200">Persona:</span>
@@ -993,41 +870,41 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
                                                         </div>
 
                                                         {/* Industry Vertical */}
-                                                        <p>
+                                                        <div className="break-words"> {/* Added break-words for text wrapping */}
                                                             <span className="font-semibold text-gray-200">Industry Vertical:</span>{" "}
                                                             <span className="text-[13px] text-gray-400">
                                                                 {g.industryVertical || "N/A"}
                                                             </span>
-                                                        </p>
+                                                        </div>
 
                                                         {/* Guest Name */}
-                                                        <p>
+                                                        <div className="break-words"> {/* Added break-words for text wrapping */}
                                                             <span className="font-semibold text-gray-200">Guest Name:</span>{" "}
                                                             <span className="text-[13px] text-gray-400">{g.name || "N/A"}</span>
-                                                        </p>
+                                                        </div>
 
                                                         {/* Guest Title */}
                                                         {g.title && (
-                                                            <p>
+                                                            <div className="break-words"> {/* Added break-words for text wrapping */}
                                                                 <span className="font-semibold text-gray-200">Guest Title:</span>{" "}
                                                                 <span className="text-[13px] text-gray-400">{g.title}</span>
-                                                            </p>
+                                                            </div>
                                                         )}
 
                                                         {/* Guest Company */}
                                                         {g.company && (
-                                                            <p>
+                                                            <div className="break-words"> {/* Added break-words for text wrapping */}
                                                                 <span className="font-semibold text-gray-200">Guest Company:</span>{" "}
                                                                 <span className="text-[13px] text-gray-400">{g.company}</span>
-                                                            </p>
+                                                            </div>
                                                         )}
 
                                                         {/* Guest Industry */}
                                                         {g.industry && (
-                                                            <p>
+                                                            <div className="break-words"> {/* Added break-words for text wrapping */}
                                                                 <span className="font-semibold text-gray-200">Guest Industry:</span>{" "}
                                                                 <span className="text-[13px] text-gray-400">{g.industry}</span>
-                                                            </p>
+                                                            </div>
                                                         )}
 
                                                         {/* Guest Dossier */}
@@ -1060,7 +937,6 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
                                                     </div>
                                                 </div>
                                             ))}
-
                                         </div>
                                     </div>
                                 )}

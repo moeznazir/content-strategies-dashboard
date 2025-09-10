@@ -13,7 +13,7 @@ const supabase = createClient(
 
 const ITEMS_PER_PAGE = 1000000000;
 
-const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSourceSelect, onLibraryDocsSelect, selectedLibraryDocs, currentSteps, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery ,searchQuery, setSearchQuery }) => {
+const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSourceSelect, onLibraryDocsSelect, selectedLibraryDocs, currentSteps, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery, searchQuery, setSearchQuery }) => {
 
     console.log("searchQueryyyyyyyyyyy", searchQueries);
     // State for data from Supabase
@@ -45,7 +45,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitEnabled, setIsSubmitEnabled] = useState(true);
     const [hasSearchedAISearch, setHasSearchedAISearch] = useState(false);
+    const [hasSearchedManualSearch, setHasSearchedManualSearch] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
+    const [searchResultsAI, setSearchResultsAI] = useState([]);
+    const [searchQueryManual, setSearchQueryManual] = useState('');
     const [isSearchResultsOpen, setIsSearchResultsOpen] = useState(true);
     const [contentTypeOpen, setContentTypeOpen] = useState(true);
     const [challengesOpen, setChallengesOpen] = useState(true);
@@ -453,21 +456,21 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
     };
 
     const handleSubmitAISearch = async () => {
-        if (!searchQuery || isLoading) return;
+        if (!selectedLibraryStep1Documents || isLoading) return;
 
         try {
             setIsLoading(true);
 
             const payload = {
                 user_id: localStorage.getItem('current_user_id'),
-                query: searchQuery
+                query: selectedLibraryStep1Documents
             };
 
             const response = await createSearchContextandSource(payload);
 
             // Handle the response format
             if (response.status === 200 && Array.isArray(response.data)) {
-                setSearchResults(response.data.map(item => ({
+                setSearchResultsAI(response.data.map(item => ({
                     id: item.id,
                     title: item.title,
                     type: item.type
@@ -481,7 +484,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
             console.log('Search Error:', error);
 
             // Fallback to sample results for demo purposes
-            setSearchResults([
+            setSearchResultsAI([
                 { id: 'ai1', title: 'Sample Result 1', type: 'voc' },
                 { id: 'ai2', title: 'Sample Result 2', type: 'doc' }
             ]);
@@ -491,6 +494,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
             setIsLoading(false);
         }
     };
+
 
     const handleFilterSelect = (filterType, value) => {
         setSelectedFilters(prev => {
@@ -505,9 +509,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
     };
     const handleManualSearchSubmit = async () => {
         // Clear results if no search query and no filters are selected
-        if (!searchQuery && Object.values(selectedFilters).every(arr => arr.length === 0)) {
+        if (!searchQueryManual && Object.values(selectedFilters).every(arr => arr.length === 0)) {
             setSearchResults([]);
-            setHasSearchedAISearch(false);
+            setHasSearchedManualSearch(false);
             return;
         }
 
@@ -521,7 +525,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
             if (contentSource === 'voc') {
                 response = await supabase.rpc('simplified_voc_search', {
-                    search_term: searchQuery.trim() || null,
+                    search_term: searchQueryManual.trim() || null,
                     video_types_json: selectedFilters["Video Type"]?.length ? selectedFilters["Video Type"] : null,
                     classifications_json: selectedFilters["Classifications"]?.length ? selectedFilters["Classifications"] : null,
                     current_user_id: currentUserId,
@@ -539,7 +543,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                 })));
             } else if (contentSource === 'vob') {
                 response = await supabase.rpc('simplified_vob_search', {
-                    search_term: searchQuery.trim() || null,
+                    search_term: searchQueryManual.trim() || null,
                     categories_json: selectedFilters["category"]?.length ? selectedFilters["category"] : null,
                     current_user_id: currentUserId,
                     current_company_id: currentCompanyId,
@@ -556,7 +560,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                 })));
             } else {
                 response = await supabase.rpc('simplified_vom_search', {
-                    search_term: searchQuery.trim() || null,
+                    search_term: searchQueryManual.trim() || null,
                     market_categories_json: selectedFilters["market_categories"]?.length ? selectedFilters["market_categories"] : null,
                     content_categories_json: selectedFilters["content_categories"]?.length ? selectedFilters["content_categories"] : null,
                     current_user_id: currentUserId,
@@ -574,7 +578,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                 })));
             }
 
-            setHasSearchedAISearch(true);
+            setHasSearchedManualSearch(true);
         } catch (error) {
             console.log('Search Error:', error);
             setSearchResults([]);
@@ -585,21 +589,23 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
     // Trigger search when filters change (for manual search)
     useEffect(() => {
-        if (searchMethod === 'manual') {
-            const timer = setTimeout(() => {
-                // Only trigger search if there's a query or at least one filter is selected
-                if (searchQuery || Object.values(selectedFilters).some(arr => arr.length > 0)) {
-                    handleManualSearchSubmit();
-                } else {
-                    // Clear results if no query and no filters
-                    setSearchResults([]);
-                    setHasSearchedAISearch(false);
-                }
-            }, 500);
+        setTimeout(() => {
+            if (searchMethod === 'manual') {
+                // Check if any filters are selected or if there's a search query
+                const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0);
+                const hasSearchQuery = searchQueryManual.trim() !== '';
 
-            return () => clearTimeout(timer);
-        }
-    }, [selectedFilters, contentSource, searchQuery, searchMethod]);
+                if (!hasActiveFilters && !hasSearchQuery) {
+                    // Clear results if no filters and no search query
+                    setSearchResults([]);
+                    setHasSearchedManualSearch(false);
+                } else {
+                    // Perform search if there are active filters or search query
+                    handleManualSearchSubmit();
+                }
+            }
+        }, 0);
+    }, [selectedFilters, contentSource, searchQueryManual, searchMethod]);
 
 
     const handleContentTypeChange = (typeId) => {
@@ -646,10 +652,13 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
         // Reset search and document selections
         setSearchQuery('');
+        setSearchQueryManual('');
         setSelectedDocuments([]);
         setSelectedLibraryStep1Documents([]);
         setSearchResults([]);
+        setSearchResultsAI([]);
         setHasSearchedAISearch(false);
+        setHasSearchedManualSearch(false);
 
         // Reset filters
         setSelectedContentTypes([]);
@@ -1224,13 +1233,21 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                 <span className="text-blue-700 text-sm">{isSearchResultsOpen ? '▼' : '▶'}</span>
                                                                 <h3 className="font-medium ml-2 text-sm text-blue-400">Source Documents</h3>
                                                                 <span className="ml-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                                                                    {searchResults.length} docs
+                                                                    {searchResultsAI.length} docs
                                                                 </span>
+                                                                {isLoading && (
+                                                                    <span className="ml-2">
+                                                                        <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                        </svg>
+                                                                    </span>
+                                                                )}
                                                             </div>
 
                                                             {isSearchResultsOpen && (
                                                                 <div className="ml-4 mr-4">
-                                                                    {searchResults.length === 0 ? (
+                                                                    {searchResultsAI.length === 0 ? (
                                                                         // Show message when no documents found
                                                                         <div className="p-4 bg-white/5 rounded-md text-center">
                                                                             <svg
@@ -1251,7 +1268,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                     ) : (
                                                                         // Show documents when available
                                                                         <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
-                                                                            {searchResults.map((doc) => (
+                                                                            {searchResultsAI.map((doc) => (
                                                                                 <div
                                                                                     key={`search-result-${doc.id}-${doc.type}`}
                                                                                     className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
@@ -1335,12 +1352,12 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                 <input
                                                                     type="text"
                                                                     placeholder="Search..."
-                                                                    value={searchQuery}
+                                                                    value={searchQueryManual}
                                                                     onChange={(e) => {
-                                                                        setSearchQuery(e.target.value);
+                                                                        setSearchQueryManual(e.target.value);
                                                                         if (e.target.value === '' && Object.values(selectedFilters).every(arr => arr.length === 0)) {
                                                                             setSearchResults([]);
-                                                                            setHasSearchedAISearch(false);
+                                                                            setHasSearchedManualSearch(false);
                                                                         }
                                                                     }}
                                                                     className="w-full pt-3 pb-3 h-[40px] p-3 pr-[80px] rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1348,7 +1365,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                     onKeyDown={(e) => e.key === 'Enter' && handleManualSearchSubmit()}
                                                                 />
                                                                 <div className="relative group">
-                                                                    {!searchQuery && Object.values(selectedFilters).every(arr => arr.length === 0) && (
+                                                                    {!searchQueryManual && Object.values(selectedFilters).every(arr => arr.length === 0) && (
                                                                         <div className="absolute -top-0 -right-14 -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                                             Please input text or select filters
                                                                         </div>
@@ -1559,7 +1576,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                         ))
                                                                     ) : (
                                                                         <div className="text-center text-gray-400 text-xs p-4 h-full -mt-1 flex items-center justify-center">
-                                                                            {hasSearchedAISearch ? 'No results found' : 'Perform a search or apply filters to see results'}
+                                                                            {hasSearchedManualSearch ? 'No results found' : 'Perform a search or apply filters to see results'}
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -1594,7 +1611,11 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                 {currentStep < 3 ? (
                                     <button
                                         className="bg-blue-600 hover:bg-blue-700 text-[13px] text-white px-4 py-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                        onClick={handleNextStep}
+                                        onClick={() => {
+                                            handleNextStep();
+                                            handleSubmitAISearch();
+                                        }}
+
                                     >
                                         Next
                                     </button>

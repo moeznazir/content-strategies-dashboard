@@ -5544,7 +5544,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             {GUEST_FIELDS.map(fieldKey => (
                                                                 <div key={fieldKey}>
                                                                     <label className="block font-semibold text-sm mb-1">
-                                                                        {fieldKey}:
+                                                                    {fieldKey === "Guest" ? "Guest Name" : fieldKey}:
                                                                     </label>
                                                                     {fieldKey === 'Avatar' ? (
                                                                         <div>
