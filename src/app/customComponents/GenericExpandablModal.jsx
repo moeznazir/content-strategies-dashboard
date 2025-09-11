@@ -284,7 +284,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         // But only if there are any Full Episode sections to show
         if (Object.keys(fullEpisodeSections).length > 0) {
             sections["FULL_EPISODES_SECTION"] = {
-                title: "Full Episodes",
+                title: "Full Episode Details",
                 children: fullEpisodeSections
             };
         }
