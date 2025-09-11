@@ -1392,7 +1392,7 @@ const Assistant = () => {
                     </div>
                 )} */}
 
-                <div className={`w-full flex-1 flex flex-col ${hasSearched ? 'justify-end' : 'justify-center'} items-center`}>
+                <div className={`w-full flex-1 flex flex-col ${((currentMessages && currentMessages.length > 0) || showContextModal || showAddonsModal || showLibraryDropdown || showOptimizationModal) ? 'justify-end' : 'justify-center'} items-center`}>
                     {/* Chat history container with scroll */}
                     <div
                         ref={chatContainerRef}
