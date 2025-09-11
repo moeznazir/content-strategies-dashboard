@@ -293,7 +293,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         return sections;
     };
     // initialize filtered sections and collapsed state
-    useEffect(() => {
+   useEffect(() => {
         const sections = detectSections();
         console.log("Detected sections:", sections); // Debug log
         setFilteredSections(sections);
@@ -302,7 +302,15 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         const init = {};
         Object.keys(sections).forEach(k => {
             console.log("Section key:", k); // Debug log
-            init[k] = true;
+            init[k] = true; 
+            
+            // If this is the Full Episodes section with children, also initialize
+            //  child sections gfggg
+            if (k === "FULL_EPISODES_SECTION" && sections[k].children) {
+                Object.keys(sections[k].children).forEach(childKey => {
+                    init[childKey] = true; // Initialize child sections as collapsed by default
+                });
+            }
         });
         setCollapsedSections(prev => ({ ...init, ...prev }));
     }, [data, appliedFilters]);
