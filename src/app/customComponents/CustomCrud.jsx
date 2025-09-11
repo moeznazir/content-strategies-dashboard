@@ -167,7 +167,7 @@ const OPTIONS = {
         { value: "Transitioning from Traditional Contact Centers to Experience Centers", label: "Transitioning from Traditional Contact Centers to Experience Centers" },
         { value: "Customer Experience as a Strategic Differentiator", label: "Customer Experience as a Strategic Differentiator" },
         { value: "Advanced Technology for Streamlined Operations", label: "Advanced Technology for Streamlined Operations" },
-        { value: "Ability to Integrate into the Company’s Brand and Culture", label: "Ability to Integrate into the Company’s Brand and Culture" },
+        { value: "Ability to Integrate into the Company's Brand and Culture", label: "Ability to Integrate into the Company's Brand and Culture" },
         { value: "Cost Sensitivity in Contract Negotiations", label: "Cost Sensitivity in Contract Negotiations" },
         { value: "Resistance to Outsourcing Critical Customer Functions", label: "Resistance to Outsourcing Critical Customer Functions" },
     ],
@@ -636,7 +636,6 @@ const CaseStudyVideoEntry = ({ video_title, video_link, copy_and_paste_text, lin
         </div>
     );
 };
-
 const ValidationEntry = ({ validation, ranking, justification, perception, whyItMatters, deeperInsight, supportingQuotes, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -1242,7 +1241,6 @@ const FullEpisodeIntroductionVideoEntry = ({ video, onEdit, onRemove, index }) =
         </div>
     );
 };
-
 const FullEpisodeQAVideosEntry = ({ qaVideos, onEdit, onRemove, index }) => {
     return (
         <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -1571,7 +1569,6 @@ const FullEpisodeChallengeQuestionsEntry = ({ challenge, onEdit, onRemove, index
         </div>
     );
 };
-
 const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, displayFields, currentPage, itemsPerPage, setUsers, setCurrentPage, setTotalRecords, fetchUsers, themesRank, prefilledData = null, tableName, createRecord, updateRecord, isDashboardForm, isFilesData }) => {
     const [loading, setLoading] = useState(false);
 
@@ -1932,26 +1929,20 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
         switch (currentStep) {
             case 1: // Guest step
-                if (guestEntries.length > 0) {
-                    stepData.Guest = guestEntries;
-                }
-                // Also save any current guest data that hasn't been added yet
                 if (Object.values(currentGuest).some(val => val !== "")) {
-                    const newGuestEntries = [...guestEntries, currentGuest];
-                    handleAddGuest();
-                    stepData.Guest = newGuestEntries;
+                    const result = await handleAddGuest();
+                    stepData.Guest = (result && result.entries) ? result.entries : guestEntries;
+                } else if (guestEntries.length > 0) {
+                    stepData.Guest = guestEntries;
                 }
                 break;
 
             case 2: // Prep Call step
-                if (prepCallEntries.length > 0) {
-                    stepData.Prep_Call = prepCallEntries;
-                }
-                // Also save any current prep call data that hasn't been added yet
                 if (Object.values(currentPrepCall).some(val => val !== "")) {
-                    const newPrepCallEntries = [...prepCallEntries, currentPrepCall];
-                    handleAddPrepCall();
-                    stepData.Prep_Call = newPrepCallEntries;
+                    const result = await handleAddPrepCall();
+                    stepData.Prep_Call = (result && result.entries) ? result.entries : prepCallEntries;
+                } else if (prepCallEntries.length > 0) {
+                    stepData.Prep_Call = prepCallEntries;
                 }
                 break;
 
@@ -2225,7 +2216,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             return entry;
         });
     }
-
     function normalizeSalesInsights(data) {
         if (!Array.isArray(data)) return [];
         return data.map(entry => {
@@ -2872,7 +2862,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         return [];
     }
-
     function normalizeFullEpisodeChallengeQuestions(data) {
         if (!data) return [];
         if (typeof data === 'string') {
@@ -3388,13 +3377,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             }
         }
     });
-
     const formik = useFormik({
         initialValues,
 
         // validationSchema,
         onSubmit: async (values) => {
             try {
+                // Ensure any pending in-progress inputs are appended before saving
                 let themesData = null;
                 if (themeEntries.length > 0) {
                     themesData = themeEntries.map(entry => ({
@@ -3644,11 +3633,17 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     formattedValues.FULL_EPISODE_CHALLENGE_QUESTIONS = formik.values?.FULL_EPISODE_CHALLENGE_QUESTIONS?.value || formik.values.FULL_EPISODE_CHALLENGE_QUESTIONS || null;
                 }
 
-                // if (formattedValues.Guest || formattedValues.Avatar) {
-                //     formattedValues.Guest = guestEntries.length > 0 ? guestEntries : null;
-                //     formattedValues.Avatar = guestEntries.length > 0 ?
-                //         guestEntries.map(g => g.Avatar).filter(Boolean) : null;
-                // }
+                // Only include fields the current table supports (based on displayFields)
+                try {
+                    const allowedKeys = new Set((displayFields || []).map(f => f.key));
+                    const alwaysAllow = new Set(['company_id', 'template_id', 'department_id', 'dynamic_fields', 'id_order']);
+                    Object.keys(formattedValues).forEach((key) => {
+                        if (!allowedKeys.has(key) && !alwaysAllow.has(key)) {
+                            delete formattedValues[key];
+                        }
+                    });
+                } catch (_) { /* noop */ }
+
                 console.log("Final formatted values:", formattedValues);
 
                 let response;
@@ -4038,7 +4033,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setCurrentObjectionSupportingQuotes(entry.supportingQuotes);
         setObjectionEditIndex(index);
     };
-
     const handleRemoveObjection = (index) => {
         const updated = objectionEntries.filter((_, i) => i !== index);
         setObjectionEntries(updated);
@@ -4308,10 +4302,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Handler for Guests
     const handleAddGuest = async () => {
         // Validate at least one field is filled
-        if (!currentGuest["Guest Title"] && !currentGuest["Guest Company"] && !currentGuest["Guest Industry"]) {
-            ShowCustomToast("Please fill guest details", "error");
-            return;
-        }
+        // if (!currentGuest["Guest Title"] && !currentGuest["Guest Company"] && !currentGuest["Guest Industry"]) {
+        //     ShowCustomToast("Please fill guest details", "error");
+        //     return;
+        // }
 
         let avatarUrl = currentGuest.Avatar;
 
@@ -4340,7 +4334,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             } catch (error) {
                 console.error("Avatar upload failed:", error);
                 ShowCustomToast("Failed to upload avatar", "error");
-                return;
+                // Continue without avatar instead of aborting save
+                avatarUrl = null;
             }
         }
         if (avatarInputRef.current) {
@@ -4359,17 +4354,22 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Avatar": avatarUrl || null
         };
 
+        let nextGuestEntries;
         if (guestEditIndex !== null) {
             const updated = [...guestEntries];
             updated[guestEditIndex] = newEntry;
             setGuestEntries(updated);
+            nextGuestEntries = updated;
             setGuestEditIndex(null);
         } else {
-            setGuestEntries([...guestEntries, newEntry]);
+            const appended = [...guestEntries, newEntry];
+            setGuestEntries(appended);
+            nextGuestEntries = appended;
         }
 
         setCurrentGuest({
             "Avatar": "",
+            "Guest": "",
             "Persona": "",
             "Industry Vertical": "",
             "Guest Title": "",
@@ -4380,6 +4380,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Dossier": "",
 
         });
+        return { type: 'guest', entries: nextGuestEntries };
     };
 
     const handleEditGuest = (index) => {
@@ -4419,12 +4420,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     const handleAddPrepCall = () => {
         // Validate at least one field is filled
-        if (!currentPrepCall["Unedited Prep Call Video"] &&
-            !currentPrepCall["Unedited Prep Call Transcript"] &&
-            !currentPrepCall["Discussion Guide"]) {
-            ShowCustomToast("Please fill at least one prep call field", "error");
-            return;
-        }
+        // if (!currentPrepCall["Unedited Prep Call Video"] &&
+        //     !currentPrepCall["Unedited Prep Call Transcript"] &&
+        //     !currentPrepCall["Discussion Guide"]) {
+        //     ShowCustomToast("Please fill at least one prep call field", "error");
+        //     return;
+        // }
 
         const newEntry = {
             "Unedited Prep Call Video": currentPrepCall["Unedited Prep Call Video"],
@@ -4432,15 +4433,24 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Discussion Guide": currentPrepCall["Discussion Guide"]
         };
 
+        let nextPrepCallEntries;
         if (prepCallEditIndex !== null) {
             // Update existing entry
             const updated = [...prepCallEntries];
             updated[prepCallEditIndex] = newEntry;
             setPrepCallEntries(updated);
+            nextPrepCallEntries = updated;
             setPrepCallEditIndex(null);
         } else {
             // Add new entry
-            setPrepCallEntries([...prepCallEntries, newEntry]);
+            const appended = [...prepCallEntries, newEntry];
+            setPrepCallEntries(appended);
+            nextPrepCallEntries = appended;
+        } {
+            // Add new entry
+            const appended = [...prepCallEntries, newEntry];
+            setPrepCallEntries(appended);
+            nextPrepCallEntries = appended;
         }
 
         // Reset form
@@ -4449,6 +4459,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Unedited Prep Call Transcript": "",
             "Discussion Guide": ""
         });
+        return { type: 'prepCall', entries: nextPrepCallEntries };
     };
 
     const handleEditPrepCall = (index) => {
@@ -4479,13 +4490,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Handler fro Additionl Guest Details
     const handleAddAdditionalProject = () => {
         // Validate at least one field is filled
-        if (!currentAdditionalProject["Podcast"] &&
-            !currentAdditionalProject["eBooks"] &&
-            !currentAdditionalProject["Articles"] &&
-            !currentAdditionalProject["Other"]) {
-            ShowCustomToast("Please fill at least one project field", "error");
-            return;
-        }
+        // if (!currentAdditionalProject["Podcast"] &&
+        //     !currentAdditionalProject["eBooks"] &&
+        //     !currentAdditionalProject["Articles"] &&
+        //     !currentAdditionalProject["Other"]) {
+        //     ShowCustomToast("Please fill at least one project field", "error");
+        //     return;
+        // }
 
         const newEntry = {
             "Podcast": currentAdditionalProject["Podcast"],
@@ -4544,10 +4555,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     const handleAddEmail = () => {
         // Validate at least one field is filled
-        if (!currentEmail["Guest"] && !currentEmail["Cold"] && !currentEmail["Warm"]) {
-            ShowCustomToast("Please fill at least one email field", "error");
-            return;
-        }
+        // if (!currentEmail["Guest"] && !currentEmail["Cold"] && !currentEmail["Warm"]) {
+        //     ShowCustomToast("Please fill at least one email field", "error");
+        //     return;
+        // }
 
         const newEntry = {
             ...currentEmail,
@@ -4667,14 +4678,14 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setFullEpisodeDetailsEditIndex(fullEpisodeDetailsEditIndex - 1);
         }
     };
-
     //.................................
 
     const handleAddFullEpisodeVideo = () => {
-        if (!currentFullEpisodeVideo["Video File"] && !currentFullEpisodeVideo["YouTube URL"]) {
-            ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
-            return;
-        }
+        // if (!currentFullEpisodeVideo["Video File"] && !currentFullEpisodeVideo["YouTube URL"]) {
+        //     ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
+        //     return;
+        // }
+
 
         const newEntry = { ...currentFullEpisodeVideo };
 
@@ -4741,11 +4752,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode Extended Content Handlers
     const handleAddFullEpisodeExtendedContent = () => {
-        if (!currentFullEpisodeExtendedContent["Article URL"] &&
-            !currentFullEpisodeExtendedContent["YouTube Short URL"]) {
-            ShowCustomToast("Please fill at least Article URL or YouTube Short URL", "error");
-            return;
-        }
+        // if (!currentFullEpisodeExtendedContent["Article URL"] &&
+        //     !currentFullEpisodeExtendedContent["YouTube Short URL"]) {
+        //     ShowCustomToast("Please fill at least Article URL or YouTube Short URL", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeExtendedContent };
 
@@ -4821,11 +4832,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode Highlight Video Handlers
     const handleAddFullEpisodeHighlightVideo = () => {
-        if (!currentFullEpisodeHighlightVideo["Video File"] &&
-            !currentFullEpisodeHighlightVideo["YouTube URL"]) {
-            ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
-            return;
-        }
+        // if (!currentFullEpisodeHighlightVideo["Video File"] &&
+        //     !currentFullEpisodeHighlightVideo["YouTube URL"]) {
+        //     ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeHighlightVideo };
 
@@ -4890,11 +4901,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode Introduction Video Handlers
     const handleAddFullEpisodeIntroductionVideo = () => {
-        if (!currentFullEpisodeIntroductionVideo["Video File"] &&
-            !currentFullEpisodeIntroductionVideo["YouTube URL"]) {
-            ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
-            return;
-        }
+        // if (!currentFullEpisodeIntroductionVideo["Video File"] &&
+        //     !currentFullEpisodeIntroductionVideo["YouTube URL"]) {
+        //     ShowCustomToast("Please fill at least Video File or YouTube URL", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeIntroductionVideo };
 
@@ -4944,11 +4955,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode QA Videos Handlers
     const handleAddFullEpisodeQAVideos = () => {
-        if (!currentFullEpisodeQAVideos["QAV1 Video File"] &&
-            !currentFullEpisodeQAVideos["QAV1 YouTube URL"]) {
-            ShowCustomToast("Please fill at least QAV1 Video File or QAV1 YouTube URL", "error");
-            return;
-        }
+        // if (!currentFullEpisodeQAVideos["QAV1 Video File"] &&
+        //     !currentFullEpisodeQAVideos["QAV1 YouTube URL"]) {
+        //     ShowCustomToast("Please fill at least QAV1 Video File or QAV1 YouTube URL", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeQAVideos };
 
@@ -5034,11 +5045,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode Podbook Handlers
     const handleAddFullEpisodePodbook = () => {
-        if (!currentFullEpisodePodbook["Interactive Experience"] &&
-            !currentFullEpisodePodbook["Website URL"]) {
-            ShowCustomToast("Please fill at least Interactive Experience or Website URL", "error");
-            return;
-        }
+        // if (!currentFullEpisodePodbook["Interactive Experience"] &&
+        //     !currentFullEpisodePodbook["Website URL"]) {
+        //     ShowCustomToast("Please fill at least Interactive Experience or Website URL", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodePodbook };
 
@@ -5088,11 +5099,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode Full Case Study Handlers
     const handleAddFullEpisodeFullCaseStudy = () => {
-        if (!currentFullEpisodeFullCaseStudy["Interactive Experience"] &&
-            !currentFullEpisodeFullCaseStudy["Case Study Text"]) {
-            ShowCustomToast("Please fill at least Interactive Experience or Case Study Text", "error");
-            return;
-        }
+        // if (!currentFullEpisodeFullCaseStudy["Interactive Experience"] &&
+        //     !currentFullEpisodeFullCaseStudy["Case Study Text"]) {
+        //     ShowCustomToast("Please fill at least Interactive Experience or Case Study Text", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeFullCaseStudy };
 
@@ -5166,11 +5177,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode One Page Case Study Handlers
     const handleAddFullEpisodeOnePageCaseStudy = () => {
-        if (!currentFullEpisodeOnePageCaseStudy["Interactive Experience"] &&
-            !currentFullEpisodeOnePageCaseStudy["One Page Text"]) {
-            ShowCustomToast("Please fill at least Interactive Experience or One Page Text", "error");
-            return;
-        }
+        // if (!currentFullEpisodeOnePageCaseStudy["Interactive Experience"] &&
+        //     !currentFullEpisodeOnePageCaseStudy["One Page Text"]) {
+        //     ShowCustomToast("Please fill at least Interactive Experience or One Page Text", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeOnePageCaseStudy };
 
@@ -5226,11 +5237,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode Other Case Study Handlers
     const handleAddFullEpisodeOtherCaseStudy = () => {
-        if (!currentFullEpisodeOtherCaseStudy["Other Case Study Interactive Experience"] &&
-            !currentFullEpisodeOtherCaseStudy["Case Study Text"]) {
-            ShowCustomToast("Please fill at least Interactive Experience or Case Study Text", "error");
-            return;
-        }
+        // if (!currentFullEpisodeOtherCaseStudy["Other Case Study Interactive Experience"] &&
+        //     !currentFullEpisodeOtherCaseStudy["Case Study Text"]) {
+        //     ShowCustomToast("Please fill at least Interactive Experience or Case Study Text", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeOtherCaseStudy };
 
@@ -5286,11 +5297,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode ICP Advice Handlers
     const handleAddFullEpisodeICPAdvice = () => {
-        if (!currentFullEpisodeICPAdvice["Post-Podcast Video"] &&
-            !currentFullEpisodeICPAdvice["Post-Podcast Insights Report"]) {
-            ShowCustomToast("Please fill at least Post-Podcast Video or Insights Report", "error");
-            return;
-        }
+        // if (!currentFullEpisodeICPAdvice["Post-Podcast Video"] &&
+        //     !currentFullEpisodeICPAdvice["Post-Podcast Insights Report"]) {
+        //     ShowCustomToast("Please fill at least Post-Podcast Video or Insights Report", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeICPAdvice };
 
@@ -5311,7 +5322,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Post-Podcast Vision Report": ""
         });
     };
-
     const handleEditFullEpisodeICPAdvice = (index) => {
         const entry = fullEpisodeICPAdviceEntries[index];
         setCurrentFullEpisodeICPAdvice({
@@ -5343,11 +5353,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
     // Full Episode Challenge Questions Handlers
     const handleAddFullEpisodeChallengeQuestions = () => {
-        if (!currentFullEpisodeChallengeQuestions["Unedited Challenge Question Video"] &&
-            !currentFullEpisodeChallengeQuestions["Challenge Report"]) {
-            ShowCustomToast("Please fill at least Challenge Question Video or Challenge Report", "error");
-            return;
-        }
+        // if (!currentFullEpisodeChallengeQuestions["Unedited Challenge Question Video"] &&
+        //     !currentFullEpisodeChallengeQuestions["Challenge Report"]) {
+        //     ShowCustomToast("Please fill at least Challenge Question Video or Challenge Report", "error");
+        //     return;
+        // }
 
         const newEntry = { ...currentFullEpisodeChallengeQuestions };
 
@@ -5396,6 +5406,71 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     };
 
     const handleFormSubmit = async () => {
+        const addHandlers = [];
+        if (Object.values(currentGuest).some(val => val !== "")) {
+            const newGuest = await handleAddGuest();
+            addHandlers.push(newGuest);
+          }
+
+        if (Object.values(currentPrepCall).some(val => val !== "")) {
+            addHandlers.push(handleAddPrepCall());
+        }
+
+        if (Object.values(currentAdditionalProject).some(val => val !== "")) {
+            addHandlers.push(handleAddAdditionalProject());
+        }
+
+        if (Object.values(currentFullEpisodeDetails).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeDetails());
+        }
+
+        if (Object.values(currentFullEpisodeVideo).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeVideo());
+        }
+
+        if (Object.values(currentFullEpisodeExtendedContent).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeExtendedContent());
+        }
+
+        if (Object.values(currentFullEpisodeHighlightVideo).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeHighlightVideo());
+        }
+
+        if (Object.values(currentFullEpisodeIntroductionVideo).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeIntroductionVideo());
+        }
+
+        if (Object.values(currentFullEpisodeQAVideos).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeQAVideos());
+        }
+
+        if (Object.values(currentFullEpisodePodbook).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodePodbook());
+        }
+
+        if (Object.values(currentFullEpisodeFullCaseStudy).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeFullCaseStudy());
+        }
+
+        if (Object.values(currentFullEpisodeOnePageCaseStudy).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeOnePageCaseStudy());
+        }
+
+        if (Object.values(currentFullEpisodeOtherCaseStudy).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeOtherCaseStudy());
+        }
+
+        if (Object.values(currentFullEpisodeICPAdvice).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeICPAdvice());
+        }
+
+        if (Object.values(currentFullEpisodeChallengeQuestions).some(val => val !== "")) {
+            addHandlers.push(handleAddFullEpisodeChallengeQuestions());
+        }
+
+        // Wait for all handlers to complete and capture results
+        const handlerResults = await Promise.all(addHandlers);
+
         // Convert all rankings to numbers in theme entries
         const validatedThemeEntries = themeEntries.map(entry => ({
             ...entry,
@@ -5427,8 +5502,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setSalesInsightsEntries(validatedSalesInsightsEntries);
 
         try {
+            const latestGuestEntries = handlerResults?.find(r => r && r.type === 'guest')?.entries || guestEntries;
+            const latestPrepCallEntries = handlerResults?.find(r => r && r.type === 'prepCall')?.entries || prepCallEntries;
 
-            const guestData = guestEntries.map(guest => ({
+
+            const guestData = latestGuestEntries.map(guest => ({
                 "Guest": guest["Guest"],
                 "Persona": guest["Persona"],
                 "Industry Vertical": guest["Industry Vertical"],
@@ -5440,7 +5518,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Dossier": guest['Dossier'],
             }));
 
-            const avatarUrls = guestEntries.map(guest => guest.Avatar).filter(Boolean);
+            const avatarUrls = latestGuestEntries.map(guest => guest.Avatar).filter(Boolean);
             // If dynamic_fields_description exists but dynamic_fields doesn't, extract fields
             if (formik.values.dynamic_fields_description && !formik.values.dynamic_fields) {
                 const fields = extractFieldsFromTemplate(formik.values.dynamic_fields_description);
@@ -5450,7 +5528,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 ...formik.values,
                 Guest: guestData.length > 0 ? guestData : null,
                 Avatar: avatarUrls.length > 0 ? avatarUrls : null,
-                Prep_Call: prepCallEntries.length > 0 ? prepCallEntries : null,
+                Prep_Call: latestPrepCallEntries.length > 0 ? latestPrepCallEntries : null,
                 Additional_Guest_Projects: additionalProjectEntries.length > 0 ? additionalProjectEntries : null,
                 Emails: emailEntries.length > 0 ? emailEntries : null,
                 DETAILS_FULL_EPISODES: fullEpisodeDetailsEntries.length > 0 ? fullEpisodeDetailsEntries : null,
@@ -5467,8 +5545,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 FULL_EPISODE_CHALLENGE_QUESTIONS: fullEpisodeChallengeQuestionsEntries.length > 0 ? fullEpisodeChallengeQuestionsEntries : null,
             });
 
-
-
+            // Ensure Formik state is committed before submit
+            await new Promise(resolve => setTimeout(resolve, 0));
             await formik.submitForm();
         } catch (error) {
             console.log("Form submission error:", error);
@@ -5544,7 +5622,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             {GUEST_FIELDS.map(fieldKey => (
                                                                 <div key={fieldKey}>
                                                                     <label className="block font-semibold text-sm mb-1">
-                                                                    {fieldKey === "Guest" ? "Guest Name" : fieldKey}:
+                                                                        {fieldKey === "Guest" ? "Guest Name" : fieldKey}:
                                                                     </label>
                                                                     {fieldKey === 'Avatar' ? (
                                                                         <div>
@@ -5730,7 +5808,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                 </div>
 
                                             )}
-
                                             {/* Step 3: Full Episodes */}
                                             {currentStep === 3 && (
                                                 <div>
@@ -6476,15 +6553,15 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             >
                                                                 Back: Full Episodes
                                                             </CustomButton>
-                                                            <div className="space-x-2">
+                                                            {/* <div className="space-x-2">
                                                                 <CustomButton
                                                                     type="button"
                                                                     onClick={() => handleNextStep(4)}
                                                                     className=" text-white px-4 py-2 rounded"
                                                                 >
-                                                                    {isSaving ? 'Saving...' : 'Save'}
+                                                                    {isSaving ? 'Saving...' : ''}
                                                                 </CustomButton>
-                                                            </div>
+                                                            </div> */}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -8301,7 +8378,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                 className="mb-0 w-[100px] -mt-2"
                             />
                             <CustomButton
-                                type="submit"
+                                type="button"
                                 title={isEditMode ? "Update" : "Save"}
                                 loading={formik.isSubmitting}
                                 disabled={formik.isSubmitting}

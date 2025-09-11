@@ -12,7 +12,7 @@ const DynamicBranding = ({
     titleClassName = "text-2xl font-bold mt-4 mb-2",
     logoWidth = 150,
     logoHeight = 150,
-    logoLink = "/"
+    logoLink = "/assistant"
 }) => {
     const [company, setCompany] = useState(getCompanyConfig(null));
 

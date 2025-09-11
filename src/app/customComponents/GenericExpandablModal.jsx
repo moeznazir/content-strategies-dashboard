@@ -284,7 +284,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         // But only if there are any Full Episode sections to show
         if (Object.keys(fullEpisodeSections).length > 0) {
             sections["FULL_EPISODES_SECTION"] = {
-                title: "Full Episodes",
+                title: "Full Episode Details",
                 children: fullEpisodeSections
             };
         }
@@ -302,7 +302,15 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         const init = {};
         Object.keys(sections).forEach(k => {
             console.log("Section key:", k); // Debug log
-            init[k] = true;
+            init[k] = true; 
+            
+            // If this is the Full Episodes section with children, also initialize
+            //  child sections gfggg
+            if (k === "FULL_EPISODES_SECTION" && sections[k].children) {
+                Object.keys(sections[k].children).forEach(childKey => {
+                    init[childKey] = true; // Initialize child sections as collapsed by default
+                });
+            }
         });
         setCollapsedSections(prev => ({ ...init, ...prev }));
     }, [data, appliedFilters]);
