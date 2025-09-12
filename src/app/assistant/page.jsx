@@ -1088,8 +1088,8 @@ const Assistant = () => {
     // Check if submit should be enabled
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
-    const formatPlainTextWithStyling = (text) => {
-        const lines = text.split('\n');
+   const formatPlainTextWithStyling = (text) => {
+        const lines = text.split("\n");
         const elements = [];
         let currentListItems = [];
         let inEmphasizedSection = false;
@@ -1100,9 +1100,14 @@ const Assistant = () => {
         const flushList = () => {
             if (currentListItems.length > 0) {
                 elements.push(
-                    <ul key={`list-${elements.length}`} className="list-disc pl-6 mb-4 space-y-2 marker:text-blue-400">
+                    <ul
+                        key={`list-${elements.length}`}
+                        className="list-disc pl-6 mb-4 space-y-2 marker:text-blue-400 text-base text-gray-100 leading-relaxed"
+                    >
                         {currentListItems.map((item, i) => (
-                            <li key={i} className="text-gray-100 text-lg">{item}</li>
+                            <li key={i} className="text-base text-gray-100 leading-relaxed">
+                                {item}
+                            </li>
                         ))}
                     </ul>
                 );
@@ -1110,27 +1115,57 @@ const Assistant = () => {
             }
         };
 
+        const renderInlineFormatting = (line) => {
+            // Bold (**text**)
+            line = line.replace(
+                /\*\*(.*?)\*\*/g,
+                '<strong class="font-semibold text-white">$1</strong>'
+            );
+
+            // Italic (_text_)
+            line = line.replace(
+                /_(.*?)_/g,
+                '<em class="italic text-gray-300">$1</em>'
+            );
+
+            return line;
+        };
+
         const renderTable = () => {
             if (tableRows.length > 0) {
                 elements.push(
-                    <div key={`table-${elements.length}`} className="mb-6 overflow-x-auto">
-                        <table className="min-w-full border-collapse border border-gray-600 text-lg">
+                    <div
+                        key={`table-${elements.length}`}
+                        className="mb-6 overflow-x-auto rounded-lg border border-gray-700"
+                    >
+                        <table className="min-w-full border-collapse text-base">
                             <thead>
                                 <tr className="bg-gray-800">
                                     {tableHeaders.map((header, idx) => (
-                                        <th key={idx} className="border border-gray-600 px-4 py-3 text-left font-semibold text-white">
-                                            {header}
-                                        </th>
+                                        <th
+                                            key={idx}
+                                            className="border border-gray-700 px-4 py-3 text-left font-semibold text-white"
+                                            dangerouslySetInnerHTML={{
+                                                __html: renderInlineFormatting(header),
+                                            }}
+                                        />
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {tableRows.map((row, rowIndex) => (
-                                    <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
+                                    <tr
+                                        key={rowIndex}
+                                        className={rowIndex % 2 === 0 ? "bg-gray-900" : "bg-gray-800"}
+                                    >
                                         {row.map((cell, cellIndex) => (
-                                            <td key={cellIndex} className="border border-gray-600 px-4 py-3 text-gray-100">
-                                                {cell}
-                                            </td>
+                                            <td
+                                                key={cellIndex}
+                                                className="border border-gray-700 px-4 py-3 text-gray-100"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: renderInlineFormatting(cell),
+                                                }}
+                                            />
                                         ))}
                                     </tr>
                                 ))}
@@ -1147,7 +1182,7 @@ const Assistant = () => {
         lines.forEach((line, index) => {
             const trimmedLine = line.trim();
 
-            // Check if this is a table header separator (|---|)
+            // Table header separator
             if (trimmedLine.match(/^\|(\s*\-+\s*\|)+$/)) {
                 if (tableHeaders.length > 0 && !inTable) {
                     inTable = true;
@@ -1155,29 +1190,27 @@ const Assistant = () => {
                 return;
             }
 
-            // Check if this is a table row
-            if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
+            // Table rows
+            if (trimmedLine.startsWith("|") && trimmedLine.endsWith("|")) {
                 if (!inTable && tableHeaders.length === 0) {
-                    // This is the header row
-                    tableHeaders = trimmedLine.split('|')
-                        .filter(cell => cell.trim() !== '')
-                        .map(cell => cell.trim());
+                    tableHeaders = trimmedLine
+                        .split("|")
+                        .filter((cell) => cell.trim() !== "")
+                        .map((cell) => cell.trim());
                 } else if (inTable) {
-                    // This is a data row
-                    const rowData = trimmedLine.split('|')
-                        .filter(cell => cell.trim() !== '')
-                        .map(cell => cell.trim());
+                    const rowData = trimmedLine
+                        .split("|")
+                        .filter((cell) => cell.trim() !== "")
+                        .map((cell) => cell.trim());
 
-                    // Skip empty rows or separator rows
-                    if (rowData.length > 0 && !rowData.every(cell => cell.match(/^\-+$/))) {
+                    if (rowData.length > 0 && !rowData.every((cell) => cell.match(/^\-+$/))) {
                         tableRows.push(rowData);
                     }
                 }
                 return;
             }
 
-            // If we were in a table and encounter a non-table line, render the table
-            if (inTable && !trimmedLine.startsWith('|')) {
+            if (inTable && !trimmedLine.startsWith("|")) {
                 renderTable();
             }
 
@@ -1187,103 +1220,117 @@ const Assistant = () => {
                 return;
             }
 
-            // Detect main headings (lines with numbers or that look like titles)
-            if ((trimmedLine.match(/^\d+\)/) || /^[A-Z][A-Za-z\s]+[:\-—]/.test(trimmedLine)) && trimmedLine.length < 80) {
+            // Headings
+            if (/^#\s+/.test(trimmedLine)) {
                 flushList();
-                inEmphasizedSection = true;
                 elements.push(
-                    <h2 key={`h2-${index}`} className="text-2xl font-bold mb-4 text-white mt-6 first:mt-0">
-                        {trimmedLine}
+                    <h1
+                        key={`h1-${index}`}
+                        className="text-3xl font-extrabold tracking-tight mb-4 mt-8 text-white leading-snug"
+                    >
+                        {trimmedLine.replace(/^#\s+/, "")}
+                    </h1>
+                );
+                inEmphasizedSection = true;
+                return;
+            }
+
+            if (/^##\s+/.test(trimmedLine)) {
+                flushList();
+                elements.push(
+                    <h2
+                        key={`h2-${index}`}
+                        className="text-2xl font-bold mb-3 mt-6 text-blue-300 leading-snug"
+                    >
+                        {trimmedLine.replace(/^##\s+/, "")}
                     </h2>
                 );
                 return;
             }
 
-            // Detect subheadings (lines with emoji or that indicate categories)
-            if (trimmedLine.includes('➤') || trimmedLine.includes('💷') || trimmedLine.includes('—')) {
+            if (/^###\s+/.test(trimmedLine)) {
                 flushList();
                 elements.push(
-                    <h3 key={`h3-${index}`} className="text-xl font-semibold mb-3 text-blue-300 mt-4">
-                        {trimmedLine}
+                    <h3
+                        key={`h3-${index}`}
+                        className="text-xl font-semibold mb-2 mt-4 text-blue-400 leading-snug"
+                    >
+                        {trimmedLine.replace(/^###\s+/, "")}
                     </h3>
                 );
                 return;
             }
 
-            // Detect options (A), B), C), etc.)
+            // Options like A) B) etc.
             if (/^[A-Z]\)\s/.test(trimmedLine)) {
                 flushList();
                 elements.push(
                     <div key={`option-${index}`} className="flex items-start mb-3">
-                        <span className="font-bold text-blue-300 mr-2 flex-shrink-0 text-xl">
+                        <span className="font-bold text-blue-300 mr-2 flex-shrink-0 text-lg">
                             {trimmedLine.substring(0, 2)}
                         </span>
-                        <span className="text-gray-100 text-lg">{trimmedLine.substring(3)}</span>
+                        <span className="text-base text-gray-100 leading-relaxed">
+                            {trimmedLine.substring(3)}
+                        </span>
                     </div>
                 );
                 return;
             }
 
-            // Detect list items (lines starting with •, -, *, or numbers)
+            // Lists
             if (/^[•\-*]\s/.test(trimmedLine) || /^\d+\.\s/.test(trimmedLine)) {
-                currentListItems.push(trimmedLine.replace(/^[•\-*]\s/, '').replace(/^\d+\.\s/, ''));
+                currentListItems.push(
+                    trimmedLine.replace(/^[•\-*]\s/, "").replace(/^\d+\.\s/, "")
+                );
                 return;
             }
 
-            // Detect bold patterns (text between **)
-            if (trimmedLine.includes('**')) {
+            // Inline formatting
+            if (/\*\*(.*?)\*\*/.test(trimmedLine) || /_(.*?)_/.test(trimmedLine)) {
                 flushList();
-                const boldLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-white text-lg">$1</strong>');
                 elements.push(
                     <p
-                        key={`bold-${index}`}
-                        className="mb-3 leading-relaxed text-gray-100 text-lg"
-                        dangerouslySetInnerHTML={{ __html: boldLine }}
+                        key={`fmt-${index}`}
+                        className="mb-4 text-base leading-relaxed text-gray-100"
+                        dangerouslySetInnerHTML={{
+                            __html: renderInlineFormatting(trimmedLine),
+                        }}
                     />
                 );
                 return;
             }
 
-            // Detect italic patterns (text between _)
-            if (trimmedLine.includes('_')) {
-                flushList();
-                const italicLine = trimmedLine.replace(/_(.*?)_/g, '<em class="italic text-gray-300 text-lg">$1</em>');
-                elements.push(
-                    <p
-                        key={`italic-${index}`}
-                        className="mb-3 leading-relaxed text-gray-100 text-lg"
-                        dangerouslySetInnerHTML={{ __html: italicLine }}
-                    />
-                );
-                return;
-            }
-
-            // Text in emphasized sections (after headings)
+            // Emphasized section after main heading
             if (inEmphasizedSection) {
                 flushList();
                 elements.push(
-                    <p key={`p-${index}`} className="mb-3 leading-relaxed text-gray-200 text-lg font-medium">
+                    <p
+                        key={`p-${index}`}
+                        className="mb-4 text-base leading-relaxed text-gray-200 font-medium"
+                    >
                         {trimmedLine}
                     </p>
                 );
                 return;
             }
 
-            // Regular paragraphs
+            // Default paragraph
             flushList();
             elements.push(
-                <p key={`p-${index}`} className="mb-3 leading-relaxed text-gray-100 text-lg">
+                <p
+                    key={`p-${index}`}
+                    className="mb-4 text-base leading-relaxed text-gray-100"
+                >
                     {trimmedLine}
                 </p>
             );
         });
 
-        // Render any remaining table at the end
         if (inTable) {
             renderTable();
         }
 
-        flushList(); // Flush any remaining list items
+        flushList();
 
         return elements;
     };
