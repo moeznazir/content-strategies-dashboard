@@ -889,6 +889,7 @@ const Assistant = () => {
             setSelectedUploadedDocuments([]);
             setAddOns({
                 industry: [],
+                audienceTitles:[],
                 audience: [],
                 tone: [],
                 objective: '',
@@ -1356,6 +1357,7 @@ const Assistant = () => {
                             setSelectedUploadedDocuments([]);
                             setAddOns({
                                 industry: [],
+                                audienceTitles:[],
                                 audience: [],
                                 tone: [],
                                 objective: "",
