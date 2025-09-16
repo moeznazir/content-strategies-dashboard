@@ -6706,7 +6706,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             <>
                                                 <label className="block font-semibold" style={{ color: appColors.textColor }}>
                                                     {field.label === "Video Type" ? "Content Type" : field.label}:
-                                                    {(field.key == 'temp_name' || field.key == 'dept_name' || field.key == 'doc_title' || field.key == 'department_id' || field.key == 'template_id') && (
+                                                    {(field.key == 'prompt_title' || field.key == 'dept_name' || field.key == 'doc_title' || field.key == 'department_id' || field.key == 'template_id') && (
                                                         <span className="text-red-500 ml-1">*</span>
                                                     )}
                                                 </label>
@@ -6735,7 +6735,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                             className="w-full mb-2"
                                                         />
                                                     ) : null
-                                                ) : (field.key == 'temp_name' || field.key == 'dept_name' || field.key == 'dept_name' || field.key == 'doc_title') ? (
+                                                ) : (field.key == 'prompt_title' || field.key == 'dept_name' || field.key == 'dept_name' || field.key == 'doc_title') ? (
                                                     <CustomInput
                                                         type={field.type || "text"}
                                                         name={field.key}

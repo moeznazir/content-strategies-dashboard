@@ -11,7 +11,7 @@ const supabase = createClient(
 );
 const ITEMS_PER_PAGE = 1000000000;
 
-const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, currentStep, selectedDocTitles, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery, searchQuery, setSearchQuery }) => {
+const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, currentStep, selectedDocTitles, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery, searchQuery, setSearchQuery, colors, theme }) => {
     // State for Context Modals
     const [contentTypeOpen, setContentTypeOpen] = useState(true);
     const [challengesOpen, setChallengesOpen] = useState(true);
@@ -453,10 +453,10 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             {/* Confirmation Modal */}
             {showReplaceConfirmation && (
                 <div className="fixed inset-0 flex items-center  justify-center bg-gray-800 bg-opacity-70 z-[9999]">
-                    <div className="relative border border-gray-300 w-[400px] rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: appColors.primaryColor }}>
+                    <div className="relative border border-gray-300 w-[400px] rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: colors.primaryColor, color: colors.text }}>
                         {/* <h3 className="text-lg font-semibold mb-4 text-white">Replace Prompt?</h3> */}
                         {/* ✅ Heading */}
-                        <h3 className="text-lg font-semibold mb-2 -mt-4 text-white">
+                        <h3 className="text-lg font-semibold mb-2 -mt-4" >
                             Action Required
                         </h3>
 
@@ -464,6 +464,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                         <button
                             className="absolute top-2 right-3 text-gray-300 hover:text-white"
                             onClick={handleCancelReplace}
+                            style={{ color: colors.text }}
                         >
                             ✕
                         </button>
@@ -491,11 +492,11 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
             {showContextModal && (
                 <>
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
-                        <div className="border w-[800px] max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl text-white px-6 py-5 relative font-sans" style={{ backgroundColor: appColors.primaryColor }}>
+                        <div className="border w-[800px] max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl text-white px-6 py-5 relative font-sans" style={{ backgroundColor: colors.primaryColor, color: colors.text }}>
 
                             {/* Step Indicator */}
                             <div className="flex flex-col items-center mb-2 -mt-2">
-                                <div className="flex items-center justify-center space-x-4">
+                                {/* <div className="flex items-center justify-center space-x-4">
                                     <div className="flex flex-col items-center">
                                         <div
                                             className={`w-5 h-5 rounded-full flex items-center justify-center text-sm font-bold border-2 ${searchMethod === 'ai' ? 'bg-blue-500 text-white border-blue-300' : 'bg-blue-500 text-white border-blue-300'}`}
@@ -503,9 +504,9 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                             1
                                         </div>
                                     </div>
-                                </div>
+                                </div> */}
                                 <div className="flex justify-center w-40 text-xs font-semibold text-white">
-                                    <span className="text-center text-[10px]">Step 1</span>
+                                    <span className="text-center text-[10px]"></span>
                                     <div>
 
                                     </div>
@@ -514,13 +515,13 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
 
 
                             </div>
-                            <div className='flex justify-end'>
+                            <div className='flex justify-end p-2'>
                                 <button
                                     onClick={() => {
                                         setShowContextModal(false);
                                         setIsLoading(false);
                                     }}
-                                    className="text-white -mt-14  hover:text-gray-300 text-2xl"
+                                    className=" -mt-6  hover:text-gray-300 text-2xl"
                                 >
                                     &times;
                                 </button>
@@ -530,7 +531,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                             <div className="border-t border-gray-600 my-0 mt-0 -mx-6"></div>
 
                             {/* Title */}
-                            <h2 className="text-xl font-semibold text-center mb-0 bg-[#2b2b4b] -mx-6 py-2">
+                            <h2 className="text-xl font-semibold text-center mb-0 -mx-6 py-2">
                                 Select your context documents
                             </h2>
 
@@ -566,7 +567,12 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                 <span className="text-blue-400 text-[12px] cursor-pointer ml-20 relative group">
                                                     Learn more about Search Type
                                                     <div className="absolute left-1/3 top-6 transform -translate-x-1/4 w-[290px] z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                                        <div className="bg-[#3b3b5b] text-white text-[11px] p-3 rounded-lg shadow-lg">
+                                                        <div className="text-white text-[11px] p-3 rounded-lg shadow-lg" 
+                                                        style={{
+                                                            backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                            color: theme === 'light' ? '#000000' : '#ffffff',
+                                                            border: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                                        }}>
                                                             <p className="mb-1 mt-0">
                                                                 <strong>AI Search:</strong> Output will come from Agents
                                                             </p>
@@ -574,7 +580,15 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                                 <strong>Manual Search:</strong> Output will come from database
                                                             </p>
                                                         </div>
-                                                        <div className="absolute -top-[5px] left-6 w-5 h-5 transform rotate-45 bg-[#3b3b5b] z-0" />
+                                                        <div className="absolute -top-[5px] left-6 w-3 h-3 transform rotate-45 bg-[#3b3b5b] z-0"
+
+                                                            style={{
+                                                                backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                                borderLeft: theme === 'light' ? '1px solid #e5e7eb' : 'none',
+                                                                borderTop: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                                            }}
+
+                                                        />
                                                     </div>
                                                 </span>
                                             </label>
@@ -663,93 +677,93 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                             </div> */}
 
                                             {/* Documents */}
-                                            {hasSearchedAISearch && (
-                                                <div className='-mt-2'>
-                                                    <div
-                                                        className="flex items-center mb-2 mt-4 ml-4 cursor-pointer"
-                                                        onClick={() => setIsSearchResultsOpen(!isSearchResultsOpen)}
-                                                    >
-                                                        <span className="text-blue-700 text-sm">{isSearchResultsOpen ? '▼' : '▶'}</span>
-                                                        <h3 className="font-medium ml-2  text-sm text-blue-400">Context Documents</h3>
-                                                        <span className="ml-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                                                            {searchResultsAI.length} docs
+                                            {/* {hasSearchedAISearch && ( */}
+                                            <div className='-mt-2'>
+                                                <div
+                                                    className="flex items-center mb-2 mt-4 ml-4 cursor-pointer"
+                                                    onClick={() => setIsSearchResultsOpen(!isSearchResultsOpen)}
+                                                >
+                                                    <span className="text-blue-700 text-sm">{isSearchResultsOpen ? '▼' : '▶'}</span>
+                                                    <h3 className="font-medium ml-2  text-sm text-blue-400">Context Documents</h3>
+                                                    <span className="ml-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                                                        {searchResultsAI.length} docs
+                                                    </span>
+                                                    {isLoading && (
+                                                        <span className="ml-2">
+                                                            <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
                                                         </span>
-                                                        {isLoading && (
-                                                            <span className="ml-2">
-                                                                <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                                </svg>
-                                                            </span>
-                                                        )}
-                                                    </div>
-
-                                                    {isSearchResultsOpen && (
-                                                        <div className="ml-4 mr-4">
-                                                            {searchResultsAI.length === 0 ? (
-                                                                // Show message when no documents found
-                                                                <div className="p-4 bg-white/5 rounded-md text-center">
-                                                                    <svg
-                                                                        className="w-8 h-8 mx-auto text-gray-400 mb-2"
-                                                                        fill="none"
-                                                                        stroke="currentColor"
-                                                                        viewBox="0 0 24 24"
-                                                                    >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth={1.5}
-                                                                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                        />
-                                                                    </svg>
-
-                                                                    <p className="text-sm text-gray-400">No context documents found</p>
-                                                                </div>
-                                                            ) : (
-                                                                // Show documents when available with Select All option
-                                                                <div>
-                                                                    {/* Select All checkbox */}
-                                                                    <div className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer mb-2">
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={selectAll}
-                                                                            onChange={() => setSelectAll(!selectAll)}
-                                                                            className="accent-blue-500 cursor-pointer"
-                                                                        />
-                                                                        <div className="text-xs text-white/90 font-medium">Select All</div>
-                                                                    </div>
-
-                                                                    {/* Documents list */}
-                                                                    <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
-                                                                        {searchResultsAI.map((doc) => (
-                                                                            <div
-                                                                                key={`search-result-${doc.id}-${doc.type}`}
-                                                                                className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
-                                                                                onClick={() => handleIndividualSelection(doc.id, doc.title)}
-                                                                            >
-                                                                                <input
-                                                                                    type="checkbox"
-                                                                                    checked={selectedDocuments.includes(doc.id)}
-                                                                                    readOnly
-                                                                                    className="accent-blue-500 cursor-pointer"
-                                                                                />
-                                                                                <div className="flex-1">
-                                                                                    <div className="text-xs text-white/90">{doc.title}</div>
-                                                                                    {doc.type && (
-                                                                                        <div className="text-[10px] text-gray-400 mt-1">
-                                                                                            Type: {doc.type.toUpperCase()}
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
                                                     )}
                                                 </div>
-                                            )}
+
+                                                {isSearchResultsOpen && (
+                                                    <div className="ml-4 mr-4">
+                                                        {searchResultsAI.length === 0 ? (
+                                                            // Show message when no documents found
+                                                            <div className="p-4 bg-white/5 rounded-md text-center">
+                                                                <svg
+                                                                    className="w-8 h-8 mx-auto text-gray-400 mb-2"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={1.5}
+                                                                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                    />
+                                                                </svg>
+
+                                                                <p className="text-sm text-gray-400">No context documents found</p>
+                                                            </div>
+                                                        ) : (
+                                                            // Show documents when available with Select All option
+                                                            <div>
+                                                                {/* Select All checkbox */}
+                                                                <div className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer mb-2">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectAll}
+                                                                        onChange={() => setSelectAll(!selectAll)}
+                                                                        className="accent-blue-500 cursor-pointer"
+                                                                    />
+                                                                    <div className="text-xs text-white/90 font-medium">Select All</div>
+                                                                </div>
+
+                                                                {/* Documents list */}
+                                                                <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
+                                                                    {searchResultsAI.map((doc) => (
+                                                                        <div
+                                                                            key={`search-result-${doc.id}-${doc.type}`}
+                                                                            className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
+                                                                            onClick={() => handleIndividualSelection(doc.id, doc.title)}
+                                                                        >
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={selectedDocuments.includes(doc.id)}
+                                                                                readOnly
+                                                                                className="accent-blue-500 cursor-pointer"
+                                                                            />
+                                                                            <div className="flex-1">
+                                                                                <div className="text-xs text-white/90">{doc.title}</div>
+                                                                                {doc.type && (
+                                                                                    <div className="text-[10px] text-gray-400 mt-1">
+                                                                                        Type: {doc.type.toUpperCase()}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {/* )} */}
                                         </div>
                                     )}
 
@@ -774,7 +788,10 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                                     "market_categories": []
                                                                 });
                                                             }}
-                                                            className="w-full p-2 mt-2 rounded bg-white/10 border border-white/20 text-sm appearance-none pr-8" // Added appearance-none and pr-8
+                                                            className="w-full p-2 mt-2 rounded bg-white/10 border border-white/20 text-sm appearance-none pr-8"
+                                                            style={{
+                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                            }} // Added appearance-none and pr-8
                                                         >
                                                             <option value="select" disabled hidden>
                                                                 Select Content source
@@ -803,6 +820,7 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                             type="text"
                                                             placeholder="Search..."
                                                             value={searchQueryManual}
+
                                                             onChange={(e) => {
                                                                 setSearchQueryManual(e.target.value);
                                                                 if (searchQueryManual === '' && Object.values(selectedFilters).every(arr => arr.length === 0)) {
@@ -811,8 +829,20 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                                 }
 
                                                             }}
+                                                            style={{
+                                                                backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                                color: theme === 'light' ? '#000000' : '#ffffff',
+                                                                borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                                                outline: 'none'
+                                                            }}
+                                                            onFocus={(e) => {
+                                                                e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                                                e.target.style.boxShadow = theme === 'light'
+                                                                    ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                                    : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                                            }}
                                                             className="w-full pt-3 pb-3 h-[40px] p-3 pr-[80px] rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                            style={{ backgroundColor: appColors.primaryColor }}
+                                                            // style={{ backgroundColor: appColors.primaryColor }}
                                                             onKeyDown={(e) => e.key === 'Enter' && handleManualSearchSubmit()}
                                                         // onKeyDown={ handleManualSearchSubmit()}
                                                         />
@@ -850,7 +880,10 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                     {contentSource === 'voc' ? (
                                                         <>
                                                             {/* Video Type Filter */}
-                                                            <div className="border border-white/20 rounded-md overflow-hidden no-scrollbar">
+                                                            <div className="border border-white/20 rounded-md overflow-hidden no-scrollbar"
+                                                               style={{
+                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                            }}>
                                                                 <button
                                                                     className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                     onClick={() => setContentTypeOpen(!contentTypeOpen)}
@@ -903,7 +936,10 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                         </>
                                                     ) : contentSource === 'vob' ? (
                                                         /* VoB Filters */
-                                                        <div className="border border-white/20 rounded-md overflow-hidden">
+                                                        <div className="border border-white/20 rounded-md overflow-hidden"
+                                                        style={{
+                                                            border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                        }}>
                                                             <button
                                                                 className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                 onClick={() => setContentTypeOpen(!contentTypeOpen)}
@@ -934,7 +970,10 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
 
                                                         <>
                                                             {/* Market Categories Filter */}
-                                                            <div className="border border-white/20 rounded-md overflow-hidden">
+                                                            <div className="border border-white/20 rounded-md overflow-hidden"
+                                                               style={{
+                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                            }}>
                                                                 <button
                                                                     className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                     onClick={() => setContentTypeOpen(!contentTypeOpen)}
@@ -963,7 +1002,11 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                             </div>
 
                                                             {/* Content Categories Filter */}
-                                                            <div className="border border-white/20 rounded-md overflow-hidden">
+                                                            <div className="border rounded-md overflow-hidden"
+                                                               style={{
+                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                            }}
+                                                            >
                                                                 <button
                                                                     className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                     onClick={() => setContentTypeOpen(!contentTypeOpen)}
@@ -1082,14 +1125,37 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                 <div className="relative group">
                                     <button
                                         onClick={goToNextStep}
-                                        className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                        className="p-2 rounded-lg transition-colors"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                ? 'rgba(0, 0, 0, 0.2)'
+                                                : 'rgba(255, 255, 255, 0.2)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                ? 'rgba(0, 0, 0, 0.1)'
+                                                : 'rgba(255, 255, 255, 0.1)';
+                                        }}
                                     >
-                                        <ArrowRight className="w-4 h-4 text-white" />
+                                        <ArrowRight
+                                            className="w-4 h-4"
+                                            style={{
+                                                color: theme === 'light' ? '#000000' : '#ffffff'
+                                            }}
+                                        />
                                     </button>
                                     {/* Tooltip */}
-                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
-                    bg-black/80 text-white text-xs rounded-md px-2 py-1 
-                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    <div
+                                        className="absolute -top-9 -left-1/2 -translate-x-1/2 text-xs rounded-md px-2 py-1 
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? '#374151' : '#000000',
+                                            color: theme === 'light' ? '#ffffff' : '#ffffff'
+                                        }}
+                                    >
                                         Apply Add-Ons
                                     </div>
                                 </div>

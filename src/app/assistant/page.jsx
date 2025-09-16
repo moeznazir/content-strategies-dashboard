@@ -12,7 +12,7 @@ import { sanitizeFileName } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
 
 
-const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
+const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps, colors }) => {
     const guidelines = [
         {
             title: "Enhance Your Search with Library",
@@ -44,7 +44,7 @@ const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
-            <div className="rounded-lg p-5 w-full max-w-sm mx-4 shadow-lg" style={{ backgroundColor: appColors.primaryColor }}>
+            <div className="rounded-lg p-5 w-full max-w-sm mx-4 shadow-lg" style={{ backgroundColor: colors.primaryColor, color: colors.text }}>
 
                 {/* Header */}
                 <div className="flex justify-between items-center mb-2 -mt-3">
@@ -98,6 +98,7 @@ const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps }) => {
 
     );
 };
+// Add this state near the other state declarations
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -134,8 +135,316 @@ const Assistant = () => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const [originalPrompt, setOriginalPrompt] = useState('');
+    const [selectedModel, setSelectedModel] = useState('GPT-5');
+    const [showModelsDropdown, setShowModelsDropdown] = useState(false);
+    const [showLegacy, setShowLegacy] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [theme, setTheme] = useState('light'); // 'dark' or 'light'
 
+    const SettingsModal = ({ show, onClose, theme, setTheme }) => {
+        if (!show) return null;
+
+        return (
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50" >
+                <div className="rounded-lg p-6 w-full max-w-sm mx-4 shadow-lg" style={{ backgroundColor: colors.primaryColor }}>
+                    <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-lg font-semibold -mt-4" style={{ color: colors.text }}>Assistant Settings</h2>
+                        <button
+                            onClick={onClose}
+                            className="text-gray-400 hover:text-gray-600 text-lg -mt-4"
+                            style={{ color: colors.text }}
+                        >
+                            &times;
+                        </button>
+                    </div>
+
+                    <hr className="border-b border-gray-300 -mx-6 mb-4" />
+
+                    <div className="mb-4">
+                        <h3 className="text-sm font-medium mb-2" style={{ color: colors.text }}>Theme</h3>
+                        <div className="flex gap-4">
+                            <div
+                                className={`flex-1 p-3 rounded-lg cursor-pointer border-2 ${theme === 'dark' ? 'border-blue-500' : 'border-gray-300'}`}
+                                onClick={() => setTheme('dark')}
+                                style={{ backgroundColor: '#1f1f3d' }}
+                            >
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm text-white">Dark</span>
+                                    {theme === 'dark' && (
+                                        <svg className="w-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                    )}
+                                </div>
+                                <div className="flex gap-1">
+                                    <div className="w-3 h-6 rounded-sm" style={{ backgroundColor: '#2b2b4b' }}></div>
+                                    <div className="w-3 h-6 rounded-sm" style={{ backgroundColor: '#3b3b5b' }}></div>
+                                    <div className="w-3 h-6 rounded-sm" style={{ backgroundColor: '#4a4a6a' }}></div>
+                                </div>
+                            </div>
+
+                            <div
+                                className={`flex-1 p-3 rounded-lg cursor-pointer border-2 ${theme === 'light' ? 'border-blue-500' : 'border-gray-300'}`}
+                                onClick={() => setTheme('light')}
+                                style={{ backgroundColor: '#f8f9fa' }}
+                            >
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm text-gray-800">Light</span>
+                                    {theme === 'light' && (
+                                        <svg className="w-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                    )}
+                                </div>
+                                <div className="flex gap-1">
+                                    <div className="w-3 h-6 rounded-sm bg-gray-100"></div>
+                                    <div className="w-3 h-6 rounded-sm bg-gray-200"></div>
+                                    <div className="w-3 h-6 rounded-sm bg-gray-300"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                        <button
+                            onClick={onClose}
+                            className="px-2 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600"
+                        >
+                            Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+    useEffect(() => {
+        // Load theme from localStorage on mount
+        const savedTheme = localStorage.getItem('assistantTheme') || 'dark';
+        setTheme(savedTheme);
+    }, []);
+
+    // Update theme when it changes
+    useEffect(() => {
+        // Save to localStorage
+        localStorage.setItem('assistantTheme', theme);
+    }, [theme]);
+
+
+
+    // ChatGPT-style color scheme for Assistant page only
+    const getThemeColors = () => {
+        if (theme === 'light') {
+            return {
+                background: '#ffffff',
+                text: "#000000", // Changed from #1f2937 to black for better readability
+                messageBackground: '#f9fafb',
+                userMessageBackground: '#3b82f6',
+                userMessageText: '#ffffff',
+                border: '#e5e7eb',
+                inputBackground: '#ffffff',
+                inputBorder: '#d1d5db',
+                sidebarBackground: '#f3f4f6',
+                activeBackground: '#e5e7eb',
+                primaryColor: '#ffffff',
+                textColor: '#000000' // Changed from #1f2937 to black
+            };
+        } else {
+            return {
+                background: '#1a1b41',
+                text: '#ffffff',
+                messageBackground: '#2f2f2f',
+                userMessageBackground: '#3b82f6',
+                userMessageText: '#ffffff',
+                border: '#404040',
+                inputBackground: '#2f2f2f',
+                inputBorder: '#404040',
+                sidebarBackground: '#2a2d45',
+                primaryColor: '#1a1b41',
+                textColor: '#ffffff',
+                toolTipColors: ''
+            };
+        }
+    };
+
+    const colors = getThemeColors();
     // const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
+
+    const ModelSelector = () => {
+        const [showLegacy, setShowLegacy] = useState(false);
+    
+        const models = [
+            { id: "gpt-5", name: "GPT-5", description: "Flagship model" },
+            { id: "gpt-5-thinking", name: "GPT-5 Thinking", description: "Get more thorough answers" },
+            { id: "gpt-5-pro", name: "GPT-5 Pro", description: "Research-grade intelligence" },
+        ];
+    
+        const legacyModels = [
+            { id: "gpt-4o", name: "GPT-4o", description: "Great for most tasks" },
+            { id: "gpt-4-5", name: "GPT-4.5 (RESEARCH PREVIEW)", description: "Good for writing and exploring ideas" },
+            { id: "o3", name: "o3", description: "Uses advanced reasoning" },
+            { id: "o3-pro", name: "o3-pro", description: "Legacy reasoning expert" },
+            { id: "o4-mini", name: "o4-mini", description: "Fastest at advanced reasoning" },
+            { id: "gpt-4-1", name: "GPT-4.1", description: "Great for quick coding and analysis" },
+        ];
+    
+        return (
+            <div
+                className="absolute left-0 top-full mt-2 z-50 w-64 border rounded-lg shadow-lg"
+                style={{
+                    backgroundColor: theme === 'light' ? '#ffffff' : '#2a2d45',
+                    borderColor: theme === 'light' ? '#e5e7eb' : '#404040'
+                }}
+            >
+                <div className="p-2">
+                    <h3
+                        className="text-sm font-semibold mb-2 px-2"
+                        style={{ 
+                            color: theme === 'light' ? '#000000' : '#ffffff'
+                        }}
+                    >
+                        ChatGPT
+                    </h3>
+                    <div className="space-y-1 max-h-60 overflow-y-auto">
+                        {models.map((model) => (
+                            <div
+                                key={model.id}
+                                className="p-2 rounded cursor-pointer transition-colors"
+                                style={{
+                                    backgroundColor: selectedModel === model.name
+                                        ? theme === 'light' ? '#3b82f6' : '#2563eb' // blue for selected
+                                        : 'transparent',
+                                    color: selectedModel === model.name 
+                                        ? '#ffffff' // white text for selected
+                                        : (theme === 'light' ? '#000000' : '#ffffff')
+                                }}
+                                onClick={() => {
+                                    setSelectedModel(model.name);
+                                    setShowModelsDropdown(false);
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (selectedModel !== model.name) {
+                                        e.currentTarget.style.backgroundColor = theme === 'light'
+                                            ? 'rgba(0, 0, 0, 0.05)'
+                                            : 'rgba(255, 255, 255, 0.1)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (selectedModel !== model.name) {
+                                        e.currentTarget.style.backgroundColor = 'transparent';
+                                    } else {
+                                        e.currentTarget.style.backgroundColor = theme === 'light' 
+                                            ? '#3b82f6' 
+                                            : '#2563eb';
+                                    }
+                                }}
+                            >
+                                <div className="text-sm font-medium">
+                                    {model.name}
+                                </div>
+                                <div
+                                    className="text-xs"
+                                    style={{ 
+                                        color: selectedModel === model.name
+                                            ? 'rgba(255, 255, 255, 0.8)' // lighter white for description when selected
+                                            : (theme === 'light' ? '#6b7280' : '#d1d5db')
+                                    }}
+                                >
+                                    {model.description}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+    
+                    {/* Legacy toggle */}
+                    <div
+                        className="mt-2 pt-2"
+                        style={{ 
+                            borderColor: theme === 'light' ? '#e5e7eb' : '#404040'
+                        }}
+                    >
+                        <button
+                            className="w-full flex justify-between items-center px-2 text-xs transition-colors"
+                            style={{
+                                color: theme === 'light' ? '#6b7280' : '#9ca3af',
+                            }}
+                            onClick={() => setShowLegacy(!showLegacy)}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.color = theme === 'light' ? '#000000' : '#ffffff';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.color = theme === 'light' ? '#6b7280' : '#9ca3af';
+                            }}
+                        >
+                            Legacy models
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className={`h-3 w-3 transition-transform ${showLegacy ? "rotate-180" : ""}`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+    
+                        {showLegacy && (
+                            <div className="space-y-1 max-h-60 overflow-y-auto mt-2">
+                                {legacyModels.map((model) => (
+                                    <div
+                                        key={model.id}
+                                        className="p-2 rounded cursor-pointer transition-colors"
+                                        style={{
+                                            backgroundColor: selectedModel === model.name
+                                                ? theme === 'light' ? '#3b82f6' : '#2563eb' // blue for selected
+                                                : 'transparent',
+                                            color: selectedModel === model.name 
+                                                ? '#ffffff' // white text for selected
+                                                : (theme === 'light' ? '#000000' : '#ffffff')
+                                        }}
+                                        onClick={() => {
+                                            setSelectedModel(model.name);
+                                            setShowModelsDropdown(false);
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (selectedModel !== model.name) {
+                                                e.currentTarget.style.backgroundColor = theme === 'light'
+                                                    ? 'rgba(0, 0, 0, 0.05)'
+                                                    : 'rgba(255, 255, 255, 0.1)';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (selectedModel !== model.name) {
+                                                e.currentTarget.style.backgroundColor = 'transparent';
+                                            } else {
+                                                e.currentTarget.style.backgroundColor = theme === 'light' 
+                                                    ? '#3b82f6' 
+                                                    : '#2563eb';
+                                            }
+                                        }}
+                                    >
+                                        <div className="text-sm font-medium">
+                                            {model.name}
+                                        </div>
+                                        <div
+                                            className="text-xs"
+                                            style={{ 
+                                                color: selectedModel === model.name
+                                                    ? 'rgba(255, 255, 255, 0.8)' // lighter white for description when selected
+                                                    : (theme === 'light' ? '#6b7280' : '#d1d5db')
+                                            }}
+                                        >
+                                            {model.description}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const [addOns, setAddOns] = useState({
         industry: {},
         audienceTitles: {},
@@ -542,7 +851,10 @@ const Assistant = () => {
             title: docTitle,
             processedDescription: processedContent
         }]);
+        setSearchQuery(docTitle);
+
     };
+    console.log("selectedLibraryDocTitles", selectedLibraryDocTitles);
 
     const handleRemoveLibraryDoc = (docId) => {
         setSelectedLibraryDocs((prev) => prev.filter((id) => id !== docId));
@@ -1089,7 +1401,7 @@ const Assistant = () => {
     const isSubmitEnabled = searchQuery.trim() || selectedDocs.length > 0 || selectedPromptId;
 
     const formatPlainTextWithStyling = (text) => {
-        const lines = text.split('\n');
+        const lines = text.split("\n");
         const elements = [];
         let currentListItems = [];
         let inEmphasizedSection = false;
@@ -1100,9 +1412,15 @@ const Assistant = () => {
         const flushList = () => {
             if (currentListItems.length > 0) {
                 elements.push(
-                    <ul key={`list-${elements.length}`} className="list-disc pl-6 mb-4 space-y-2 marker:text-blue-400">
+                    <ul
+                        key={`list-${elements.length}`}
+                        className="list-disc pl-6 mb-4 space-y-2"
+                        style={{ color: colors.text }}
+                    >
                         {currentListItems.map((item, i) => (
-                            <li key={i} className="text-gray-100 text-lg">{item}</li>
+                            <li key={i} className="text-base leading-relaxed" style={{ color: colors.text }}>
+                                {item}
+                            </li>
                         ))}
                     </ul>
                 );
@@ -1110,27 +1428,64 @@ const Assistant = () => {
             }
         };
 
+        const renderInlineFormatting = (line) => {
+            // Bold (**text**)
+            line = line.replace(
+                /\*\*(.*?)\*\*/g,
+                `<strong class="font-semibold" style="color: ${colors.text}">$1</strong>`
+            );
+
+            // Italic (_text_)
+            line = line.replace(
+                /_(.*?)_/g,
+                `<em class="italic" style="color: ${colors.text}">$1</em>`
+            );
+
+            return line;
+        };
+
         const renderTable = () => {
             if (tableRows.length > 0) {
                 elements.push(
-                    <div key={`table-${elements.length}`} className="mb-6 overflow-x-auto">
-                        <table className="min-w-full border-collapse border border-gray-600 text-lg">
+                    <div
+                        key={`table-${elements.length}`}
+                        className="mb-6 overflow-x-auto rounded-lg border"
+                        style={{ borderColor: colors.border }}
+                    >
+                        <table className="min-w-full border-collapse text-base">
                             <thead>
-                                <tr className="bg-gray-800">
+                                <tr style={{ backgroundColor: colors.messageBackground }}>
                                     {tableHeaders.map((header, idx) => (
-                                        <th key={idx} className="border border-gray-600 px-4 py-3 text-left font-semibold text-white">
-                                            {header}
-                                        </th>
+                                        <th
+                                            key={idx}
+                                            className="border px-4 py-3 text-left font-semibold"
+                                            style={{ borderColor: colors.border, color: colors.text }}
+                                            dangerouslySetInnerHTML={{
+                                                __html: renderInlineFormatting(header),
+                                            }}
+                                        />
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {tableRows.map((row, rowIndex) => (
-                                    <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
+                                    <tr
+                                        key={rowIndex}
+                                        style={{
+                                            backgroundColor: rowIndex % 2 === 0
+                                                ? colors.background
+                                                : colors.messageBackground
+                                        }}
+                                    >
                                         {row.map((cell, cellIndex) => (
-                                            <td key={cellIndex} className="border border-gray-600 px-4 py-3 text-gray-100">
-                                                {cell}
-                                            </td>
+                                            <td
+                                                key={cellIndex}
+                                                className="border px-4 py-3"
+                                                style={{ borderColor: colors.border, color: colors.text }}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: renderInlineFormatting(cell),
+                                                }}
+                                            />
                                         ))}
                                     </tr>
                                 ))}
@@ -1147,7 +1502,7 @@ const Assistant = () => {
         lines.forEach((line, index) => {
             const trimmedLine = line.trim();
 
-            // Check if this is a table header separator (|---|)
+            // Table header separator
             if (trimmedLine.match(/^\|(\s*\-+\s*\|)+$/)) {
                 if (tableHeaders.length > 0 && !inTable) {
                     inTable = true;
@@ -1155,29 +1510,27 @@ const Assistant = () => {
                 return;
             }
 
-            // Check if this is a table row
-            if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
+            // Table rows
+            if (trimmedLine.startsWith("|") && trimmedLine.endsWith("|")) {
                 if (!inTable && tableHeaders.length === 0) {
-                    // This is the header row
-                    tableHeaders = trimmedLine.split('|')
-                        .filter(cell => cell.trim() !== '')
-                        .map(cell => cell.trim());
+                    tableHeaders = trimmedLine
+                        .split("|")
+                        .filter((cell) => cell.trim() !== "")
+                        .map((cell) => cell.trim());
                 } else if (inTable) {
-                    // This is a data row
-                    const rowData = trimmedLine.split('|')
-                        .filter(cell => cell.trim() !== '')
-                        .map(cell => cell.trim());
+                    const rowData = trimmedLine
+                        .split("|")
+                        .filter((cell) => cell.trim() !== "")
+                        .map((cell) => cell.trim());
 
-                    // Skip empty rows or separator rows
-                    if (rowData.length > 0 && !rowData.every(cell => cell.match(/^\-+$/))) {
+                    if (rowData.length > 0 && !rowData.every((cell) => cell.match(/^\-+$/))) {
                         tableRows.push(rowData);
                     }
                 }
                 return;
             }
 
-            // If we were in a table and encounter a non-table line, render the table
-            if (inTable && !trimmedLine.startsWith('|')) {
+            if (inTable && !trimmedLine.startsWith("|")) {
                 renderTable();
             }
 
@@ -1187,110 +1540,137 @@ const Assistant = () => {
                 return;
             }
 
-            // Detect main headings (lines with numbers or that look like titles)
-            if ((trimmedLine.match(/^\d+\)/) || /^[A-Z][A-Za-z\s]+[:\-—]/.test(trimmedLine)) && trimmedLine.length < 80) {
+            // Headings
+            if (/^#\s+/.test(trimmedLine)) {
                 flushList();
-                inEmphasizedSection = true;
                 elements.push(
-                    <h2 key={`h2-${index}`} className="text-2xl font-bold mb-4 text-white mt-6 first:mt-0">
-                        {trimmedLine}
+                    <h1
+                        key={`h1-${index}`}
+                        className="text-3xl font-extrabold tracking-tight mb-4 mt-8 leading-snug"
+                        style={{ color: colors.text }}
+                    >
+                        {trimmedLine.replace(/^#\s+/, "")}
+                    </h1>
+                );
+                inEmphasizedSection = true;
+                return;
+            }
+
+            if (/^##\s+/.test(trimmedLine)) {
+                flushList();
+                elements.push(
+                    <h2
+                        key={`h2-${index}`}
+                        className="text-2xl font-bold mb-3 mt-6 leading-snug"
+                        style={{ color: colors.text }}
+                    >
+                        {trimmedLine.replace(/^##\s+/, "")}
                     </h2>
                 );
                 return;
             }
 
-            // Detect subheadings (lines with emoji or that indicate categories)
-            if (trimmedLine.includes('➤') || trimmedLine.includes('💷') || trimmedLine.includes('—')) {
+            if (/^###\s+/.test(trimmedLine)) {
                 flushList();
                 elements.push(
-                    <h3 key={`h3-${index}`} className="text-xl font-semibold mb-3 text-blue-300 mt-4">
-                        {trimmedLine}
+                    <h3
+                        key={`h3-${index}`}
+                        className="text-xl font-semibold mb-2 mt-4 leading-snug"
+                        style={{ color: colors.text }}
+                    >
+                        {trimmedLine.replace(/^###\s+/, "")}
                     </h3>
                 );
                 return;
             }
 
-            // Detect options (A), B), C), etc.)
+            // Options like A) B) etc.
             if (/^[A-Z]\)\s/.test(trimmedLine)) {
                 flushList();
                 elements.push(
                     <div key={`option-${index}`} className="flex items-start mb-3">
-                        <span className="font-bold text-blue-300 mr-2 flex-shrink-0 text-xl">
+                        <span
+                            className="font-bold mr-2 flex-shrink-0 text-lg"
+                            style={{ color: colors.text }}
+                        >
                             {trimmedLine.substring(0, 2)}
                         </span>
-                        <span className="text-gray-100 text-lg">{trimmedLine.substring(3)}</span>
+                        <span
+                            className="text-base leading-relaxed"
+                            style={{ color: colors.text }}
+                        >
+                            {trimmedLine.substring(3)}
+                        </span>
                     </div>
                 );
                 return;
             }
 
-            // Detect list items (lines starting with •, -, *, or numbers)
+            // Lists
             if (/^[•\-*]\s/.test(trimmedLine) || /^\d+\.\s/.test(trimmedLine)) {
-                currentListItems.push(trimmedLine.replace(/^[•\-*]\s/, '').replace(/^\d+\.\s/, ''));
+                currentListItems.push(
+                    trimmedLine.replace(/^[•\-*]\s/, "").replace(/^\d+\.\s/, "")
+                );
                 return;
             }
 
-            // Detect bold patterns (text between **)
-            if (trimmedLine.includes('**')) {
+            // Inline formatting
+            if (/\*\*(.*?)\*\*/.test(trimmedLine) || /_(.*?)_/.test(trimmedLine)) {
                 flushList();
-                const boldLine = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-white text-lg">$1</strong>');
                 elements.push(
                     <p
-                        key={`bold-${index}`}
-                        className="mb-3 leading-relaxed text-gray-100 text-lg"
-                        dangerouslySetInnerHTML={{ __html: boldLine }}
+                        key={`fmt-${index}`}
+                        className="mb-4 text-base leading-relaxed"
+                        style={{ color: colors.text }}
+                        dangerouslySetInnerHTML={{
+                            __html: renderInlineFormatting(trimmedLine),
+                        }}
                     />
                 );
                 return;
             }
 
-            // Detect italic patterns (text between _)
-            if (trimmedLine.includes('_')) {
-                flushList();
-                const italicLine = trimmedLine.replace(/_(.*?)_/g, '<em class="italic text-gray-300 text-lg">$1</em>');
-                elements.push(
-                    <p
-                        key={`italic-${index}`}
-                        className="mb-3 leading-relaxed text-gray-100 text-lg"
-                        dangerouslySetInnerHTML={{ __html: italicLine }}
-                    />
-                );
-                return;
-            }
-
-            // Text in emphasized sections (after headings)
+            // Emphasized section after main heading
             if (inEmphasizedSection) {
                 flushList();
                 elements.push(
-                    <p key={`p-${index}`} className="mb-3 leading-relaxed text-gray-200 text-lg font-medium">
+                    <p
+                        key={`p-${index}`}
+                        className="mb-4 text-base leading-relaxed font-medium"
+                        style={{ color: colors.text }}
+                    >
                         {trimmedLine}
                     </p>
                 );
                 return;
             }
 
-            // Regular paragraphs
+            // Default paragraph
             flushList();
             elements.push(
-                <p key={`p-${index}`} className="mb-3 leading-relaxed text-gray-100 text-lg">
+                <p
+                    key={`p-${index}`}
+                    className="mb-4 text-base leading-relaxed"
+                    style={{ color: colors.text }}
+                >
                     {trimmedLine}
                 </p>
             );
         });
 
-        // Render any remaining table at the end
         if (inTable) {
             renderTable();
         }
 
-        flushList(); // Flush any remaining list items
+        flushList();
 
         return elements;
     };
+
     return (
-        <div className="w-full flex" style={{ backgroundColor: appColors.primaryColor, minHeight: '90%' }}>
+        <div className="w-full flex" style={{ backgroundColor: colors.background, minHeight: '93%' }}>
             {/* Conversations sidebar */}
-            <div className="w-64 border-r border-gray-700 relative flex flex-col" style={{ height: "85vh" }}>
+            <div className="w-64 border-r relative flex flex-col" style={{ height: "85vh", backgroundColor: colors.sidebarBackground, borderColor: colors.border }}>
                 {/* Fixed header section */}
                 <div className="flex-shrink-0">
                     {/* New Chat button */}
@@ -1309,13 +1689,24 @@ const Assistant = () => {
                             setSelectedUploadedDocuments([]);
                             setAddOns({
                                 industry: [],
+                                audienceTitles: [],
                                 audience: [],
                                 tone: [],
                                 objective: "",
                                 advice: { do: [], dont: [] },
                             });
                         }}
-                        className="p-3 mx-4 mt-3 mb-2 flex items-center gap-3 text-sm text-white hover:bg-white/20 rounded-md transition-colors cursor-pointer"
+                        className="p-3 mx-4 mt-3 mb-2 flex items-center gap-3 text-md rounded-md transition-colors cursor-pointer"
+                        style={{
+                            color: colors.text,
+                            backgroundColor: 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = theme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                        }}
                     >
                         {/* Pencil/Edit icon */}
                         <svg
@@ -1326,6 +1717,7 @@ const Assistant = () => {
                             xmlns="http://www.w3.org/2000/svg"
                             className="icon -ml-[3px]"
                             aria-hidden="true"
+                            style={{ color: colors.text }}
                         >
                             <path d="M2.6687 11.333V8.66699C2.6687 7.74455 2.66841 7.01205 2.71655 6.42285C2.76533 5.82612 2.86699 5.31731 3.10425 4.85156L3.25854 4.57617C3.64272 3.94975 4.19392 3.43995 4.85229 3.10449L5.02905 3.02149C5.44666 2.84233 5.90133 2.75849 6.42358 2.71582C7.01272 2.66769 7.74445 2.66797 8.66675 2.66797H9.16675C9.53393 2.66797 9.83165 2.96586 9.83179 3.33301C9.83179 3.70028 9.53402 3.99805 9.16675 3.99805H8.66675C7.7226 3.99805 7.05438 3.99834 6.53198 4.04102C6.14611 4.07254 5.87277 4.12568 5.65601 4.20313L5.45581 4.28906C5.01645 4.51293 4.64872 4.85345 4.39233 5.27149L4.28979 5.45508C4.16388 5.7022 4.08381 6.01663 4.04175 6.53125C3.99906 7.05373 3.99878 7.7226 3.99878 8.66699V11.333C3.99878 12.2774 3.99906 12.9463 4.04175 13.4688C4.08381 13.9833 4.16389 14.2978 4.28979 14.5449L4.39233 14.7285C4.64871 15.1465 5.01648 15.4871 5.45581 15.7109L5.65601 15.7969C5.87276 15.8743 6.14614 15.9265 6.53198 15.958C7.05439 16.0007 7.72256 16.002 8.66675 16.002H11.3337C12.2779 16.002 12.9461 16.0007 13.4685 15.958C13.9829 15.916 14.2976 15.8367 14.5447 15.7109L14.7292 15.6074C15.147 15.3511 15.4879 14.9841 15.7117 14.5449L15.7976 14.3447C15.8751 14.128 15.9272 13.8546 15.9587 13.4688C16.0014 12.9463 16.0017 12.2774 16.0017 11.333V10.833C16.0018 10.466 16.2997 10.1681 16.6667 10.168C17.0339 10.168 17.3316 10.4659 17.3318 10.833V11.333C17.3318 12.2555 17.3331 12.9879 17.2849 13.5771C17.2422 14.0993 17.1584 14.5541 16.9792 14.9717L16.8962 15.1484C16.5609 15.8066 16.0507 16.3571 15.4246 16.7412L15.1492 16.8955C14.6833 17.1329 14.1739 17.2354 13.5769 17.2842C12.9878 17.3323 12.256 17.332 11.3337 17.332H8.66675C7.74446 17.332 7.01271 17.3323 6.42358 17.2842C5.90135 17.2415 5.44665 17.1577 5.02905 16.9785L4.85229 16.8955C4.19396 16.5601 3.64271 16.0502 3.25854 15.4238L3.10425 15.1484C2.86697 14.6827 2.76534 14.1739 2.71655 13.5771C2.66841 12.9879 2.6687 12.2555 2.6687 11.333ZM13.4646 3.11328C14.4201 2.334 15.8288 2.38969 16.7195 3.28027L16.8865 3.46485C17.6141 4.35685 17.6143 5.64423 16.8865 6.53613L16.7195 6.7207L11.6726 11.7686C11.1373 12.3039 10.4624 12.6746 9.72827 12.8408L9.41089 12.8994L7.59351 13.1582C7.38637 13.1877 7.17701 13.1187 7.02905 12.9707C6.88112 12.8227 6.81199 12.6134 6.84155 12.4063L7.10132 10.5898L7.15991 10.2715C7.3262 9.53749 7.69692 8.86241 8.23218 8.32715L13.2791 3.28027L13.4646 3.11328ZM15.7791 4.2207C15.3753 3.81702 14.7366 3.79124 14.3035 4.14453L14.2195 4.2207L9.17261 9.26856C8.81541 9.62578 8.56774 10.0756 8.45679 10.5654L8.41772 10.7773L8.28296 11.7158L9.22241 11.582L9.43433 11.543C9.92426 11.432 10.3749 11.1844 10.7322 10.8271L15.7791 5.78027L15.8552 5.69629C16.185 5.29194 16.1852 4.708 15.8552 4.30371L15.7791 4.2207Z"></path>
                         </svg>
@@ -1334,8 +1726,8 @@ const Assistant = () => {
 
                     {/* Chats header */}
                     <div className="px-4">
-                        <h2 className="text-xl font-semibold text-white mb-2 ml-2">Chats</h2>
-                        <hr className="border-gray-500" />
+                        <h2 className="text-xl font-semibold mb-2 ml-2" style={{ color: colors.text }}>Chats</h2>
+                        <hr style={{ borderColor: colors.border }} />
                     </div>
                 </div>
 
@@ -1343,20 +1735,44 @@ const Assistant = () => {
                 <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2">
                     {isLoading && conversations.length === 0 ? (
                         <div className="flex justify-center items-center h-20">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: colors.text }}></div>
                         </div>
                     ) : (
                         <div className="space-y-2">
                             {conversations.map((conv) => (
                                 <div
                                     key={conv.conversation_id}
-                                    className={`p-3 rounded-lg cursor-pointer ${selectedConversation === conv.conversation_id
-                                        ? "bg-blue-600"
-                                        : "hover:bg-white/20"
-                                        }`}
+                                    className="p-3 rounded-lg cursor-pointer transition-colors"
+                                    style={{
+                                        color: colors.text,
+                                        backgroundColor: selectedConversation === conv.conversation_id
+                                            ? theme === 'light'
+                                                ? colors.activeBackground // Use sidebar background in light mode
+                                                : '#2563eb' // Keep blue in dark mode
+                                            : 'transparent',
+                                        border: selectedConversation === conv.conversation_id && theme === 'light'
+                                            ? `1px solid ${colors.border}`
+                                            : 'none'
+                                    }}
                                     onClick={() => handleConversationSelect(conv.conversation_id)}
+                                    onMouseEnter={(e) => {
+                                        if (selectedConversation !== conv.conversation_id) {
+                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                ? 'rgba(0, 0, 0, 0.1)'
+                                                : 'rgba(255, 255, 255, 0.2)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (selectedConversation !== conv.conversation_id) {
+                                            e.currentTarget.style.backgroundColor = 'transparent';
+                                        } else {
+                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                ? colors.activeBackground
+                                                : '#2563eb';
+                                        }
+                                    }}
                                 >
-                                    <p className="text-white text-sm truncate">
+                                    <p className="text-sm truncate">
                                         {conv.title || `Conversation ${conv.conversation_id.slice(-4)}`}
                                     </p>
                                 </div>
@@ -1366,9 +1782,46 @@ const Assistant = () => {
                 </div>
             </div>
 
+            <div className="fixed left-64 top-20 z-50" style={{ width: 'calc(100% - 256px)' }}>
+                <div className="ml-4 relative inline-block">
+                    <button
+                        className="p-2 text-white rounded-md text-sm flex items-center justify-between hover:bg-white/10 "
+                        onClick={() => setShowModelsDropdown(!showModelsDropdown)}
+                        style={{ minWidth: '120px', color: colors.text }}
+                    >
+                        <div className="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                            <span className="truncate">{selectedModel}</span>
+                        </div>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`h-4 w-4 transition-transform ${showModelsDropdown ? 'rotate-180' : ''}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    {showModelsDropdown && (
+                        <div className="absolute top-full left-0 mb-2 z-50"    >
+                            <ModelSelector />
+                        </div>
+                    )}
+                </div>
+            </div>
+
 
             {/* Main chat area */}
-            <div className="flex-1 flex flex-col relative">
+            <div className="flex-1 flex flex-col relative" style={{ backgroundColor: colors.background }}>
                 {/* {newResponseArrived && (
                     <button
                         onClick={scrollToTopOfResponse}
@@ -1412,8 +1865,7 @@ const Assistant = () => {
                             currentMessages.map((msg, index) => (
                                 <div key={`${msg.id}-${index}`} className="w-full space-y-4 mb-6">
                                     <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`rounded-lg px-4 py-3 max-w-3xl break-words overflow-hidden ${msg.role === 'user' ? 'bg-white/10 text-white' : ' text-white'}`}>
-
+                                        <div className={`rounded-lg px-4 py-3 max-w-3xl break-words overflow-hidden ${msg.role === 'user' ? 'bg-white/10 text-white' : ''}`} style={{ color: colors.text }}>
                                             {msg.role === 'assistant' ? (
                                                 <div className="message-content">
                                                     {formatPlainTextWithStyling(msg.content)}
@@ -1430,14 +1882,14 @@ const Assistant = () => {
                         {/* Show loading indicator at the bottom while loading */}
                         {isLoading && (
                             <div className="flex justify-center my-4">
-                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white" style={{ borderColor: colors.text }}></div>
                             </div>
                         )}
 
                         {/* Show empty state if no messages */}
                         {!isLoading && currentMessages.length === 0 && (
                             <div className="h-full flex items-center justify-center mb-4">
-                                <h1 className="text-2xl font-bold" style={{ color: appColors.textColor }}>
+                                <h1 className="text-2xl font-bold" style={{ color: colors.textColor }}>
                                     {conversations.length === 0 ? 'How can I help you today?' : 'Choose a chat or begin a new one!'}
                                 </h1>
                             </div>
@@ -1469,7 +1921,13 @@ const Assistant = () => {
                                             <div className="flex gap-2 min-w-min">
                                                 {/* Prompt Title */}
                                                 {selectedPromptTitle && (
-                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full w-100">
+                                                    <span
+                                                        className="inline-flex items-center text-xs px-2 py-1 rounded-full w-100"
+                                                        style={{
+                                                            backgroundColor: theme === 'light' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                                                            color: theme === 'light' ? '#1e40af' : '#93c5fd'
+                                                        }}
+                                                    >
                                                         {selectedPromptTitle}
                                                         <button
                                                             onClick={() => {
@@ -1477,7 +1935,10 @@ const Assistant = () => {
                                                                 setSelectedPromptTitle('');
                                                                 setSearchQuery('');
                                                             }}
-                                                            className="ml-1 text-blue-100 hover:text-white"
+                                                            style={{
+                                                                color: theme === 'light' ? '#1e40af' : '#93c5fd'
+                                                            }}
+                                                            className="ml-1 hover:opacity-70 transition-opacity"
                                                         >
                                                             ×
                                                         </button>
@@ -1486,7 +1947,13 @@ const Assistant = () => {
 
                                                 {/* Document Titles - Grouped summary */}
                                                 {selectedDocTitles.length > 0 && (
-                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 !py-0 rounded-full whitespace-nowrap">
+                                                    <span
+                                                        className="inline-flex items-center text-xs px-2 !py-0 rounded-full whitespace-nowrap"
+                                                        style={{
+                                                            backgroundColor: theme === 'light' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                                                            color: theme === 'light' ? '#1e40af' : '#93c5fd'
+                                                        }}
+                                                    >
                                                         Context ({selectedDocTitles.length} Document{selectedDocTitles.length !== 1 ? 's' : ''})
                                                         <button
                                                             onClick={() => {
@@ -1495,13 +1962,42 @@ const Assistant = () => {
                                                                     handleDocSelect(doc.id, doc.title);
                                                                 });
                                                             }}
-                                                            className="ml-4 text-blue-100 hover:text-white"
+                                                            style={{
+                                                                color: theme === 'light' ? '#1e40af' : '#93c5fd'
+                                                            }}
+                                                            className="ml-4 hover:opacity-70 transition-opacity"
                                                         >
                                                             ×
                                                         </button>
                                                     </span>
                                                 )}
 
+                                                {/* Source Titles Group by */}
+                                                {selectedSourceTitles.length > 0 && (
+                                                    <span
+                                                        className="inline-flex items-center text-xs px-2 !py-0 rounded-full whitespace-nowrap"
+                                                        style={{
+                                                            backgroundColor: theme === 'light' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                                                            color: theme === 'light' ? '#1e40af' : '#93c5fd'
+                                                        }}
+                                                    >
+                                                        Library ({selectedSourceTitles.length} Document{selectedSourceTitles.length !== 1 ? 's' : ''})
+                                                        <button
+                                                            onClick={() => {
+                                                                // Remove all library docs at once
+                                                                selectedSourceTitles.forEach(source => {
+                                                                    handleSourceSelect(source.id, source.title);
+                                                                });
+                                                            }}
+                                                            style={{
+                                                                color: theme === 'light' ? '#1e40af' : '#93c5fd'
+                                                            }}
+                                                            className="ml-4 hover:opacity-70 transition-opacity"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </span>
+                                                )}
                                                 {/* Document Titles */}
                                                 {/* {selectedDocTitles.map(doc => (
                                                     <span
@@ -1517,23 +2013,7 @@ const Assistant = () => {
                                                         </button>
                                                     </span>
                                                 ))} */}
-                                                {/* Source Titles Group by */}
-                                                {selectedSourceTitles.length > 0 && (
-                                                    <span className="inline-flex items-center text-xs bg-blue-500/20 text-blue-300 px-2 !py-0 rounded-full whitespace-nowrap">
-                                                        Library ({selectedSourceTitles.length} Document{selectedSourceTitles.length !== 1 ? 's' : ''})
-                                                        <button
-                                                            onClick={() => {
-                                                                // Remove all library docs at once
-                                                                selectedSourceTitles.forEach(source => {
-                                                                    handleSourceSelect(source.id, source.title);
-                                                                });
-                                                            }}
-                                                            className="ml-4 text-blue-100 hover:text-white"
-                                                        >
-                                                            ×
-                                                        </button>
-                                                    </span>
-                                                )}
+
 
 
                                                 {/* Source Titles */}
@@ -1652,7 +2132,7 @@ const Assistant = () => {
                                                 {/* Loader Overlay */}
                                                 {file.isUploading && (
                                                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
-                                                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" style={{ borderColor: colors.text }}></div>
                                                     </div>
                                                 )}
 
@@ -1671,6 +2151,7 @@ const Assistant = () => {
                                         minHeight: selectedFiles.length > 0 ? '30px' : '20px',
                                         maxHeight: '100px',
                                         height: 'auto',
+                                        color: theme === 'light' ? '#000000' : colors.text
                                     }}
                                     onInput={(e) => {
                                         e.target.style.height = 'auto';
@@ -1734,9 +2215,11 @@ const Assistant = () => {
                                     onMouseLeave={handleMouseLeave}
                                 >
                                     {/* Info icon */}
+
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
-                                        className="h-6 w-6 text-gray-400 hover:text-white transition-colors"
+                                        className="h-6 w-6 hover:text-white transition-colors"
+                                        style={{ color: colors.text }}
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -1751,11 +2234,21 @@ const Assistant = () => {
 
                                     {/* Tooltip */}
                                     <div className="absolute bottom-full  -translate-x-1/2 mb-3 ml-[50px] z-10 hidden group-hover:block">
-                                        <div className="relative bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-64">
+                                        <div className="relative bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-64" style={{
+                                            backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                            color: theme === 'light' ? '#000000' : '#ffffff',
+                                            border: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                        }}
+                                        >
                                             <p className="mb-0">
                                                 Let the AI Navigator walk you through a best practice prompt experience.
                                             </p>
-                                            <div className="absolute -bottom-2 right-4 w-4 h-4 transform rotate-45 bg-[#3b3b5b]"></div>
+                                            <div className="absolute -bottom-2 right-4 w-4 h-4 transform rotate-45 "
+                                                style={{
+                                                    backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                    borderRight: theme === 'light' ? '1px solid #e5e7eb' : 'none',
+                                                    borderBottom: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                                }}></div>
                                         </div>
                                     </div>
                                 </div>
@@ -1773,11 +2266,20 @@ const Assistant = () => {
 
                                     {/* Updated Tooltip */}
                                     <div className="absolute left-1/2 -translate-x-1/2 top-9 mt-0.5 w-48 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
-                                        <div className="bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-[120px]">
+                                        <div className="text-white text-sm p-3 rounded-lg shadow-lg w-[120px]" style={{
+                                            backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                            color: theme === 'light' ? '#000000' : '#ffffff',
+                                            border: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                        }}>
                                             <p className="mb-0">Randomness</p>
                                         </div>
                                         {/* Tooltip arrow */}
-                                        <div className="absolute -top-[9px] left-1/2 -translate-x-1/2 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
+                                        <div className="absolute -top-[9px] left-1/2 -translate-x-1/2 w-5 h-5 transform rotate-45 z-0"
+                                            style={{
+                                                backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                borderLeft: theme === 'light' ? '1px solid #e5e7eb' : 'none',
+                                                borderTop: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                            }}></div>
                                     </div>
                                 </div>
 
@@ -1788,11 +2290,21 @@ const Assistant = () => {
                                 {/* Updated Tooltip */}
                                 {!searchQuery && (
                                     <div className="absolute -right-10 top-1 w-48 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ">
-                                        <div className="bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg w-[150px]">
+                                        <div className="text-white text-sm p-3 rounded-lg shadow-lg w-[150px]"
+                                            style={{
+                                                backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                color: theme === 'light' ? '#000000' : '#ffffff',
+                                                border: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                            }}>
                                             <p className="mb-0">Please input text</p>
                                         </div>
                                         {/* Tooltip arrow */}
-                                        <div className="absolute -top-[10px] right-14 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
+                                        <div className="absolute -top-[10px] right-14 w-5 h-5 transform rotate-45  z-0"
+                                            style={{
+                                                backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                borderLeft: theme === 'light' ? '1px solid #e5e7eb' : 'none',
+                                                borderTop: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                            }}></div>
                                     </div>
                                 )}
                                 {/* Submit Button */}
@@ -1830,52 +2342,76 @@ const Assistant = () => {
 
                     {/* Tabs with hover tooltips */}
                     <div className="flex mt-4 flex-wrap justify-center gap-2 -mb-4">
-                        {tabs.map((tab) => (
-                            <div
-                                key={tab.id}
-                                className="relative"
-                                onMouseEnter={() => handleMouseEnter(tab.id)}
-                                onMouseLeave={handleMouseLeave}
-                            >
-                                {/* Tab button */}
-                                <button
-                                    onClick={() => handleTabClick(tab.id)}
-                                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${activeTab === tab.id
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-white hover:bg-white/10'
-                                        }`}
-                                >
-                                    {tab.label}
-                                </button>
+                        {tabs
+                            .filter(tab => !(tab.id === 'library' && searchQuery.trim() !== ''))
+                            .map((tab) => (
+                                <div key={tab.id} className="relative" onMouseEnter={() => handleMouseEnter(tab.id)} onMouseLeave={handleMouseLeave}>
+                                    {/* Tab button */}
+                                    <button
+                                        onClick={() => handleTabClick(tab.id)}
+                                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${activeTab === tab.id
+                                            ? theme === 'light'
+                                                ? 'text-gray-800' // Dark text for light background
+                                                : 'bg-blue-600 text-white'
+                                            : 'text-white hover:bg-white/10'
+                                            }`}
+                                        style={{
+                                            color: activeTab === tab.id && theme === 'light' ? colors.text : colors.text,
+                                            borderColor: colors.border,
+                                            backgroundColor: activeTab === tab.id && theme === 'light' ? colors.activeBackground : 'transparent'
+                                        }}
+                                    >
+                                        {tab.label}
+                                    </button>
 
-                                {/* Tooltip/modal */}
-                                {hoveredTab === tab.id && tabMessages[tab.id] && (
-                                    <div className="absolute left-1/3 bottom-12 transform translate-x-1/10 mt-0.5 w-64 z-10">
-                                        {/* Tooltip box with no margin gap */}
-                                        <div
-                                            className="bg-[#3b3b5b] text-white text-sm p-3 rounded-lg shadow-lg "
-                                        >
-                                            <p className="mb-2">
-                                                {tabMessages[tab.id][Math.floor(Math.random() * tabMessages[tab.id].length)]}
-                                            </p>
-                                            <a
-                                                href="#"
-                                                className="text-blue-400 hover:text-blue-300 text-xs font-medium flex items-center justify-end"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    handleTabClick(tab.id);
+                                    {/* Tooltip/modal */}
+                                    {hoveredTab === tab.id && tabMessages[tab.id] && (
+                                        <div className="absolute left-1/3 bottom-12 transform translate-x-1/10 mt-0.5 w-64 z-10">
+                                            {/* Tooltip box */}
+                                            <div
+                                                className="text-sm p-3 rounded-lg shadow-lg"
+                                                style={{
+                                                    backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                    color: theme === 'light' ? '#000000' : '#ffffff',
+                                                    border: theme === 'light' ? '1px solid #e5e7eb' : 'none'
                                                 }}
                                             >
-                                                Learn More →
-                                            </a>
+                                                <p className="mb-2">
+                                                    {tabMessages[tab.id][Math.floor(Math.random() * tabMessages[tab.id].length)]}
+                                                </p>
+                                                <a
+                                                    href="#"
+                                                    className="text-xs font-medium flex items-center justify-end transition-colors"
+                                                    style={{
+                                                        color: theme === 'light' ? '#2563eb' : '#60a5fa',
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.color = theme === 'light' ? '#1d4ed8' : '#93c5fd';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.color = theme === 'light' ? '#2563eb' : '#60a5fa';
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleTabClick(tab.id);
+                                                    }}
+                                                >
+                                                    Learn More →
+                                                </a>
+                                            </div>
+                                            {/* Tooltip arrow */}
+                                            <div
+                                                className="absolute -bottom-[9px] left-6 w-5 h-5 transform rotate-45 z-0"
+                                                style={{
+                                                    backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                    borderRight: theme === 'light' ? '1px solid #e5e7eb' : 'none',
+                                                    borderBottom: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                                }}
+                                            ></div>
                                         </div>
-                                        {/* Tooltip arrow */}
-                                        <div className="absolute -bottom-[9px] left-6 w-6 h-6 transform rotate-45 bg-[#3b3b5b] z-0"></div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-
+                                    )}
+                                </div>
+                            ))}
                     </div>
 
                 </div>
@@ -1894,6 +2430,8 @@ const Assistant = () => {
                     onClearSearchQuery={handleClearSearchQuery}
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
+                    colors={colors}
+                    theme={theme}
 
                 />
 
@@ -1912,12 +2450,14 @@ const Assistant = () => {
                     onClearSearchQuery={handleClearSearchQuery}
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
+                    colors={colors}
+                    theme={theme}
                 />
 
                 {/* Optimization Modal */}
                 {showOptimizationModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
-                        <div className="border rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto" style={{ backgroundColor: appColors.primaryColor }}>
+                        <div className="border rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto" style={{ backgroundColor: colors.primaryColor, color: colors.text }}>
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-bold -mt-4">Prompt Optimization</h2>
                                 <button
@@ -1926,6 +2466,7 @@ const Assistant = () => {
                                         setIsLoading(false);
                                     }}
                                     className="text-white -mt-4 hover:text-gray-300 text-2xl"
+                                    style={{ color: colors.text }}
                                 >
                                     &times;
                                 </button>
@@ -1983,6 +2524,7 @@ const Assistant = () => {
                                     }}
                                     className="w-full bg-white/5 p-3 rounded-lg mb-3 text-sm min-h-[100px]"
                                     placeholder="Enter or edit your prompt here..."
+                                    style={{ border: theme === 'light' ? '1px solid #e5e7eb' : 'none' }}
                                 />
 
 
@@ -2001,6 +2543,7 @@ const Assistant = () => {
                                         onChange={(e) => setOptimizedQuery(e.target.value)}
                                         className="w-full bg-white/5 p-3 rounded-lg mb-3 text-sm min-h-[150px]"
                                         placeholder="Optimized prompt will appear here..."
+                                        style={{ border: theme === 'light' ? '1px solid #e5e7eb' : 'none' }}
                                     />
                                 )}
                             </div>
@@ -2099,7 +2642,7 @@ const Assistant = () => {
                 {/* Add-Ons Modal */}
                 {showAddonsModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
-                        <div className="bg-[#2b2b4b] border rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto no-scrollbar" style={{ backgroundColor: appColors.primaryColor }}>
+                        <div className="bg-[#2b2b4b] border rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto no-scrollbar" style={{ backgroundColor: colors.primaryColor, color: colors.text }}>
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-bold -mt-2">Optional Add-Ons</h2>
                                 <button
@@ -2109,6 +2652,7 @@ const Assistant = () => {
 
                                     }}
                                     className="text-white -mt-3 hover:text-gray-300 text-2xl"
+                                    style={{ color: colors.text }}
                                 >
                                     &times;
                                 </button>
@@ -2742,8 +3286,24 @@ const Assistant = () => {
                                     <input
                                         type="text"
                                         placeholder="Add custom audience industry..."
-                                        className="w-full px-4 py-2 text-white bg-[#3b3b5b] border border-white/20 rounded-md mt-3"
-                                        onBlur={(e) => handleCustomAddOn('industry', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md mt-3 transition-colors"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                            color: theme === 'light' ? '#000000' : '#ffffff',
+                                            borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                            outline: 'none'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                            e.target.style.boxShadow = theme === 'light'
+                                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)';
+                                            e.target.style.boxShadow = 'none';
+                                            handleCustomAddOn('industry', e.target.value);
+                                        }}
                                         onKeyDown={(e) => e.key === 'Enter' && handleCustomAddOn('industry', e.target.value)}
                                     />
                                 </div>
@@ -2772,7 +3332,19 @@ const Assistant = () => {
                                     <input
                                         type="text"
                                         placeholder="Add custom audience departments..."
-                                        className="w-full px-4 py-2 bg-[#3b3b5b] border border-white/20 text-white rounded-md"
+                                        className="w-full px-4 py-2 border border-white/20 text-white rounded-md"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                            color: theme === 'light' ? '#000000' : '#ffffff',
+                                            borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                            outline: 'none'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                            e.target.style.boxShadow = theme === 'light'
+                                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                        }}
                                         onBlur={(e) => handleCustomAddOn('audience', e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleCustomAddOn('audience', e.target.value)}
                                     />
@@ -3158,6 +3730,18 @@ const Assistant = () => {
                                         type="text"
                                         placeholder="Add custom audience title..."
                                         className="w-full px-4 py-2 text-white bg-[#3b3b5b] border border-white/20 rounded-md mt-3"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                            color: theme === 'light' ? '#000000' : '#ffffff',
+                                            borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                            outline: 'none'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                            e.target.style.boxShadow = theme === 'light'
+                                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                        }}
                                         onBlur={(e) => handleCustomAddOn('audienceTitles', e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleCustomAddOn('audienceTitles', e.target.value)}
                                     />
@@ -3190,6 +3774,18 @@ const Assistant = () => {
                                         onChange={(e) => handleAddOnChange('objective', e.target.value)}
                                         placeholder="Enter your objective..."
                                         className="w-full px-4 py-2 bg-[#3b3b5b] border border-white/20 text-white rounded-md"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                            color: theme === 'light' ? '#000000' : '#ffffff',
+                                            borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                            outline: 'none'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                            e.target.style.boxShadow = theme === 'light'
+                                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                        }}
                                     />
                                 </div>
 
@@ -3213,6 +3809,18 @@ const Assistant = () => {
                                                     }));
                                                 }}
                                                 className="w-full px-4 py-2 bg-[#3b3b5b] text-white border border-white/20 rounded-md h-32"
+                                                style={{
+                                                    backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                    color: theme === 'light' ? '#000000' : '#ffffff',
+                                                    borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                                    outline: 'none'
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                                    e.target.style.boxShadow = theme === 'light'
+                                                        ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                        : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                                }}
                                             />
                                         </div>
                                         <div>
@@ -3231,6 +3839,18 @@ const Assistant = () => {
                                                     }));
                                                 }}
                                                 className="w-full px-4 py-2 bg-[#3b3b5b] text-white border border-white/20 rounded-md h-32"
+                                                style={{
+                                                    backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                    color: theme === 'light' ? '#000000' : '#ffffff',
+                                                    borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                                    outline: 'none'
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                                    e.target.style.boxShadow = theme === 'light'
+                                                        ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                        : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -3259,14 +3879,33 @@ const Assistant = () => {
                                 <div className="relative group">
                                     <button
                                         onClick={goToPreviousStep}
-                                        className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                        className="p-2 rounded-lg transition-colors"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+                                            color: theme === 'light' ? '#000000' : '#ffffff'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                ? 'rgba(0, 0, 0, 0.2)'
+                                                : 'rgba(255, 255, 255, 0.2)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                ? 'rgba(0, 0, 0, 0.1)'
+                                                : 'rgba(255, 255, 255, 0.1)';
+                                        }}
                                     >
-                                        <ArrowLeft className="w-4 h-4 text-white" />
+                                        <ArrowLeft className="w-4 h-4" />
                                     </button>
                                     {/* Tooltip */}
-                                    <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
-                    bg-black/80 text-white text-xs rounded-md px-2 py-1 
-                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    <div
+                                        className="absolute -top-9 -left-1/2 -translate-x-1/2 text-xs rounded-md px-2 py-1 
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? '#374151' : '#000000',
+                                            color: theme === 'light' ? '#ffffff' : '#ffffff'
+                                        }}
+                                    >
                                         Add Context
                                     </div>
                                 </div>
@@ -3285,6 +3924,8 @@ const Assistant = () => {
                         onSkip={handleGuidelineSkip}
                         onClose={handleGuidelineClose}
                         totalSteps={totalGuidelineSteps}
+                        colors={colors}
+                        theme={theme}
                     />
                 )}
             </div>
@@ -3292,11 +3933,35 @@ const Assistant = () => {
             {/* Bottom Left Footer */}
             <div className="fixed bottom-0 left-0 flex items-center gap-3 py-4 px-6">
                 <img
-                    src="/ai-navigator-logo.png"
+                    src={theme === 'light' ? "/ai-navigator-dark-logo.png" : "/ai-navigator-logo.png"}
                     alt="Logo"
                     className="w-30 h-6 object-contain"
                 />
+                <button
+                    onClick={() => setShowSettingsModal(true)}
+                    className="p-2 transition-colors"
+                    style={{ color: theme === 'light' ? '#6b7280' : '#9ca3af' }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.color = colors.text;
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.color = theme === 'light' ? '#6b7280' : '#9ca3af';
+                    }}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
             </div>
+
+            {/* Settings Modal */}
+            <SettingsModal
+                show={showSettingsModal}
+                onClose={() => setShowSettingsModal(false)}
+                theme={theme}
+                setTheme={setTheme}
+            />
         </div >
     );
 };

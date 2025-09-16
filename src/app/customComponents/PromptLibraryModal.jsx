@@ -13,7 +13,7 @@ const supabase = createClient(
 
 const ITEMS_PER_PAGE = 1000000000;
 
-const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSourceSelect, onLibraryDocsSelect, selectedLibraryDocs, currentSteps, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery, searchQuery, setSearchQuery }) => {
+const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSourceSelect, onLibraryDocsSelect, selectedLibraryDocs, currentSteps, goToPreviousStep, goToNextStep, searchQueries, setSearchQueries, onClearSearchQuery, searchQuery, setSearchQuery, theme, colors }) => {
 
     console.log("searchQueryyyyyyyyyyy", searchQueries);
     // State for data from Supabase
@@ -231,8 +231,8 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
                 // Fetch templates and group by department
                 const { data: templates, error: templateError } = await supabase
-                    .from('template')
-                    .select('id, temp_name, department_id');
+                    .from('prompt_library')
+                    .select('id, prompt_title, department_id');
 
                 if (templateError) throw templateError;
 
@@ -244,7 +244,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                     }
                     groupedTemplates[deptId].push({
                         id: template.id,
-                        name: template.temp_name
+                        name: template.prompt_title
                     });
                 });
                 setTemplateLibraries(groupedTemplates);
@@ -712,7 +712,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
             processedContent
         );
 
-        clearAllSelections();
+        // clearAllSelections();
         setShowLibraryDropdown(false);
     };
     // Filter documents based on selected template and search query
@@ -751,7 +751,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
             {showLibraryDropdown && (
                 <>
                     {/* Confirmation Modal */}
-                    {showReplaceConfirmation && (
+                    {/* {showReplaceConfirmation && (
                         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 z-[9999]">
                             <div className="border border-gray-300 rounded-lg p-6 w-96 shadow-xl" style={{ backgroundColor: appColors.primaryColor }}>
                                 <h3 className="text-lg font-semibold mb-4 text-white">Replace Prompt?</h3>
@@ -774,11 +774,11 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                 </div>
                             </div>
                         </div>
-                    )}
+                    )} */}
 
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50 no-scrollbar">
                         {/* Main Library Modal */}
-                        <div className="border w-[800px] max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl text-white px-6 py-5 relative font-sans no-scrollbar" style={{ backgroundColor: appColors.primaryColor }}>
+                        <div className="border w-[800px] max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl text-white px-6 py-5 relative font-sans no-scrollbar" style={{ backgroundColor: colors.primaryColor, color: colors.text }}>
                             {/* Step Indicator */}
                             <div className="flex justify-center -mt-2 items-center text-white">
                                 {steps.map((step, idx) => (
@@ -809,7 +809,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                         </div>
 
                                         {/* Step label */}
-                                        <div className="mt-1 text-xs text-[10px] font-medium">
+                                        <div className="mt-1 text-xs text-[10px] font-medium" style={{ color: colors.text }}>
                                             Step {step}
                                         </div>
 
@@ -823,9 +823,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                     onClick={() => {
                                         setShowLibraryDropdown(false);
                                         setIsLoading(false);
-                                        clearAllSelections();
+                                        // clearAllSelections();
                                     }}
-                                    className="text-white -mt-14  hover:text-gray-300 text-2xl"
+                                    className=" -mt-14  hover:text-gray-300 text-2xl"
                                 >
                                     &times;
                                 </button>
@@ -835,7 +835,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                             <div className="border-t border-gray-600 my-0 mt-3 -mx-6"></div>
 
                             {/* Title */}
-                            <h2 className="text-xl font-semibold text-center mb-0 bg-[#2b2b4b] -mx-6 py-2">
+                            <h2 className="text-xl font-semibold text-center mb-0  -mx-6 py-2">
                                 {currentStep === 1 ? 'Prompt Library' : currentStep === 2 ? 'Prompt Library' : 'Prompt Library'}
                             </h2>
 
@@ -872,7 +872,18 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                     value={searchQueryStep1}
                                                     onChange={(e) => setSearchQueryStep1(e.target.value)}
                                                     className="w-full pt-2 pb-2 h-[38px] p-3 rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    style={{ backgroundColor: appColors.primaryColor }}
+                                                    style={{
+                                                        backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                        color: theme === 'light' ? '#000000' : '#ffffff',
+                                                        borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                                        outline: 'none'
+                                                    }}
+                                                    onFocus={(e) => {
+                                                        e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                                        e.target.style.boxShadow = theme === 'light'
+                                                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                            : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                                    }}
                                                 />
                                             </div>
                                             <div className="flex gap-4 mt-4">
@@ -881,7 +892,12 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
 
                                                     {/* Department Filter */}
-                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                    <div
+                                                        className="rounded-md overflow-hidden"
+                                                        style={{
+                                                            border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                        }}
+                                                    >
                                                         <button
                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                             onClick={() => setDepartmentTypeOpen(!departmentTypeOpen)}
@@ -893,7 +909,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                             <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20">
                                                                 {isLoadingData ? (
                                                                     <div className="flex justify-center items-center h-20">
-                                                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2"></div>
                                                                     </div>
                                                                 ) : (
                                                                     <>
@@ -929,7 +945,12 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                     </div>
 
                                                     {/* Template Filter */}
-                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                    <div
+                                                        className="rounded-md overflow-hidden"
+                                                        style={{
+                                                            border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                        }}
+                                                    >
                                                         <button
                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                             onClick={() => setTemplateOpen(!templateOpen)}
@@ -941,7 +962,7 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                             <div className="max-h-[120px] overflow-auto p-1 border-t border-white/20">
                                                                 {isLoadingData ? (
                                                                     <div className="flex justify-center items-center h-20">
-                                                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2"></div>
                                                                     </div>
                                                                 ) : (
                                                                     <>
@@ -992,20 +1013,27 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                         <div className="h-[270px] max-h-[calc(80vh-100px)] overflow-y-auto">
                                                             {isLoadingData ? (
                                                                 <div className="flex justify-center items-center h-full">
-                                                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                                                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 "></div>
                                                                 </div>
                                                             ) : (
                                                                 <>
                                                                     {getFilteredDocuments().length > 0 ? (
                                                                         getFilteredDocuments().map((doc) => (
                                                                             <div key={doc.id} className="relative">
-                                                                                <div className="flex items-center bg-[#2b2b4b] p-2 mx-2 my-1 bg-[#3b3b5b] border hover:bg-white/10 border-white/20 rounded-md cursor-pointer"
+                                                                                <div className="flex items-center  p-2 mx-2 my-1 bg-[#3b3b5b] border hover:bg-white/10 border-white/20 rounded-md cursor-pointer"
+                                                                                    style={{
+                                                                                        backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                                                        color: theme === 'light' ? '#000000' : '#ffffff',
+                                                                                        borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                                                                        outline: 'none'
+                                                                                    }}
                                                                                     onClick={() => handleLibraryDocumentClick(doc)}
                                                                                 >
                                                                                     <input
                                                                                         type="checkbox"
                                                                                         className="mr-2 h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                                                                         checked={selectedLibraryStep1Documents.includes(doc.id)}
+
                                                                                         onChange={(e) => {
                                                                                             e.stopPropagation();
                                                                                             handleLibraryDocumentClick(doc);
@@ -1049,53 +1077,77 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                             {/* Step 2 Content - Selected Template Review */}
 
                             {currentStep === 2 && (
-                                <div className="p-4">
-                                    <div className="p-6 rounded-lg border border-white/20">
-                                        {dynamicFields.length > 0 ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {dynamicFields.map((field, index) => {
-                                                    const isDateField =
-                                                        field.label.toLowerCase().includes("date") ||
-                                                        field.name.toLowerCase().includes("date");
-
-                                                    return (
-                                                        <div key={`field_${index}`}>
-                                                            <label className="block text-gray-300 text-sm mb-1">
-                                                                {field.label}
-                                                            </label>
-
-                                                            {isDateField ? (
-                                                                <input
-                                                                    type="date"
-                                                                    value={dynamicFieldValues[field.name] || ""}
-                                                                    onChange={(e) =>
-                                                                        handleDynamicFieldChange(field.name, e.target.value)
-                                                                    }
-                                                                    className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white [color-scheme:dark] cursor-pointer"
-                                                                />
-                                                            ) : (
-                                                                <input
-                                                                    type="text"
-                                                                    value={dynamicFieldValues[field.name] || ""}
-                                                                    onChange={(e) =>
-                                                                        handleDynamicFieldChange(field.name, e.target.value)
-                                                                    }
-                                                                    className="w-full bg-[#2b2b4b] border border-white/20 rounded-md p-2 text-sm text-white"
-                                                                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center text-gray-400 py-4">
-                                                No fields to display for this template
-                                            </div>
-                                        )}
-
-                                    </div>
-                                </div>
+                               <div className="p-4">
+                               <div 
+                                   className="p-6 rounded-lg border"
+                                   style={{
+                                       borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'
+                                   }}
+                               >
+                                   {dynamicFields.length > 0 ? (
+                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                           {dynamicFields.map((field, index) => {
+                                               const isDateField =
+                                                   field.label.toLowerCase().includes("date") ||
+                                                   field.name.toLowerCase().includes("date");
+                           
+                                               return (
+                                                   <div key={`field_${index}`}>
+                                                       <label 
+                                                           className="block text-sm mb-1"
+                                                           style={{
+                                                               color: theme === 'light' ? '#374151' : '#d1d5db'
+                                                           }}
+                                                       >
+                                                           {field.label}
+                                                       </label>
+                           
+                                                       {isDateField ? (
+                                                           <input
+                                                               type="date"
+                                                               value={dynamicFieldValues[field.name] || ""}
+                                                               onChange={(e) =>
+                                                                   handleDynamicFieldChange(field.name, e.target.value)
+                                                               }
+                                                               className="w-full border rounded-md p-2 text-sm cursor-pointer"
+                                                               style={{
+                                                                   backgroundColor: theme === 'light' ? '#ffffff' : '#2b2b4b',
+                                                                   borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                                                   color: theme === 'light' ? '#000000' : '#ffffff'
+                                                               }}
+                                                           />
+                                                       ) : (
+                                                           <input
+                                                               type="text"
+                                                               value={dynamicFieldValues[field.name] || ""}
+                                                               onChange={(e) =>
+                                                                   handleDynamicFieldChange(field.name, e.target.value)
+                                                               }
+                                                               className="w-full border rounded-md p-2 text-sm"
+                                                               style={{
+                                                                   backgroundColor: theme === 'light' ? '#ffffff' : '#2b2b4b',
+                                                                   borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                                                   color: theme === 'light' ? '#000000' : '#ffffff'
+                                                               }}
+                                                               placeholder={`Enter ${field.label.toLowerCase()}`}
+                                                           />
+                                                       )}
+                                                   </div>
+                                               );
+                                           })}
+                                       </div>
+                                   ) : (
+                                       <div 
+                                           className="text-center py-4"
+                                           style={{
+                                               color: theme === 'light' ? '#9ca3af' : '#9ca3af'
+                                           }}
+                                       >
+                                           No fields to display for this template
+                                       </div>
+                                   )}
+                               </div>
+                           </div>
                             )}
 
                             {/* Step 3 Content - Source Document */}
@@ -1246,56 +1298,98 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                             </div>
 
                                                             {isSearchResultsOpen && (
-                                                                <div className="ml-4 mr-4">
-                                                                    {searchResultsAI.length === 0 ? (
-                                                                        // Show message when no documents found
-                                                                        <div className="p-4 bg-white/5 rounded-md text-center">
-                                                                            <svg
-                                                                                className="w-8 h-8 mx-auto text-gray-400 mb-2"
-                                                                                fill="none"
-                                                                                stroke="currentColor"
-                                                                                viewBox="0 0 24 24"
-                                                                            >
-                                                                                <path
-                                                                                    strokeLinecap="round"
-                                                                                    strokeLinejoin="round"
-                                                                                    strokeWidth={1.5}
-                                                                                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                                />
-                                                                            </svg>
-                                                                            <p className="text-sm text-gray-400">No source documents found </p>
-                                                                        </div>
-                                                                    ) : (
-                                                                        // Show documents when available
-                                                                        <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
-                                                                            {searchResultsAI.map((doc) => (
-                                                                                <div
-                                                                                    key={`search-result-${doc.id}-${doc.type}`}
-                                                                                    className="flex items-center gap-2 p-2 bg-white/5 hover:bg-white/10 rounded-md cursor-pointer"
-                                                                                    onClick={() => handleDocumentClick(doc)}
-                                                                                >
-                                                                                    {/* ✅ Checkbox instead of icon */}
-                                                                                    <input
-                                                                                        type="checkbox"
-                                                                                        checked={selectedDocuments.includes(doc.id)}
-                                                                                        readOnly
-                                                                                        className="accent-blue-500 cursor-pointer"
-                                                                                    />
-
-                                                                                    <div className="flex-1">
-                                                                                        <div className="text-xs text-white/90">{doc.title}</div>
-                                                                                        {doc.type && (
-                                                                                            <div className="text-[10px] text-gray-400 mt-1">
-                                                                                                Type: {doc.type.toUpperCase()}
-                                                                                            </div>
-                                                                                        )}
-                                                                                    </div>
-                                                                                </div>
-                                                                            ))}
-                                                                        </div>
-
-                                                                    )}
-                                                                </div>
+                                                             <div className="ml-4 mr-4">
+                                                             {searchResultsAI.length === 0 ? (
+                                                                 // Show message when no documents found
+                                                                 <div 
+                                                                     className="p-4 rounded-md text-center"
+                                                                     style={{
+                                                                         backgroundColor: theme === 'light' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)'
+                                                                     }}
+                                                                 >
+                                                                     <svg
+                                                                         className="w-8 h-8 mx-auto mb-2"
+                                                                         fill="none"
+                                                                         stroke="currentColor"
+                                                                         viewBox="0 0 24 24"
+                                                                         style={{
+                                                                             color: theme === 'light' ? '#9ca3af' : '#9ca3af'
+                                                                         }}
+                                                                     >
+                                                                         <path
+                                                                             strokeLinecap="round"
+                                                                             strokeLinejoin="round"
+                                                                             strokeWidth={1.5}
+                                                                             d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                         />
+                                                                     </svg>
+                                                                     <p 
+                                                                         className="text-sm"
+                                                                         style={{
+                                                                             color: theme === 'light' ? '#6b7280' : '#9ca3af'
+                                                                         }}
+                                                                     >
+                                                                         No source documents found
+                                                                     </p>
+                                                                 </div>
+                                                             ) : (
+                                                                 // Show documents when available
+                                                                 <div className="max-h-[170px] overflow-y-auto grid grid-cols-1 gap-1.5">
+                                                                     {searchResultsAI.map((doc) => (
+                                                                         <div
+                                                                             key={`search-result-${doc.id}-${doc.type}`}
+                                                                             className="flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors"
+                                                                             style={{
+                                                                                 backgroundColor: theme === 'light' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)',
+                                                                             }}
+                                                                             onMouseEnter={(e) => {
+                                                                                 e.currentTarget.style.backgroundColor = theme === 'light' 
+                                                                                     ? 'rgba(0, 0, 0, 0.1)' 
+                                                                                     : 'rgba(255, 255, 255, 0.1)';
+                                                                             }}
+                                                                             onMouseLeave={(e) => {
+                                                                                 e.currentTarget.style.backgroundColor = theme === 'light' 
+                                                                                     ? 'rgba(0, 0, 0, 0.05)' 
+                                                                                     : 'rgba(255, 255, 255, 0.05)';
+                                                                             }}
+                                                                             onClick={() => handleDocumentClick(doc)}
+                                                                         >
+                                                                             {/* Checkbox */}
+                                                                             <input
+                                                                                 type="checkbox"
+                                                                                 checked={selectedDocuments.includes(doc.id)}
+                                                                                 readOnly
+                                                                                 className="cursor-pointer"
+                                                                                 style={{
+                                                                                     accentColor: theme === 'light' ? '#3b82f6' : '#3b82f6'
+                                                                                 }}
+                                                                             />
+                                                         
+                                                                             <div className="flex-1">
+                                                                                 <div 
+                                                                                     className="text-xs"
+                                                                                     style={{
+                                                                                         color: theme === 'light' ? '#374151' : 'rgba(255, 255, 255, 0.9)'
+                                                                                     }}
+                                                                                 >
+                                                                                     {doc.title}
+                                                                                 </div>
+                                                                                 {doc.type && (
+                                                                                     <div 
+                                                                                         className="text-[10px] mt-1"
+                                                                                         style={{
+                                                                                             color: theme === 'light' ? '#6b7280' : 'rgba(255, 255, 255, 0.4)'
+                                                                                         }}
+                                                                                     >
+                                                                                         Type: {doc.type.toUpperCase()}
+                                                                                     </div>
+                                                                                 )}
+                                                                             </div>
+                                                                         </div>
+                                                                     ))}
+                                                                 </div>
+                                                             )}
+                                                         </div>
                                                             )}
                                                         </div>
                                                     )}
@@ -1324,7 +1418,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                             "market_categories": []
                                                                         });
                                                                     }}
-                                                                    className="w-full p-2 mt-2 rounded bg-white/10 border border-white/20 text-sm appearance-none pr-8" // Added appearance-none and pr-8
+                                                                    className="w-full p-2 mt-2 rounded bg-white/10 border border-white/20 text-sm appearance-none pr-8" 
+                                                                    style={{
+                                                                        border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                    }}// Added appearance-none and pr-8
                                                                 >
                                                                     <option value="select" disabled hidden>
                                                                         Select Content source
@@ -1361,7 +1458,18 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                         }
                                                                     }}
                                                                     className="w-full pt-3 pb-3 h-[40px] p-3 pr-[80px] rounded-full border border-gray-300 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                    style={{ backgroundColor: appColors.primaryColor }}
+                                                                    style={{
+                                                                        backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
+                                                                        color: theme === 'light' ? '#000000' : '#ffffff',
+                                                                        borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)',
+                                                                        outline: 'none'
+                                                                    }}
+                                                                    onFocus={(e) => {
+                                                                        e.target.style.borderColor = theme === 'light' ? '#3b82f6' : '#60a5fa';
+                                                                        e.target.style.boxShadow = theme === 'light'
+                                                                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                                                            : '0 0 0 3px rgba(96, 165, 250, 0.2)';
+                                                                    }}
                                                                     onKeyDown={(e) => e.key === 'Enter' && handleManualSearchSubmit()}
                                                                 />
                                                                 <div className="relative group">
@@ -1398,7 +1506,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                             {contentSource === 'voc' ? (
                                                                 <>
                                                                     {/* Video Type Filter */}
-                                                                    <div className="border border-white/20 rounded-md overflow-hidden no-scrollbar">
+                                                                    <div className="border rounded-md overflow-hidden no-scrollbar"
+                                                                       style={{
+                                                                        border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                    }}>
                                                                         <button
                                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                             onClick={() => setContentTypeOpen(!contentTypeOpen)}
@@ -1424,7 +1535,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                     </div>
 
                                                                     {/* Classifications Filter */}
-                                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                                    <div className="border rounded-md overflow-hidden"
+                                                                       style={{
+                                                                        border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                    }}>
                                                                         <button
                                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                             onClick={() => setChallengesOpen(!challengesOpen)}
@@ -1451,7 +1565,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                 </>
                                                             ) : contentSource === 'vob' ? (
                                                                 /* VoB Filters */
-                                                                <div className="border border-white/20 rounded-md overflow-hidden">
+                                                                <div className="border border-white/20 rounded-md overflow-hidden"
+                                                                style={{
+                                                                    border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                }}>
                                                                     <button
                                                                         className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                         onClick={() => setContentTypeOpen(!contentTypeOpen)}
@@ -1482,7 +1599,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
                                                                 <>
                                                                     {/* Market Categories Filter */}
-                                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                                    <div className="border border-white/20 rounded-md overflow-hidden"
+                                                                       style={{
+                                                                        border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                    }}>
                                                                         <button
                                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                             onClick={() => setContentTypeOpen(!contentTypeOpen)}
@@ -1511,7 +1631,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                     </div>
 
                                                                     {/* Content Categories Filter */}
-                                                                    <div className="border border-white/20 rounded-md overflow-hidden">
+                                                                    <div className="border border-white/20 rounded-md overflow-hidden"
+                                                                        style={{
+                                                                            border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                        }}>
                                                                         <button
                                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                             onClick={() => setContentTypeOpen(!contentTypeOpen)}
@@ -1637,13 +1760,34 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                     <button
                                         onClick={goToNextStep}
                                         className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                ? 'rgba(0, 0, 0, 0.2)'
+                                                : 'rgba(255, 255, 255, 0.2)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                ? 'rgba(0, 0, 0, 0.1)'
+                                                : 'rgba(255, 255, 255, 0.1)';
+                                        }}
                                     >
-                                        <ArrowRight className="w-4 h-4 text-white" />
+                                        <ArrowRight className="w-4 h-4 text-white"
+                                            style={{
+                                                color: theme === 'light' ? '#000000' : '#ffffff'
+                                            }}
+                                        />
                                     </button>
                                     {/* Tooltip */}
                                     <div className="absolute -top-9 -left-1/2 -translate-x-1/2 
                     bg-black/80 text-white text-xs rounded-md px-2 py-1 
-                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                                        style={{
+                                            backgroundColor: theme === 'light' ? '#374151' : '#000000',
+                                            color: theme === 'light' ? '#ffffff' : '#ffffff'
+                                        }}>
                                         Add Context
                                     </div>
                                 </div>

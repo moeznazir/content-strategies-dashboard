@@ -14,6 +14,7 @@ import RankingModal from "./CustomRankingModal";
 import { formatUrl } from "@/lib/utils";
 import FileContentViewer from "./FilePreview";
 import GenericModal from "./GenericExpandablModal";
+import { Tooltip } from "./CustomTooltip";
 
 
 const ItemType = "COLUMN";
@@ -5733,18 +5734,18 @@ const DraggableTable = ({
                                                     })()}
                                                 </div>
                                             ) : column.id === "file_type_icon" ? (
-                                                
+
                                                 <div className="flex justify-center">
-                                                     <button
+                                                    <button
                                                         onClick={() => setFileRow(row)}
                                                         className="text-blue-500 hover:text-blue-700 mr-2 transition-colors"
                                                         title="Expand preview"
                                                     >
                                                         <FaExpandAlt size={18} />
                                                     </button>
-                                                  {column.render ? column.render(row) : row[column.id] ?? "-"}
+                                                    {column.render ? column.render(row) : row[column.id] ?? "-"}
                                                 </div>
-                                              ): column.id === "Guest" ? (
+                                            ) : column.id === "Guest" ? (
                                                 <div className="flex gap-1">
 
                                                     {column.render ? column.render(row) : row[column.id] ?? "-"}
@@ -5754,11 +5755,14 @@ const DraggableTable = ({
 
                                                     {column.render ? column.render(row) : row[column.id] ?? "-"}
                                                 </div>
-                                            ) : column.id === "Description" ? (
-                                                <div className="flex gap-1">
+                                            ) : column.id === "Description" || column.id === "description" ? (
+                                                <Tooltip content={column.render ? column.render(row) : row[column.id] ?? "-"}>
+                                                    <div className="line-clamp-2 truncate">
+                                                        {column.render ? column.render(row) : row[column.id] ?? "-"}
+                                                    </div>
+                                                </Tooltip>
 
-                                                    {column.render ? column.render(row) : row[column.id] ?? "-"}
-                                                </div>
+
                                             ) : column.id === "Formate" ? (
                                                 <div className="flex gap-1">
 

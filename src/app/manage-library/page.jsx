@@ -63,14 +63,14 @@ const ManageLibrary = () => {
             { label: "Actions", id: "action" },
         ],
         templates: [
-            { label: "Template Name", id: "temp_name" },
+            { label: "Template Name", id: "prompt_title" },
             { label: "Department Name", id: "dept_name" },
-            { label: "Description", id: "temp_desc" },
+            { label: "Description", id: "prompt_description" },
             { label: "Actions", id: "action" },
         ],
         documents: [
             { label: "Prompt Title", id: "doc_title" },
-            { label: "Prompt Name", id: "temp_name" },
+            { label: "Prompt Name", id: "prompt_title" },
             { label: "Description", id: "doc_details" },
             { label: "Propmpt Template", id: "dynamic_fields_description" },
             { label: "Actions", id: "action" },
@@ -84,7 +84,7 @@ const ManageLibrary = () => {
             { label: "Description", key: "dept_desc", placeholder: "Enter department description", type: "textarea", required: false },
         ],
         templates: [
-            { label: "Template Name", key: "temp_name", placeholder: "Enter template name", type: "text", required: true },
+            { label: "Template Name", key: "prompt_title", placeholder: "Enter template name", type: "text", required: true },
             {
                 label: "Department Name",
                 key: "department_id",
@@ -93,7 +93,7 @@ const ManageLibrary = () => {
                 options: departmentOptions,
                 required: true
             },
-            { label: "Description", key: "temp_desc", placeholder: "Enter template description", type: "textarea", required: false },
+            { label: "Description", key: "prompt_description", placeholder: "Enter template description", type: "textarea", required: false },
 
         ],
         documents: [
@@ -175,8 +175,8 @@ const ManageLibrary = () => {
     const fetchTemplateOptions = async () => {
         const { data, error } = await supabase
             .from('template')
-            .select('id, temp_name, department (id, dept_name)')
-            .order('temp_name', { ascending: true });
+            .select('id, prompt_title, department (id, dept_name)')
+            .order('prompt_title', { ascending: true });
 
         if (error) {
             console.log('Error fetching templates:', error);
@@ -185,7 +185,7 @@ const ManageLibrary = () => {
 
         return data.map(temp => ({
             value: temp.id,
-            label: `${temp.temp_name} (${temp.department.dept_name})`
+            label: `${temp.prompt_title} (${temp.department.dept_name})`
         }));
     };
 
@@ -690,7 +690,7 @@ const ManageLibrary = () => {
                     setTotalRecords={setTotalRecords}
                     setCurrentPage={setCurrentPage}
                     fetchUsers={fetchData}
-                    tableName="template"
+                    tableName="prompt_library"
                     createRecord="Add Template"
                     updateRecord="Edit Template"
                     formatedValueDashboard={false}
@@ -712,7 +712,7 @@ const ManageLibrary = () => {
                     setTotalRecords={setTotalRecords}
                     setCurrentPage={setCurrentPage}
                     fetchUsers={fetchData}
-                    tableName="template"
+                    tableName="prompt_library"
                     createRecord="Add Template"
                     updateRecord="Edit Template"
                     formatedValueDashboard={false}
