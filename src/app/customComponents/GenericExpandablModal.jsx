@@ -11,7 +11,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
     const [filteredSections, setFilteredSections] = useState({});
     const [isGuestSectionCollapsed, setIsGuestSectionCollapsed] = useState(true);
     const [copiedIndex, setCopiedIndex] = useState(null);
-    const ALWAYS_SHOW_FIELDS = ['Additional_Guest_Projects', 'Prep_Call'];
+    const ALWAYS_SHOW_FIELDS = ['Prep_Call'];
     const handleCopy = (url, index) => {
         navigator.clipboard.writeText(url);
         setCopiedIndex(index);
@@ -240,7 +240,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
             // If we found this key in a Full Episode group, skip further processing
             if (foundInGroup) return;
 
-            // ✅ Always show fields
+            // ✅ Always show fields (except we conditionally handle Additional_Guest_Projects below)
             if (ALWAYS_SHOW_FIELDS.includes(key)) {
                 const parsed = safeParseJSON(data[key]);
                 sections[key] = {
@@ -248,6 +248,32 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
                     data: Array.isArray(parsed) ? parsed : [{ [key]: parsed }]
                 };
                 return;
+            }
+
+            // Special-case: Only show Additional_Guest_Projects when data exists
+            if (key === 'Additional_Guest_Projects') {
+                const parsed = safeParseJSON(data[key]);
+                let items = [];
+                if (Array.isArray(parsed)) {
+                    items = parsed.filter(it => {
+                        if (it === null || it === undefined || it === '') return false;
+                        if (typeof it === 'object') return Object.keys(it).length > 0 && hasValidData(it);
+                        if (typeof it === 'string') return it.trim().length > 0;
+                        return true;
+                    });
+                } else if (parsed && typeof parsed === 'object') {
+                    items = hasValidData(parsed) ? [parsed] : [];
+                } else if (typeof parsed === 'string' && parsed.trim().length > 0) {
+                    items = [{ [key]: parsed }];
+                }
+
+                if (items.length > 0) {
+                    sections[key] = {
+                        title: titleCase(key),
+                        data: items
+                    };
+                }
+                return; // whether added or not, we handled this key
             }
 
             // Skip normalized fields
@@ -331,10 +357,30 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
     };
 
     const toggleSection = (sectionId) => {
-        setCollapsedSections(prev => ({
-            ...prev,
-            [sectionId]: !prev[sectionId]
-        }));
+        // Ensure only one dropdown is open at a time
+        setIsGuestSectionCollapsed(true);
+        setCollapsedSections(prev => {
+            const next = { ...prev };
+
+            // Collapse everything first
+            Object.keys(next).forEach(k => { next[k] = true; });
+
+            // If it's a child of Full Episodes, keep parent open
+            const fullEpisodesChildren = filteredSections?.FULL_EPISODES_SECTION?.children || {};
+            if (fullEpisodesChildren[sectionId]) {
+                next["FULL_EPISODES_SECTION"] = false;
+                next[sectionId] = !prev[sectionId];
+                // Close other children
+                Object.keys(fullEpisodesChildren).forEach(childKey => {
+                    if (childKey !== sectionId) next[childKey] = true;
+                });
+            } else {
+                // Top-level section toggle
+                next[sectionId] = !prev[sectionId];
+            }
+
+            return next;
+        });
     };
 
     const toggleExpandField = (fieldId) => {
@@ -818,7 +864,15 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
                             <div className="mb-6">
                                 <div
                                     className={`flex justify-between items-center cursor-pointer p-3 rounded-lg hover:bg-white/10 border border-gray-600 transition-all duration-200 ${isGuestSectionCollapsed ? 'bg-gray-800/50' : 'bg-gray-800/70 shadow-md'}`}
-                                    onClick={() => setIsGuestSectionCollapsed(!isGuestSectionCollapsed)}
+                                    onClick={() => {
+                                        // Only one dropdown open at a time
+                                        setCollapsedSections(prev => {
+                                            const next = { ...prev };
+                                            Object.keys(next).forEach(k => { next[k] = true; });
+                                            return next;
+                                        });
+                                        setIsGuestSectionCollapsed(prev => !prev);
+                                    }}
                                 >
                                     <h3 className="text-lg font-semibold text-gray-200 flex items-center gap-2">
                                         <span className="px-2 py-1 rounded-md text-sm">
@@ -953,9 +1007,27 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
 
                         {/* Sections */}
                         <div className="space-y-4">
-                            {Object.entries(filteredSections).map(([sectionId, sectionData]) =>
-                                renderSection(sectionId, sectionData)
-                            )}
+                            {(() => {
+                                // Prioritize order: Prep Calls -> Full Episodes -> Additional Guest Projects -> others
+                                const prioritized = ["Prep_Call", "FULL_EPISODES_SECTION", "Additional_Guest_Projects"]; 
+                                const entries = Object.entries(filteredSections || {});
+                                const seen = new Set();
+
+                                const ordered = [];
+                                prioritized.forEach(key => {
+                                    const found = entries.find(([k]) => k === key);
+                                    if (found) {
+                                        ordered.push(found);
+                                        seen.add(key);
+                                    }
+                                });
+                                // Append the rest
+                                entries.forEach(([k, v]) => {
+                                    if (!seen.has(k)) ordered.push([k, v]);
+                                });
+
+                                return ordered.map(([sectionId, sectionData]) => renderSection(sectionId, sectionData));
+                            })()}
                         </div>
                     </div>
                 </div>
