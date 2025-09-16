@@ -901,7 +901,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                         <button
                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                             onClick={() => setDepartmentTypeOpen(!departmentTypeOpen)}
-                                                        >
+                                                            style={{
+                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                            }}>
                                                             <span>Department</span>
                                                             <span>{departmentTypeOpen ? '▼' : '◀'}</span>
                                                         </button>
@@ -954,7 +956,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                         <button
                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                             onClick={() => setTemplateOpen(!templateOpen)}
-                                                        >
+                                                            style={{
+                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                            }}>
                                                             <span>Templates</span>
                                                             <span>{templateOpen ? '▼' : '◀'}</span>
                                                         </button>
@@ -1005,7 +1009,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
 
 
                                                     <div className="border border-white/20 rounded-md">
-                                                        <div className="p-2 border-b border-white/20">
+                                                        <div className="p-2 border-b border-white/20"   style={{
+                                                                    borderBottom: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                }}>
                                                             <div className="text-blue-300 font-medium text-xs">
                                                                 Prompts ({getFilteredDocuments().length})
                                                             </div>
@@ -1513,7 +1519,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                         <button
                                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                             onClick={() => setContentTypeOpen(!contentTypeOpen)}
-                                                                        >
+                                                                            style={{
+                                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                            }}>
                                                                             <span>Filter By Content Type</span>
                                                                             <span>{contentTypeOpen ? '▼' : '▶'}</span>
                                                                         </button>
@@ -1542,7 +1550,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                         <button
                                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                             onClick={() => setChallengesOpen(!challengesOpen)}
-                                                                        >
+                                                                            style={{
+                                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                            }}>
                                                                             <span>Filter By Classifications</span>
                                                                             <span>{challengesOpen ? '▼' : '▶'}</span>
                                                                         </button>
@@ -1572,7 +1582,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                     <button
                                                                         className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                         onClick={() => setContentTypeOpen(!contentTypeOpen)}
-                                                                    >
+                                                                        style={{
+                                                                            border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                        }}>
                                                                         <span>Filter By Category</span>
                                                                         <span>{contentTypeOpen ? '▼' : '▶'}</span>
                                                                     </button>
@@ -1606,7 +1618,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                         <button
                                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                             onClick={() => setContentTypeOpen(!contentTypeOpen)}
-                                                                        >
+                                                                            style={{
+                                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                            }}>
                                                                             <span>Filter By Market Categories</span>
                                                                             <span>{contentTypeOpen ? '▼' : '▶'}</span>
                                                                         </button>
@@ -1638,7 +1652,9 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                                         <button
                                                                             className="flex justify-between items-center w-full p-2 text-left text-xs font-medium"
                                                                             onClick={() => setContentTypeOpen(!contentTypeOpen)}
-                                                                        >
+                                                                            style={{
+                                                                                border: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                            }}>
                                                                             <span>Filter By Content Categories</span>
                                                                             <span>{contentTypeOpen ? '▼' : '▶'}</span>
                                                                         </button>
@@ -1668,7 +1684,10 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                                         {/* Right Results - 2/3 width */}
                                                         <div className="w-2/3 rounded-md border overflow-hidden h-[270px]">
                                                             <div className="border border-white/20 rounded-md h-full">
-                                                                <div className="p-2 border-b border-white/20">
+                                                                <div className="p-2 border-b border-white/20"
+                                                                  style={{
+                                                                    borderBottom: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                                }}>
                                                                     <div className="text-blue-300 font-medium text-xs">
                                                                         {contentSource === 'voc' ? 'Full Episodes' : 'Files'} ({searchResults.length} results)
                                                                     </div>
