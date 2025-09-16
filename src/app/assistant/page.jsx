@@ -219,7 +219,7 @@ const Assistant = () => {
     };
     useEffect(() => {
         // Load theme from localStorage on mount
-        const savedTheme = localStorage.getItem('assistantTheme') || 'dark';
+        const savedTheme = localStorage.getItem('assistantTheme') || 'light';
         setTheme(savedTheme);
     }, []);
 
