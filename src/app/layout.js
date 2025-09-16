@@ -22,35 +22,35 @@ export default function RootLayout({ children }) {
     return () => clearTimeout(timer);
   }, []);
   
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Prevent inspect and dev tools
-      const disableDevTools = (e) => {
-        if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-            (e.ctrlKey && e.shiftKey && e.key === 'J') ||
-            (e.ctrlKey && e.key === 'U')) {
-          e.preventDefault();
-          alert('For Security Reasons Developer tools are disabled for this site');
-        }
-      };
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     // Prevent inspect and dev tools
+  //     const disableDevTools = (e) => {
+  //       if (e.key === 'F12' || 
+  //           (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+  //           (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+  //           (e.ctrlKey && e.key === 'U')) {
+  //         e.preventDefault();
+  //         alert('For Security Reasons Developer tools are disabled for this site');
+  //       }
+  //     };
 
-      // Prevent right click
-      const disableContextMenu = (e) => {
-        e.preventDefault();
-        alert('For Security Reasons  Developer tools are disabled for this site');
-      };
+  //     // Prevent right click
+  //     const disableContextMenu = (e) => {
+  //       e.preventDefault();
+  //       alert('For Security Reasons  Developer tools are disabled for this site');
+  //     };
 
-      document.addEventListener('keydown', disableDevTools);
-      document.addEventListener('contextmenu', disableContextMenu);
+  //     document.addEventListener('keydown', disableDevTools);
+  //     document.addEventListener('contextmenu', disableContextMenu);
 
-      // Cleanup
-      return () => {
-        document.removeEventListener('keydown', disableDevTools);
-        document.removeEventListener('contextmenu', disableContextMenu);
-      };
-    }
-  }, []);
+  //     // Cleanup
+  //     return () => {
+  //       document.removeEventListener('keydown', disableDevTools);
+  //       document.removeEventListener('contextmenu', disableContextMenu);
+  //     };
+  //   }
+  // }, []);
   return (
     <html lang="en" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
       <head>

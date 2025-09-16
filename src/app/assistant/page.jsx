@@ -271,13 +271,13 @@ const Assistant = () => {
 
     const ModelSelector = () => {
         const [showLegacy, setShowLegacy] = useState(false);
-    
+
         const models = [
             { id: "gpt-5", name: "GPT-5", description: "Flagship model" },
             { id: "gpt-5-thinking", name: "GPT-5 Thinking", description: "Get more thorough answers" },
             { id: "gpt-5-pro", name: "GPT-5 Pro", description: "Research-grade intelligence" },
         ];
-    
+
         const legacyModels = [
             { id: "gpt-4o", name: "GPT-4o", description: "Great for most tasks" },
             { id: "gpt-4-5", name: "GPT-4.5 (RESEARCH PREVIEW)", description: "Good for writing and exploring ideas" },
@@ -286,7 +286,7 @@ const Assistant = () => {
             { id: "o4-mini", name: "o4-mini", description: "Fastest at advanced reasoning" },
             { id: "gpt-4-1", name: "GPT-4.1", description: "Great for quick coding and analysis" },
         ];
-    
+
         return (
             <div
                 className="absolute left-0 top-full mt-2 z-50 w-64 border rounded-lg shadow-lg"
@@ -298,7 +298,7 @@ const Assistant = () => {
                 <div className="p-2">
                     <h3
                         className="text-sm font-semibold mb-2 px-2"
-                        style={{ 
+                        style={{
                             color: theme === 'light' ? '#000000' : '#ffffff'
                         }}
                     >
@@ -313,7 +313,7 @@ const Assistant = () => {
                                     backgroundColor: selectedModel === model.name
                                         ? theme === 'light' ? '#3b82f6' : '#2563eb' // blue for selected
                                         : 'transparent',
-                                    color: selectedModel === model.name 
+                                    color: selectedModel === model.name
                                         ? '#ffffff' // white text for selected
                                         : (theme === 'light' ? '#000000' : '#ffffff')
                                 }}
@@ -332,8 +332,8 @@ const Assistant = () => {
                                     if (selectedModel !== model.name) {
                                         e.currentTarget.style.backgroundColor = 'transparent';
                                     } else {
-                                        e.currentTarget.style.backgroundColor = theme === 'light' 
-                                            ? '#3b82f6' 
+                                        e.currentTarget.style.backgroundColor = theme === 'light'
+                                            ? '#3b82f6'
                                             : '#2563eb';
                                     }
                                 }}
@@ -343,7 +343,7 @@ const Assistant = () => {
                                 </div>
                                 <div
                                     className="text-xs"
-                                    style={{ 
+                                    style={{
                                         color: selectedModel === model.name
                                             ? 'rgba(255, 255, 255, 0.8)' // lighter white for description when selected
                                             : (theme === 'light' ? '#6b7280' : '#d1d5db')
@@ -354,11 +354,11 @@ const Assistant = () => {
                             </div>
                         ))}
                     </div>
-    
+
                     {/* Legacy toggle */}
                     <div
                         className="mt-2 pt-2"
-                        style={{ 
+                        style={{
                             borderColor: theme === 'light' ? '#e5e7eb' : '#404040'
                         }}
                     >
@@ -386,7 +386,7 @@ const Assistant = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
-    
+
                         {showLegacy && (
                             <div className="space-y-1 max-h-60 overflow-y-auto mt-2">
                                 {legacyModels.map((model) => (
@@ -397,7 +397,7 @@ const Assistant = () => {
                                             backgroundColor: selectedModel === model.name
                                                 ? theme === 'light' ? '#3b82f6' : '#2563eb' // blue for selected
                                                 : 'transparent',
-                                            color: selectedModel === model.name 
+                                            color: selectedModel === model.name
                                                 ? '#ffffff' // white text for selected
                                                 : (theme === 'light' ? '#000000' : '#ffffff')
                                         }}
@@ -416,8 +416,8 @@ const Assistant = () => {
                                             if (selectedModel !== model.name) {
                                                 e.currentTarget.style.backgroundColor = 'transparent';
                                             } else {
-                                                e.currentTarget.style.backgroundColor = theme === 'light' 
-                                                    ? '#3b82f6' 
+                                                e.currentTarget.style.backgroundColor = theme === 'light'
+                                                    ? '#3b82f6'
                                                     : '#2563eb';
                                             }
                                         }}
@@ -427,7 +427,7 @@ const Assistant = () => {
                                         </div>
                                         <div
                                             className="text-xs"
-                                            style={{ 
+                                            style={{
                                                 color: selectedModel === model.name
                                                     ? 'rgba(255, 255, 255, 0.8)' // lighter white for description when selected
                                                     : (theme === 'light' ? '#6b7280' : '#d1d5db')
@@ -1865,16 +1865,22 @@ const Assistant = () => {
                             currentMessages.map((msg, index) => (
                                 <div key={`${msg.id}-${index}`} className="w-full space-y-4 mb-6">
                                     <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`rounded-lg px-4 py-3 max-w-3xl break-words overflow-hidden ${msg.role === 'user' ? 'bg-white/10 text-white' : ''}`} style={{ color: colors.text }}>
+                                        <div
+                                            className={`rounded-2xl px-4 py-2 max-w-3xl break-words ${msg.role === 'user'
+                                                ? theme === 'light'
+                                                    ? 'bg-gray-100 text-gray-900'
+                                                    : 'bg-gray-700 text-white'
+                                                : ''
+                                                }`}
+                                        >
                                             {msg.role === 'assistant' ? (
-                                                <div className="message-content">
-                                                    {formatPlainTextWithStyling(msg.content)}
-                                                </div>
+                                                <div className="message-content">{formatPlainTextWithStyling(msg.content)}</div>
                                             ) : (
                                                 <div className="whitespace-pre-wrap">{msg.content}</div>
                                             )}
                                         </div>
                                     </div>
+
                                 </div>
                             ))
                         )}
@@ -2345,20 +2351,34 @@ const Assistant = () => {
                         {tabs
                             .filter(tab => !(tab.id === 'library' && searchQuery.trim() !== ''))
                             .map((tab) => (
-                                <div key={tab.id} className="relative" onMouseEnter={() => handleMouseEnter(tab.id)} onMouseLeave={handleMouseLeave}>
+                                <div
+                                    key={tab.id}
+                                    className="relative"
+                                    onMouseEnter={() => handleMouseEnter(tab.id)}
+                                    onMouseLeave={handleMouseLeave}
+                                >
                                     {/* Tab button */}
                                     <button
                                         onClick={() => handleTabClick(tab.id)}
-                                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center ${activeTab === tab.id
-                                            ? theme === 'light'
-                                                ? 'text-gray-800' // Dark text for light background
-                                                : 'bg-blue-600 text-white'
-                                            : 'text-white hover:bg-white/10'
+                                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center 
+            ${activeTab === tab.id
+                                                ? theme === 'light'
+                                                    ? 'text-gray-800'
+                                                    : 'bg-blue-600 text-white'
+                                                : 'text-white hover:bg-white/10'
                                             }`}
                                         style={{
-                                            color: activeTab === tab.id && theme === 'light' ? colors.text : colors.text,
+                                            color:
+                                                activeTab === tab.id && theme === 'light'
+                                                    ? colors.text
+                                                    : colors.text,
                                             borderColor: colors.border,
-                                            backgroundColor: activeTab === tab.id && theme === 'light' ? colors.activeBackground : 'transparent'
+                                            backgroundColor:
+                                                activeTab === tab.id && theme === 'light'
+                                                    ? colors.activeBackground
+                                                    : activeTab === tab.id && theme === 'dark'
+                                                        ? '' // leave empty so Tailwind's bg-blue-600 applies
+                                                        : 'transparent',
                                         }}
                                     >
                                         {tab.label}
@@ -2373,11 +2393,15 @@ const Assistant = () => {
                                                 style={{
                                                     backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
                                                     color: theme === 'light' ? '#000000' : '#ffffff',
-                                                    border: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                                    border: theme === 'light' ? '1px solid #e5e7eb' : 'none',
                                                 }}
                                             >
                                                 <p className="mb-2">
-                                                    {tabMessages[tab.id][Math.floor(Math.random() * tabMessages[tab.id].length)]}
+                                                    {
+                                                        tabMessages[tab.id][
+                                                        Math.floor(Math.random() * tabMessages[tab.id].length)
+                                                        ]
+                                                    }
                                                 </p>
                                                 <a
                                                     href="#"
@@ -2386,10 +2410,12 @@ const Assistant = () => {
                                                         color: theme === 'light' ? '#2563eb' : '#60a5fa',
                                                     }}
                                                     onMouseEnter={(e) => {
-                                                        e.currentTarget.style.color = theme === 'light' ? '#1d4ed8' : '#93c5fd';
+                                                        e.currentTarget.style.color =
+                                                            theme === 'light' ? '#1d4ed8' : '#93c5fd';
                                                     }}
                                                     onMouseLeave={(e) => {
-                                                        e.currentTarget.style.color = theme === 'light' ? '#2563eb' : '#60a5fa';
+                                                        e.currentTarget.style.color =
+                                                            theme === 'light' ? '#2563eb' : '#60a5fa';
                                                     }}
                                                     onClick={(e) => {
                                                         e.preventDefault();
@@ -2405,7 +2431,7 @@ const Assistant = () => {
                                                 style={{
                                                     backgroundColor: theme === 'light' ? '#ffffff' : '#3b3b5b',
                                                     borderRight: theme === 'light' ? '1px solid #e5e7eb' : 'none',
-                                                    borderBottom: theme === 'light' ? '1px solid #e5e7eb' : 'none'
+                                                    borderBottom: theme === 'light' ? '1px solid #e5e7eb' : 'none',
                                                 }}
                                             ></div>
                                         </div>
@@ -2413,6 +2439,7 @@ const Assistant = () => {
                                 </div>
                             ))}
                     </div>
+
 
                 </div>
 

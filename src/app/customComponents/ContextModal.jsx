@@ -1093,81 +1093,81 @@ const ContextModal = ({ showContextModal, setShowContextModal, onDocSelect, curr
                                                 <div className="w-2/3 rounded-md border overflow-hidden h-[270px]">
                                                     <div className="border border-white/20 rounded-md h-full">
                                                         <div className="p-2 border-b border-white/20"
-                                                          style={{
-                                                            borderBottom: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
-                                                        }}>
+                                                            style={{
+                                                                borderBottom: `1px solid ${theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.2)'}`
+                                                            }}>
                                                             <div className="text-blue-300 font-medium text-xs">
                                                                 {contentSource === 'voc' ? 'Full Episodes' : 'Files'} ({searchResults.length} results)
                                                             </div>
                                                         </div>
                                                         <div className="h-[234px] overflow-y-auto">
-    {isLoading ? (
-        <div className="flex items-center justify-center -mt-2 h-full">
-            <svg 
-                className="animate-spin h-8 w-8" 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
-                viewBox="0 0 24 24"
-                style={{
-                    color: theme === 'light' ? '#3b82f6' : '#3b82f6'
-                }}
-            >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-        </div>
-    ) : searchResults.length > 0 ? (
-        searchResults.map((doc) => (
-            <div
-                key={doc.id}
-                className="flex items-center p-2 mx-2 my-1 border rounded-md cursor-pointer transition-colors"
-                style={{
-                    backgroundColor: theme === 'light' ? '#f9fafb' : '#3b3b5b',
-                    borderColor: theme === 'light' ? '#e5e7eb' : 'rgba(255, 255, 255, 0.2)'
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = theme === 'light' 
-                        ? 'rgba(0, 0, 0, 0.05)' 
-                        : 'rgba(255, 255, 255, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = theme === 'light' 
-                        ? '#f9fafb' 
-                        : '#3b3b5b';
-                }}
-                onClick={() => handleDocumentClick(doc)}
-            >
-                <input
-                    type="checkbox"
-                    className="mr-2 h-3 w-3 rounded focus:ring-2"
-                    style={{
-                        borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.3)',
-                        accentColor: theme === 'light' ? '#3b82f6' : '#3b82f6'
-                    }}
-                    checked={selectedDocuments.includes(doc.id)}
-                    onChange={() => handleDocumentSelect(doc.id)}
-                />
-                <span 
-                    className="text-xs"
-                    style={{
-                        color: theme === 'light' ? '#374151' : '#ffffff'
-                    }}
-                >
-                    {doc.title}
-                </span>
-            </div>
-        ))
-    ) : (
-        <div 
-            className="text-center text-xs p-4 h-full -mt-1 flex items-center justify-center"
-            style={{
-                color: theme === 'light' ? '#9ca3af' : '#9ca3af'
-            }}
-        >
-            {hasSearchedManualSearch ? 'No results found' : 'Perform a search or apply filters to see results'}
-        </div>
-    )}
-</div>
+                                                            {isLoading ? (
+                                                                <div className="flex items-center justify-center -mt-2 h-full">
+                                                                    <svg
+                                                                        className="animate-spin h-8 w-8"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        fill="none"
+                                                                        viewBox="0 0 24 24"
+                                                                        style={{
+                                                                            color: theme === 'light' ? '#3b82f6' : '#3b82f6'
+                                                                        }}
+                                                                    >
+                                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                                                    </svg>
+                                                                </div>
+                                                            ) : searchResults.length > 0 ? (
+                                                                searchResults.map((doc) => (
+                                                                    <div
+                                                                        key={doc.id}
+                                                                        className="flex items-center p-2 mx-2 my-1 border rounded-md cursor-pointer transition-colors"
+                                                                        style={{
+                                                                            backgroundColor: theme === 'light' ? '#f9fafb' : '#3b3b5b',
+                                                                            borderColor: theme === 'light' ? '#e5e7eb' : 'rgba(255, 255, 255, 0.2)'
+                                                                        }}
+                                                                        onMouseEnter={(e) => {
+                                                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                                                ? 'rgba(0, 0, 0, 0.05)'
+                                                                                : 'rgba(255, 255, 255, 0.1)';
+                                                                        }}
+                                                                        onMouseLeave={(e) => {
+                                                                            e.currentTarget.style.backgroundColor = theme === 'light'
+                                                                                ? '#f9fafb'
+                                                                                : '#3b3b5b';
+                                                                        }}
+                                                                        onClick={() => handleDocumentClick(doc)}
+                                                                    >
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            className="mr-2 h-3 w-3 rounded focus:ring-2"
+                                                                            style={{
+                                                                                borderColor: theme === 'light' ? '#d1d5db' : 'rgba(255, 255, 255, 0.3)',
+                                                                                accentColor: theme === 'light' ? '#3b82f6' : '#3b82f6'
+                                                                            }}
+                                                                            checked={selectedDocuments.includes(doc.id)}
+                                                                            onChange={() => handleDocumentSelect(doc.id)}
+                                                                        />
+                                                                        <span
+                                                                            className="text-xs"
+                                                                            style={{
+                                                                                color: theme === 'light' ? '#374151' : '#ffffff'
+                                                                            }}
+                                                                        >
+                                                                            {doc.title}
+                                                                        </span>
+                                                                    </div>
+                                                                ))
+                                                            ) : (
+                                                                <div
+                                                                    className="text-center text-xs p-4 h-full -mt-1 flex items-center justify-center"
+                                                                    style={{
+                                                                        color: theme === 'light' ? '#9ca3af' : '#9ca3af'
+                                                                    }}
+                                                                >
+                                                                    {hasSearchedManualSearch ? 'No results found' : 'Perform a search or apply filters to see results'}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
