@@ -54,7 +54,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
       <head>
-        <title>Content Strategies</title>
+        <title>AI Navigator</title>
       </head>
       <body style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }} cz-shortcut-listen="true">
         {loading ? (

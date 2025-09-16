@@ -10,9 +10,9 @@
 }
 html, body {
   height: 100%;
-  /* background-color: #1a1b41;  */
   margin: 0;
   padding: 0;
+  /* overflow: hidden; */
 }
 .Toastify__close-button > svg {
   color: white !important;
