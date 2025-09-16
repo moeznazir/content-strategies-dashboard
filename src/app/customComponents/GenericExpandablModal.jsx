@@ -293,7 +293,7 @@ const GenericModal = ({ data, onClose, appliedFilters }) => {
         return sections;
     };
     // initialize filtered sections and collapsed state
-    useEffect(() => {
+   useEffect(() => {
         const sections = detectSections();
         console.log("Detected sections:", sections); // Debug log
         setFilteredSections(sections);
