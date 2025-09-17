@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sanitizeFileName } from '@/lib/utils';
-import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Share2 } from 'lucide-react';
 
 
 const GuidelineModal = ({ step, onNext, onSkip, onClose, totalSteps, colors }) => {
@@ -140,6 +140,9 @@ const Assistant = () => {
     const [showLegacy, setShowLegacy] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [theme, setTheme] = useState('light'); // 'dark' or 'light'
+    const [openConvMenu, setOpenConvMenu] = useState(null);
+    const [initializedFromLink, setInitializedFromLink] = useState(false);
+    const [isSearchFromLibrary, setIsSearchFromLibrary] = useState(false);
 
     const SettingsModal = ({ show, onClose, theme, setTheme }) => {
         if (!show) return null;
@@ -165,7 +168,10 @@ const Assistant = () => {
                         <div className="flex gap-4">
                             <div
                                 className={`flex-1 p-3 rounded-lg cursor-pointer border-2 ${theme === 'dark' ? 'border-blue-500' : 'border-gray-300'}`}
-                                onClick={() => setTheme('dark')}
+                                onClick={() => {
+                                    setTheme('dark');
+                                    onClose(); // ✅ close modal when selecting light
+                                }}
                                 style={{ backgroundColor: '#1f1f3d' }}
                             >
                                 <div className="flex items-center justify-between mb-2">
@@ -185,7 +191,10 @@ const Assistant = () => {
 
                             <div
                                 className={`flex-1 p-3 rounded-lg cursor-pointer border-2 ${theme === 'light' ? 'border-blue-500' : 'border-gray-300'}`}
-                                onClick={() => setTheme('light')}
+                                onClick={() => {
+                                    setTheme('light');
+                                    onClose(); // ✅ close modal when selecting light
+                                }}
                                 style={{ backgroundColor: '#f8f9fa' }}
                             >
                                 <div className="flex items-center justify-between mb-2">
@@ -205,17 +214,50 @@ const Assistant = () => {
                         </div>
                     </div>
 
-                    <div className="flex justify-end">
+                    {/* <div className="flex justify-end">
                         <button
                             onClick={onClose}
                             className="px-2 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600"
                         >
                             Done
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         );
+    };
+
+    // Close conversation menu on outside click (but keep it open when clicking inside menu/button)
+    useEffect(() => {
+        const handleDocClick = (e) => {
+            const target = e.target;
+            if (target && typeof target.closest === 'function') {
+                if (target.closest('.conv-menu-area')) {
+                    return; // click inside menu/button; do not close
+                }
+            }
+            setOpenConvMenu(null);
+        };
+        document.addEventListener('click', handleDocClick);
+        return () => document.removeEventListener('click', handleDocClick);
+    }, []);
+
+    const getConversationShareLink = (conversationId) => {
+        if (typeof window === 'undefined') return '';
+        const origin = window.location.origin || '';
+        return `${origin}/assistant?conversation=${encodeURIComponent(conversationId)}`;
+    };
+
+    const handleShareConversation = async (conversationId) => {
+        try {
+            const link = getConversationShareLink(conversationId);
+            await navigator.clipboard.writeText(link);
+            ShowCustomToast('Chat Copied!', 'success');
+        } catch (e) {
+            ShowCustomToast('Failed to copy link', 'error');
+        } finally {
+            setOpenConvMenu(null);
+        }
     };
     useEffect(() => {
         // Load theme from localStorage on mount
@@ -580,6 +622,18 @@ const Assistant = () => {
         fetchConversations();
     }, []);
 
+    // Deep-link: if URL contains ?conversation=ID, load that conversation on first load
+    useEffect(() => {
+        if (initializedFromLink) return;
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        const convId = params.get('conversation');
+        if (convId) {
+            handleConversationSelect(convId);
+            setInitializedFromLink(true);
+        }
+    }, [initializedFromLink, conversations]);
+
     const optimizeQuery = async () => {
         if (showOptimizationModal && searchQuery.trim()) {
             try {
@@ -852,6 +906,7 @@ const Assistant = () => {
             processedDescription: processedContent
         }]);
         setSearchQuery(docTitle);
+    
 
     };
     console.log("selectedLibraryDocTitles", selectedLibraryDocTitles);
@@ -1191,6 +1246,7 @@ const Assistant = () => {
 
             setCurrentMessages(newMessages);
             setSearchQuery('');
+            setIsSearchFromLibrary(false);
             setSelectedDocs([]);
             setSelectedDocTitles([]);
             setSelectedLibraryDocTitles([]);
@@ -1742,19 +1798,18 @@ const Assistant = () => {
                             {conversations.map((conv) => (
                                 <div
                                     key={conv.conversation_id}
-                                    className="p-3 rounded-lg cursor-pointer transition-colors"
+                                    className="p-3 rounded-lg transition-colors group"
                                     style={{
                                         color: colors.text,
                                         backgroundColor: selectedConversation === conv.conversation_id
                                             ? theme === 'light'
-                                                ? colors.activeBackground // Use sidebar background in light mode
-                                                : '#2563eb' // Keep blue in dark mode
+                                                ? colors.activeBackground
+                                                : '#2563eb'
                                             : 'transparent',
                                         border: selectedConversation === conv.conversation_id && theme === 'light'
                                             ? `1px solid ${colors.border}`
                                             : 'none'
                                     }}
-                                    onClick={() => handleConversationSelect(conv.conversation_id)}
                                     onMouseEnter={(e) => {
                                         if (selectedConversation !== conv.conversation_id) {
                                             e.currentTarget.style.backgroundColor = theme === 'light'
@@ -1772,9 +1827,42 @@ const Assistant = () => {
                                         }
                                     }}
                                 >
-                                    <p className="text-sm truncate">
-                                        {conv.title || `Conversation ${conv.conversation_id.slice(-4)}`}
-                                    </p>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div
+                                            className="flex-1 min-w-0 cursor-pointer"
+                                            onClick={() => handleConversationSelect(conv.conversation_id)}
+                                        >
+                                            <p className="text-sm truncate">
+                                                {conv.title || `Conversation ${conv.conversation_id.slice(-4)}`}
+                                            </p>
+                                        </div>
+
+                                        {/* Three dots menu */}
+                                        <div className="relative conv-menu-area" onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                                className="p-1 rounded hover:bg-white/10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenConvMenu(prev => prev === conv.conversation_id ? null : conv.conversation_id);
+                                                }}
+                                                aria-label="More options"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5" style={{ color: colors.text }}>
+                                                    <path d="M12 6.75a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM12 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM12 20.25a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
+                                                </svg>
+                                            </button>
+                                            {openConvMenu === conv.conversation_id && (
+                                                <div className="absolute right-0 mt-2  rounded-md shadow-lg z-50" style={{ backgroundColor: colors.sidebarBackground, border: `1px solid ${colors.border}` }}>
+                                                    <button
+                                                        className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
+                                                        onClick={() => handleShareConversation(conv.conversation_id)}
+                                                    >
+                                                        <Share2 size={16} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -1821,7 +1909,24 @@ const Assistant = () => {
 
 
             {/* Main chat area */}
-            <div className="flex-1 flex flex-col relative" style={{ backgroundColor: colors.background }}>
+            <div className="flex-1 flex flex-col relative" >
+                {/* Top-right Share button */}
+                <div className="fixed top-[75px] right-4 z-50">
+                    <button
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10"
+                        style={{ color: colors.text }}
+                        onClick={() => {
+                            if (selectedConversation) {
+                                handleShareConversation(selectedConversation);
+                            } else {
+                                ShowCustomToast('Open a chat to share', 'info');
+                            }
+                        }}
+                    >
+                        <Share2 className="w-4 h-4" />
+                        <span className="text-sm">Share</span>
+                    </button>
+                </div>
                 {/* {newResponseArrived && (
                     <button
                         onClick={scrollToTopOfResponse}
@@ -2151,7 +2256,7 @@ const Assistant = () => {
                                 <textarea
                                     placeholder={selectedFiles.length > 0 ? "Add a message or ask about your files..." : "Ask anything"}
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={(e) => { setSearchQuery(e.target.value); setIsSearchFromLibrary(false); }}
                                     className="w-full  -mt-[10px] bg-transparent outline-none resize-none overflow-y-auto no-scrollbar"
                                     style={{
                                         minHeight: selectedFiles.length > 0 ? '30px' : '20px',
@@ -2349,7 +2454,17 @@ const Assistant = () => {
                     {/* Tabs with hover tooltips */}
                     <div className="flex mt-4 flex-wrap justify-center gap-2 -mb-4">
                         {tabs
-                            .filter(tab => !(tab.id === 'library' && searchQuery.trim() !== ''))
+                            .filter(tab => {
+                                // Hide Context, Optimization, Add-Ons when Library modal is open
+                                if (isSearchFromLibrary && (tab.id === 'context' || tab.id === 'business' || tab.id === 'addons')) {
+                                    return false;
+                                }
+                                // Hide Library tab only when user typed text manually (not from Library)
+                                if (tab.id === 'library' && searchQuery.trim() !== '' && !isSearchFromLibrary) {
+                                    return false;
+                                }
+                                return true;
+                            })
                             .map((tab) => (
                                 <div
                                     key={tab.id}
@@ -2479,6 +2594,7 @@ const Assistant = () => {
                     setSearchQuery={setSearchQuery}
                     colors={colors}
                     theme={theme}
+                    setIsSearchFromLibrary={setIsSearchFromLibrary}
                 />
 
                 {/* Optimization Modal */}
@@ -2529,7 +2645,7 @@ const Assistant = () => {
                                         )}
                                     </button>
                                 </div>
-                                <textarea
+                                    <textarea
                                     value={originalPrompt ? originalPrompt : searchQuery}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -2540,7 +2656,8 @@ const Assistant = () => {
                                             localStorage.setItem("originalPrompt", value);
                                         } else {
                                             // warna searchQuery update hoti rahe
-                                            setSearchQuery(value);
+                                                setSearchQuery(value);
+                                                setIsSearchFromLibrary(false);
 
                                             // sirf pehli dafa hi originalPrompt set karo
                                             if (value.trim()) {
