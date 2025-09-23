@@ -3451,7 +3451,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             }
 
             // Guest Challenge Report
-            const guestChallengeReportData = matchedData['Multi-Guest_Challenge_Report_Text'];
+            const guestChallengeReportData = matchedData?.['Multi-Guest_Challenge_Report_Text'];
             if (guestChallengeReportData) {
                 try {
                     setGuestChallengeReportEntries(normalizeGuestChallengeReport(guestChallengeReportData));
