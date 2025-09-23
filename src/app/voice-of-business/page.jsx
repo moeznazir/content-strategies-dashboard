@@ -57,7 +57,7 @@ const FileManagement = () => {
     const columns = [
         // { label: "Avatar", id: "thumbnail" },
         {
-            label: "Avatar",
+            label: "Details",
             id: "file_type_icon",
             // Custom renderer for the icon column
             render: (row) => {
