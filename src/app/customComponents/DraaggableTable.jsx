@@ -94,6 +94,11 @@ const GuestDetailsModal = ({ guests, onClose }) => {
 
     const handlePreview = async (url) => {
         setErrorMessage(null);
+          // Special case: LinkedIn
+          if (url.includes("linkedin.com")) {
+            window.open(url, "_blank", "noopener,noreferrer");
+            return;
+        }
         try {
             // Test if the URL is valid and reachable
             const response = await fetch(url, { method: 'HEAD' });
@@ -272,6 +277,56 @@ const GuestDetailsModal = ({ guests, onClose }) => {
                                                 <span className="font-semibold text-gray-200">Guest Industry:</span>{" "}
                                                 <span className="text-[13px] text-gray-400">{guest["Guest Industry"]}</span>
                                             </p>
+                                        )}
+
+                                        {guest["LinkedIn Profile"] && (
+                                            <div className="mt-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-gray-200">Guest LinkedIn Profile:</span>
+                                                    <div className="flex items-center gap-1 ml-1">
+                                                        <button
+                                                            onClick={() => handlePreview(guest["LinkedIn Profile"])}
+                                                            className="text-blue-300 hover:text-white p-1"
+                                                            title="View"
+                                                        >
+                                                            <FaEye size={16} />
+                                                        </button>
+
+                                                        {copiedIndex === index && (
+                                                            <span className="text-green-400 text-xs ml-1">Copied!</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+
+                                        {guest["Industry Vertical"] && (
+                                            <p>
+                                                <span className="font-semibold text-gray-200">Industry Vertical:</span>{" "}
+                                                <span className="text-[13px] text-gray-400">{guest["Industry Vertical"]}</span>
+                                            </p>
+                                        )}
+
+                                        {guest["Tracker"] && (
+                                            <div className="mt-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-gray-200">Guest Tracker:</span>
+                                                    <div className="flex items-center gap-1 ml-1">
+                                                        <button
+                                                            onClick={() => handlePreview(guest["Tracker"])}
+                                                            className="text-blue-300 hover:text-white p-1"
+                                                            title="View"
+                                                        >
+                                                            <FaEye size={16} />
+                                                        </button>
+
+                                                        {copiedIndex === index && (
+                                                            <span className="text-green-400 text-xs ml-1">Copied!</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         )}
 
                                         {guest["Dossier"] && (
@@ -5462,6 +5517,231 @@ const DraggableTable = ({
             return [];
         }
     };
+
+    const normalizeIcpAdviceReport = (rowId) => {
+        const icpData = themesRank?.find(item => item.id === rowId)?.ICP_Advice_Report;
+        console.log("icpData", icpData);
+        if (!icpData) return [];
+
+        try {
+            // Handle string case
+            if (typeof icpData === 'string') {
+                if (icpData.toLowerCase().trim() === 'nan' ||
+                    icpData.trim() === '{}' ||
+                    icpData.trim() === '[]' ||
+                    icpData.trim() === '') {
+                    return [];
+                }
+
+                // Try to parse as JSON
+                if (icpData.trim().startsWith('{') || icpData.trim().startsWith('[')) {
+                    try {
+                        const parsed = JSON.parse(icpData);
+                        return Array.isArray(parsed) ? parsed : [parsed];
+                    } catch {
+                        return [];
+                    }
+                }
+
+                // If plain string, treat as Report URL
+                return [{
+                    "ICP Advice Post-Podcast Video File": "",
+                    "ICP Advice Post-Podcast Video Length": "",
+                    "ICP Advice Post-Podcast Video Transcript": "",
+                    "ICP Advice Report": String(icpData || ''),
+                    "VoC FILE": ""
+                }];
+            }
+
+            // Handle array case
+            if (Array.isArray(icpData)) {
+                return icpData.map(item => {
+                    if (typeof item === 'object' && item !== null) {
+                        return {
+                            "ICP Advice Post-Podcast Video File": String(item["ICP Advice Post-Podcast Video File"] || ''),
+                            "ICP Advice Post-Podcast Video Length": String(item["ICP Advice Post-Podcast Video Length"] || ''),
+                            "ICP Advice Post-Podcast Video Transcript": String(item["ICP Advice Post-Podcast Video Transcript"] || ''),
+                            "ICP Advice Report": String(item["ICP Advice Report"] || ''),
+                            "VoC FILE": String(item["VoC FILE"] || '')
+                        };
+                    }
+                    return {
+                        "ICP Advice Post-Podcast Video File": "",
+                        "ICP Advice Post-Podcast Video Length": "",
+                        "ICP Advice Post-Podcast Video Transcript": "",
+                        "ICP Advice Report": String(item || ''),
+                        "VoC FILE": ""
+                    };
+                }).filter(Boolean);
+            }
+
+            // Handle object case
+            if (typeof icpData === 'object' && icpData !== null) {
+                return [{
+                    "ICP Advice Post-Podcast Video File": String(icpData["ICP Advice Post-Podcast Video File"] || ''),
+                    "ICP Advice Post-Podcast Video Length": String(icpData["ICP Advice Post-Podcast Video Length"] || ''),
+                    "ICP Advice Post-Podcast Video Transcript": String(icpData["ICP Advice Post-Podcast Video Transcript"] || ''),
+                    "ICP Advice Report": String(icpData["ICP Advice Report"] || ''),
+                    "VoC FILE": String(icpData["VoC FILE"] || '')
+                }];
+            }
+
+            return [];
+        } catch (error) {
+            console.error('Error normalizing ICP advice report:', error);
+            return [];
+        }
+    };
+
+    const normalizeSqlAnalysisReport = (rowId) => {
+        const sqlData = themesRank?.find(item => item.id === rowId)?.SQL_Analysis_Report;
+        console.log("sqlData", sqlData);
+        if (!sqlData) return [];
+
+        try {
+            // Handle string case
+            if (typeof sqlData === 'string') {
+                if (sqlData.toLowerCase().trim() === 'nan' ||
+                    sqlData.trim() === '{}' ||
+                    sqlData.trim() === '[]' ||
+                    sqlData.trim() === '') {
+                    return [];
+                }
+
+                // Try to parse as JSON
+                if (sqlData.trim().startsWith('{') || sqlData.trim().startsWith('[')) {
+                    try {
+                        const parsed = JSON.parse(sqlData);
+                        return Array.isArray(parsed) ? parsed : [parsed];
+                    } catch {
+                        return [];
+                    }
+                }
+
+                // If plain string, treat as Report URL
+                return [{
+                    "SQL Analysis Post-Podcast Video File": "",
+                    "SQL Analysis Post-Podcast Video Length": "",
+                    "SQL Analysis Post-Podcast Video Transcript": "",
+                    "SQL Analysis Report": String(sqlData || ''),
+                    "VoC FILE": ""
+                }];
+            }
+
+            // Handle array case
+            if (Array.isArray(sqlData)) {
+                return sqlData.map(item => {
+                    if (typeof item === 'object' && item !== null) {
+                        return {
+                            "SQL Analysis Post-Podcast Video File": String(item["SQL Analysis Post-Podcast Video File"] || ''),
+                            "SQL Analysis Post-Podcast Video Length": String(item["SQL Analysis Post-Podcast Video Length"] || ''),
+                            "SQL Analysis Post-Podcast Video Transcript": String(item["SQL Analysis Post-Podcast Video Transcript"] || ''),
+                            "SQL Analysis Report": String(item["SQL Analysis Report"] || ''),
+                            "VoC FILE": String(item["VoC FILE"] || '')
+                        };
+                    }
+                    return {
+                        "SQL Analysis Post-Podcast Video File": "",
+                        "SQL Analysis Post-Podcast Video Length": "",
+                        "SQL Analysis Post-Podcast Video Transcript": "",
+                        "SQL Analysis Report": String(item || ''),
+                        "VoC FILE": ""
+                    };
+                }).filter(Boolean);
+            }
+
+            // Handle object case
+            if (typeof sqlData === 'object' && sqlData !== null) {
+                return [{
+                    "SQL Analysis Post-Podcast Video File": String(sqlData["SQL Analysis Post-Podcast Video File"] || ''),
+                    "SQL Analysis Post-Podcast Video Length": String(sqlData["SQL Analysis Post-Podcast Video Length"] || ''),
+                    "SQL Analysis Post-Podcast Video Transcript": String(sqlData["SQL Analysis Post-Podcast Video Transcript"] || ''),
+                    "SQL Analysis Report": String(sqlData["SQL Analysis Report"] || ''),
+                    "VoC FILE": String(sqlData["VoC FILE"] || '')
+                }];
+            }
+
+            return [];
+        } catch (error) {
+            console.error('Error normalizing SQL analysis report:', error);
+            return [];
+        }
+    };
+
+    const normalizeChallengeQuestions = (rowId) => {
+        const challengeData = themesRank?.find(item => item.id === rowId)?.Challenge_Questions;
+        console.log("challengeData", challengeData);
+        if (!challengeData) return [];
+
+        try {
+            // Handle string case
+            if (typeof challengeData === 'string') {
+                if (challengeData.toLowerCase().trim() === 'nan' ||
+                    challengeData.trim() === '{}' ||
+                    challengeData.trim() === '[]' ||
+                    challengeData.trim() === '') {
+                    return [];
+                }
+
+                // Try to parse as JSON
+                if (challengeData.trim().startsWith('{') || challengeData.trim().startsWith('[')) {
+                    try {
+                        const parsed = JSON.parse(challengeData);
+                        return Array.isArray(parsed) ? parsed : [parsed];
+                    } catch {
+                        return [];
+                    }
+                }
+
+                // If plain string, treat as Report URL
+                return [{
+                    "Challenge Questions Prep Call Video File": "",
+                    "Challenge Questions Prep Call Video Length": "",
+                    "Challenge Questions Prep Call Video Transcript": "",
+                    "Challenge Questions Report": String(challengeData || ''),
+                    "VoC FILE": ""
+                }];
+            }
+
+            // Handle array case
+            if (Array.isArray(challengeData)) {
+                return challengeData.map(item => {
+                    if (typeof item === 'object' && item !== null) {
+                        return {
+                            "Challenge Questions Prep Call Video File": String(item["Challenge Questions Prep Call Video File"] || ''),
+                            "Challenge Questions Prep Call Video Length": String(item["Challenge Questions Prep Call Video Length"] || ''),
+                            "Challenge Questions Prep Call Video Transcript": String(item["Challenge Questions Prep Call Video Transcript"] || ''),
+                            "Challenge Questions Report": String(item["Challenge Questions Report"] || ''),
+                            "VoC FILE": String(item["VoC FILE"] || '')
+                        };
+                    }
+                    return {
+                        "Challenge Questions Prep Call Video File": "",
+                        "Challenge Questions Prep Call Video Length": "",
+                        "Challenge Questions Prep Call Video Transcript": "",
+                        "Challenge Questions Report": String(item || ''),
+                        "VoC FILE": ""
+                    };
+                }).filter(Boolean);
+            }
+
+            // Handle object case
+            if (typeof challengeData === 'object' && challengeData !== null) {
+                return [{
+                    "Challenge Questions Prep Call Video File": String(challengeData["Challenge Questions Prep Call Video File"] || ''),
+                    "Challenge Questions Prep Call Video Length": String(challengeData["Challenge Questions Prep Call Video Length"] || ''),
+                    "Challenge Questions Prep Call Video Transcript": String(challengeData["Challenge Questions Prep Call Video Transcript"] || ''),
+                    "Challenge Questions Report": String(challengeData["Challenge Questions Report"] || ''),
+                    "VoC FILE": String(challengeData["VoC FILE"] || '')
+                }];
+            }
+
+            return [];
+        } catch (error) {
+            console.error('Error normalizing challenge questions:', error);
+            return [];
+        }
+    };
     return (
         <DndProvider backend={HTML5Backend}>
             <div className="overflow-x-auto  relative no-scrollbar"
@@ -5628,6 +5908,7 @@ const DraggableTable = ({
                                                                     Persona: row.Persona,
                                                                     Guest: row.Guest,
                                                                     "Guest Title": row["Guest Title"],
+                                                                    "Guest Company": row["Guest Company"],
                                                                     "Guest Company": row["Guest Company"],
                                                                     "Guest Industry": row["Guest Industry"]
                                                                 };
