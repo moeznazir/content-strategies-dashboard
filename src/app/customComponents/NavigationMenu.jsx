@@ -322,7 +322,7 @@ const NavigationMenu = () => {
                                 {isOpen && (
                                     <div
                                         ref={dropdownRef}
-                                        className="absolute right-0 mt-3 border border-gray-500 shadow-lg bg-[#2B2B4B] rounded-md z-50 min-w-[180px]"
+                                        className="absolute right-0 mt-3 border border-gray-500 shadow-lg bg-[#2B2B4B] rounded-md z-[9999] min-w-[180px]"
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         {/* Triangle Pointer */}

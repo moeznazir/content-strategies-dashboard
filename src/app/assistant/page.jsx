@@ -313,7 +313,17 @@ const Assistant = () => {
 
     const ModelSelector = () => {
         const [showLegacy, setShowLegacy] = useState(false);
-
+        const dropdownRef = useRef(null);
+        useEffect(() => {
+            function handleClickOutside(event) {
+                if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                    // close the menu when clicking outside
+                    setShowModelsDropdown(false);
+                }
+            }
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => document.removeEventListener("mousedown", handleClickOutside);
+        }, []);
         const models = [
             { id: "gpt-5", name: "GPT-5", description: "Flagship model" },
             { id: "gpt-5-thinking", name: "GPT-5 Thinking", description: "Get more thorough answers" },
@@ -332,6 +342,7 @@ const Assistant = () => {
         return (
             <div
                 className="absolute left-0 top-full mt-2 z-50 w-64 border rounded-lg shadow-lg"
+                ref={dropdownRef}
                 style={{
                     backgroundColor: theme === 'light' ? '#ffffff' : '#2a2d45',
                     borderColor: theme === 'light' ? '#e5e7eb' : '#404040'
@@ -906,7 +917,7 @@ const Assistant = () => {
             processedDescription: processedContent
         }]);
         setSearchQuery(docTitle);
-    
+
 
     };
     console.log("selectedLibraryDocTitles", selectedLibraryDocTitles);
@@ -2595,6 +2606,8 @@ const Assistant = () => {
                     colors={colors}
                     theme={theme}
                     setIsSearchFromLibrary={setIsSearchFromLibrary}
+                    
+                    
                 />
 
                 {/* Optimization Modal */}
@@ -2645,7 +2658,7 @@ const Assistant = () => {
                                         )}
                                     </button>
                                 </div>
-                                    <textarea
+                                <textarea
                                     value={originalPrompt ? originalPrompt : searchQuery}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -2656,8 +2669,8 @@ const Assistant = () => {
                                             localStorage.setItem("originalPrompt", value);
                                         } else {
                                             // warna searchQuery update hoti rahe
-                                                setSearchQuery(value);
-                                                setIsSearchFromLibrary(false);
+                                            setSearchQuery(value);
+                                            setIsSearchFromLibrary(false);
 
                                             // sirf pehli dafa hi originalPrompt set karo
                                             if (value.trim()) {

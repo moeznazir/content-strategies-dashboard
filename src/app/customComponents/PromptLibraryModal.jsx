@@ -1735,6 +1735,8 @@ const PromptLibraryModal = ({ showLibraryDropdown, setShowLibraryDropdown, onSou
                                 </>
                             )}
 
+                    
+
                             {/* Footer */}
                             <div className="flex justify-end gap-4 mt-6">
                                 {/* <button

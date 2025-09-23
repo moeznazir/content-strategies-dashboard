@@ -9,6 +9,7 @@ import { appColors } from "@/lib/theme";
 import Alert from "./Alert";
 import { ShowCustomToast } from "./CustomToastify";
 import { FileInput, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { Tooltip } from "./CustomTooltip";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_API_URL,
@@ -251,6 +252,7 @@ const OPTIONS = {
 
 };
 
+
 // GUEST_FIELDS Section (Page 1 on step 1)
 
 const GUEST_FIELDS = [
@@ -302,103 +304,118 @@ const DETAILS_FULL_EPISODES = [
     "Episode Title",
     "Date Recorded",
     "Category",
-    "Description",
+    "Short Episode Description",
+    "Long Episode Description",
     "Formate",
     "Short and Long-Tail SEO Keywords",
     "All Asset Folder"
 ];
 const FULL_EPISODE_VIDEO = [
-    "Video File",
-    "Audio File",
-    "YouTube URL",
-    "Full Episode Details",
-    "Transcript",
-    "LinkedIn Post Text",
-    "LinkedIn Executive Comments",
-    "Emails Marketing",
-    "Emails Sales"
+    "Full Episode Video Title",
+    "Full Episode Video Length",
+    "Full Episode Video Description",
+    "Full Episode Video File",
+    "Full Episode Audio File",
+    "Full Episode YouTube URL",
+    "Unedited Full Episode Transcript",
+    "Edited Full Episode Transcript",
+    "Provocative Statements",
+    "Custom Requests"
 
 ];
 const FULL_EPISODE_EXTENDED_CONTENT = [
     "Article URL",
     "Article Text",
-    "YouTube Short Video File",
-    "YouTube Short URL",
-    "YouTube Short Transcript",
-    "LinkedIn Video File",
-    "LinkedIn Video Transcript",
-    "LinkedIn Post Text",
-    "LinkedIn Executive Comments",
-    "Emails Marketing",
-    "Emails Sales",
-    "Quote Card"
+    "Full Episode Quote Card"
 ];
 const FULL_EPISODE_HIGHLIGHT_VIDEO = [
-    "Video File",
-    "YouTube URL",
-    "Transcript",
-    "Highlights Video Details",
-    "LinkedIn Post Text",
-    "LinkedIn Executive Comments",
-    "Emails Marketing",
-    "Emails Sales"
+    "Highlight Video Title",
+    "Highlight Video Length",
+    "Highlight Video Description",
+    "Highlight Video File",
+    "Highlight YouTube URL",
+    "Highlight Video Transcript",
+    "Highlights Video LinkedIn Post Information (post text, comments & emails)"
 
 ];
 const FULL_EPISODE_INTRODUCTION_VIDEO = [
-    "Video File",
-    "YouTube URL",
-    "Transcript",
-    "Instruction Video Details"
+    "Introduction Video Title",
+    "Introduction Video Length",
+    "Introduction Video Description",
+    "Introduction Video File",
+    "Introduction Video YouTube URL",
+    "Introduction Video Transcript",
 ];
 const FULL_EPISODE_QA_VIDEOS = [
+    "QAV1 Video Title",
+    "QAV1 Video Length",
+    "QAV1 Video Description",
+    "QAV1 Video Quote",
+    "QAV1 Video Hashtags",
+    "QAV1 Video LinkedIn Post Information (post text, comments & emails)",
     "QAV1 Video File",
     "QAV1 YouTube URL",
-    "QAV1 Transcript",
-    "QAV1 QA Video Details",
-    "Extended Content Article URL",
-    "Extended Content Article Text",
-    "Extended Content YouTube Short Video File",
-    "Extended Content YouTube Short URL",
-    "Extended Content YouTube Short Transcript",
-    "Extended Content LinkedIn Video File",
-    "Extended Content LinkedIn Video Transcript",
-    "LinkedIn Post Text",
-    "LinkedIn Executive Comments",
-    "Emails Marketing",
-    "Emails Sales",
-    "Quote Card"
+    "QAV1 Video Transcript",
+    "QAV1 Article URL",
+    "QAV1 Article Text",
+    "QAV1 YouTube Short Video File",
+    "QAV1 YouTube Short URL",
+    "QAV1 YouTube Short Transcript",
+    "QAV1 LinkedIn Short Video File",
+    "QAV1 Quote Card"
+
 ]
 
 const FULL_EPISODE_PODBOOK = [
-    "Interactive Experience",
-    "Website URL",
-    "Embed Code",
-    "Loom Folder"
+    "Podbook Interactive Link",
+    "Podbook Website URL",
+    "Podbook Embed Code",
+    "Podbook Presentation",
+    "Podbook Loom Folder"
 ];
 
+
+
 const FULL_EPISODE_FULL_CASE_STUDY = [
-    "Interactive Experience",
-    "Case Study Text",
-    "Sales Email",
-    "Problem Section Video",
+    "Full Case Study Interactive Link",
+    "Full Case Study Website URL",
+    "Full Case Study Embed Code",
+    "Full Case Study Text",
+    "Full Case Study LinkedIn Post Information (post text, comments & emails)",
+    "Problem Section Video File",
     "Problem Section Video Length",
     "Problem Section Video Transcript",
-    "Solutions Section Video",
+    "Solutions Section Video File",
     "Solutions Section Video Length",
     "Solutions Section Video Transcript",
-    "Results Section Video",
+    "Results Section Video File",
     "Results Section Video Length",
     "Results Section Video Transcript"
 ];
-
 const FULL_EPISODE_ONE_PAGE_CASE_STUDY = [
-    "Interactive Experience",
-    "One Page Text",
-    "Sales Email",
-    "One Page Video",
-    "Length",
-    "Transcript"
+    "One Page Case Study Interactive Link",
+    "One Page Case Study Website URL",
+    "One Page Case Study Embed Code",
+
 ];
+
+const eBook = [
+    "eBook Interactive Link",
+    "eBook Website URL",
+    "eBook Embed Code",
+    "eBook Text",
+    "eBook LinkedIn Post Information (post text, comments & emails)",
+];
+
+const Guest_Challenge_Report_Text = [
+    "Multi-Guest Challenge Report Interactive Link",
+    "Multi-Guest Challenge Report Website URL",
+    "Multi-Guest Challenge Report Embed Code",
+    "Multi-Guest Challenge Report Text",
+    "Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)",
+];
+
+
 
 const FULL_EPISODE_OTHER_CASE_STUDY = [
     "Other Case Study Interactive Experience",
@@ -424,6 +441,263 @@ const FULL_EPISODE_CHALLENGE_QUESTIONS = [
     "Challenge Report"
 ];
 
+const ICP_Advice_Report = [
+    "ICP Advice Post-Podcast Video File",
+    "ICP Advice Post-Podcast Video Length",
+    "ICP Advice Post-Podcast Video Transcript",
+    "ICP Advice Report"
+];
+
+const SQL_Analysis_Report = [
+    "SQL Analysis Post-Podcast Video File",
+    "SQL Analysis Post-Podcast Video Length",
+    "SQL Analysis Post-Podcast Video Transcript",
+    "SQL Analysis Report"
+];
+
+const Challenge_Questions = [
+    "Challenge Questions Prep Call Video File",
+    "Challenge Questions Prep Call Video Length",
+    "Challenge Questions Prep Call Video Transcript",
+    "Challenge Questions Report"
+];
+
+const IcpAdviceReportEntry = ({ report, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit ICP Advice Report"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove ICP Advice Report"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(report).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') || key.includes('Video') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const SqlAnalysisReportEntry = ({ report, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit SQL Analysis Report"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove SQL Analysis Report"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(report).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') || key.includes('Video') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const ChallengeQuestionsEntry = ({ challenges, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Challenge Questions"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Challenge Questions"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(challenges).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('File') || key.includes('Video') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// eBook Entry Component
+const EBookEntry = ({ eBook, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit eBook"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove eBook"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(eBook).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('Embed Code') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// Guest Challenge Report Entry Component
+const GuestChallengeReportEntry = ({ report, onEdit, onRemove, index }) => {
+    return (
+        <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+            <div className="absolute top-3 right-3 flex space-x-1">
+                <button
+                    type="button"
+                    onClick={() => onEdit(index)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edit Guest Challenge Report"
+                >
+                    <PencilIcon className="h-5 w-5" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove Guest Challenge Report"
+                >
+                    <TrashIcon className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="space-y-2 pr-8">
+                {Object.entries(report).map(([key, value]) => (
+                    value && (
+                        <p className="truncate" key={key}>
+                            <span className="font-medium text-[15px]">{key}:</span>
+                            {key.includes('URL') || key.includes('Link') || key.includes('Embed Code') ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 text-sm ml-1"
+                                >
+                                    {value.length > 30 ? `${value.substring(0, 30)}...` : value}
+                                </a>
+                            ) : (
+                                <span className='text-gray-400 text-sm ml-1'>{value}</span>
+                            )}
+                        </p>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+};
 
 // Updated component to properly display data
 const VideoTypeEntry = ({ videoType, videos, onEdit, onRemove, index }) => {
@@ -1242,6 +1516,7 @@ const FullEpisodeIntroductionVideoEntry = ({ video, onEdit, onRemove, index }) =
     );
 };
 const FullEpisodeQAVideosEntry = ({ qaVideos, onEdit, onRemove, index }) => {
+    const displayKey = (key) => key.replace('QAV1', `QAV${index + 1}`);
     return (
         <div className="border rounded-lg p-3 mb-3 relative" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
             <div className="absolute top-3 right-3 flex space-x-1">
@@ -1263,11 +1538,14 @@ const FullEpisodeQAVideosEntry = ({ qaVideos, onEdit, onRemove, index }) => {
                 </button>
             </div>
 
+            {/* Entry label e.g., QAV1, QAV2 */}
+            {/* <div className="mb-2 text-sm font-semibold">{`QAV${index + 1}`}</div> */}
+
             <div className="space-y-2 pr-8">
                 {Object.entries(qaVideos).map(([key, value]) => (
                     value && (
                         <p className="truncate" key={key}>
-                            <span className="font-medium text-[15px]">{key}:</span>
+                            <span className="font-medium text-[15px]">{displayKey(key)}:</span>
                             {key.includes('URL') || key.includes('Link') || key.includes('File') ? (
                                 <a
                                     href={value}
@@ -1706,9 +1984,10 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         "Episode Number": "",
         "Episode Title": "",
         "Date Recorded": "",
-        "Category": "Podcast",
-        "Description": "",
-        "Formate": "Multi-Media",
+        "Category": "",
+        "Short Episode Description": "",
+        "Long Episode Description": "",
+        "Formate": "",
         "Short and Long-Tail SEO Keywords": "",
         "All Asset Folder": ""
     });
@@ -1717,15 +1996,22 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Full Episode Video
     const [fullEpisodeVideoEntries, setFullEpisodeVideoEntries] = useState([]);
     const [currentFullEpisodeVideo, setCurrentFullEpisodeVideo] = useState({
+        "Full Episode Video Title": "",
+        "Full Episode Video Length": "",
+        "Full Episode Video Description": "",
         "Video File": "",
-        "Audio File": "",
-        "YouTube URL": "",
-        "Full Episode Details": "",
-        "Transcript": "",
-        "LinkedIn Post Text": "",
-        "LinkedIn Executive Comments": "",
-        "Emails Marketing": "",
-        "Emails Sales": ""
+        "Full Episode Audio File": "",
+        "Full Episode YouTube URL": "",
+        "Unedited Full Episode Transcript": "",
+        "Edited Full Episode Transcript": "",
+        "Provocative Statements": "",
+        "Custom Requests": "",
+        // "Full Episode Details": "",
+        // "Transcript": "",
+        // "LinkedIn Post Text": "",
+        // "LinkedIn Executive Comments": "",
+        // "Emails Marketing": "",
+        // "Emails Sales": ""
     });
     const [fullEpisodeVideoEditIndex, setFullEpisodeVideoEditIndex] = useState(null);
 
@@ -1743,21 +2029,20 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         "LinkedIn Executive Comments": "",
         "Emails Marketing": "",
         "Emails Sales": "",
-        "Quote Card": ""
+        "Full Episode Quote Card": ""
     });
     const [fullEpisodeExtendedContentEditIndex, setFullEpisodeExtendedContentEditIndex] = useState(null);
 
     // Full Episode Highlight Video
     const [fullEpisodeHighlightVideoEntries, setFullEpisodeHighlightVideoEntries] = useState([]);
     const [currentFullEpisodeHighlightVideo, setCurrentFullEpisodeHighlightVideo] = useState({
-        "Video File": "",
-        "YouTube URL": "",
-        "Transcript": "",
-        "Highlights Video Details": "",
-        "LinkedIn Post Text": "",
-        "LinkedIn Executive Comments": "",
-        "Emails Marketing": "",
-        "Emails Sales": ""
+        "Highlight Video Title": "",
+        "Highlight Video Length": "",
+        "Highlight Video Description": "",
+        "Highlight Video File": "",
+        "Highlight YouTube URL": "",
+        "Highlight Video Transcript": "",
+        "Highlights Video LinkedIn Post Information (post text, comments & emails)": ""
 
     });
     const [fullEpisodeHighlightVideoEditIndex, setFullEpisodeHighlightVideoEditIndex] = useState(null);
@@ -1765,73 +2050,77 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     // Full Episode Introduction Video
     const [fullEpisodeIntroductionVideoEntries, setFullEpisodeIntroductionVideoEntries] = useState([]);
     const [currentFullEpisodeIntroductionVideo, setCurrentFullEpisodeIntroductionVideo] = useState({
-        "Video File": "",
-        "YouTube URL": "",
-        "Transcript": "",
-        "Instruction Video Details": ""
+        "Introduction Video Title": "",
+        "Introduction Video Length": "",
+        "Introduction Video Description": "",
+        "Introduction Video File": "",
+        "Introduction Video YouTube URL": "",
+        "Introduction Video Transcript": "",
     });
     const [fullEpisodeIntroductionVideoEditIndex, setFullEpisodeIntroductionVideoEditIndex] = useState(null);
 
     // Full Episode QA Videos
     const [fullEpisodeQAVideosEntries, setFullEpisodeQAVideosEntries] = useState([]);
     const [currentFullEpisodeQAVideos, setCurrentFullEpisodeQAVideos] = useState({
+        "QAV1 Video Title": "",
+        "QAV1 Video Length": "",
+        "QAV1 Video Description": "",
+        "QAV1 Video Quote": "",
+        "QAV1 Video Hashtags": "",
+        "QAV1 Video LinkedIn Post Information (post text, comments & emails)": "",
         "QAV1 Video File": "",
         "QAV1 YouTube URL": "",
-        "QAV1 Transcript": "",
-        "QAV1 QA Video Details": "",
-        "Extended Content Article URL": "",
-        "Extended Content Article Text": "",
-        "Extended Content YouTube Short Video File": "",
-        "Extended Content YouTube Short URL": "",
-        "Extended Content YouTube Short Transcript": "",
-        "Extended Content LinkedIn Video File": "",
-        "Extended Content LinkedIn Video Transcript": "",
-        "LinkedIn Post Text": "",
-        "LinkedIn Executive Comments": "",
-        "Emails Marketing": "",
-        "Emails Sales": "",
-        "Quote Card": ""
+        "QAV1 Video Transcript": "",
+        "QAV1 Article URL": "",
+        "QAV1 Article Text": "",
+        "QAV1 YouTube Short Video File": "",
+        "QAV1 YouTube Short URL": "",
+        "QAV1 YouTube Short Transcript": "",
+        "QAV1 LinkedIn Short Video File": "",
+        "QAV1 Quote Card": ""
     });
     const [fullEpisodeQAVideosEditIndex, setFullEpisodeQAVideosEditIndex] = useState(null);
 
     // Full Episode Podbook
     const [fullEpisodePodbookEntries, setFullEpisodePodbookEntries] = useState([]);
     const [currentFullEpisodePodbook, setCurrentFullEpisodePodbook] = useState({
-        "Interactive Experience": "",
-        "Website URL": "",
-        "Embed Code": "",
-        "Loom Folder": ""
+        "Podbook Interactive Link": "",
+        "Podbook Website URL": "",
+        "Podbook Embed Code": "",
+        "Podbook Presentation": "",
+        "Podbook Loom Folder": ""
     });
     const [fullEpisodePodbookEditIndex, setFullEpisodePodbookEditIndex] = useState(null);
 
     // Full Episode Full Case Study
     const [fullEpisodeFullCaseStudyEntries, setFullEpisodeFullCaseStudyEntries] = useState([]);
     const [currentFullEpisodeFullCaseStudy, setCurrentFullEpisodeFullCaseStudy] = useState({
-        "Interactive Experience": "",
-        "Case Study Text": "",
-        "Sales Email": "",
-        "Problem Section Video": "",
+        "Full Case Study Interactive Link": "",
+        "Full Case Study Website URL": "",
+        "Full Case Study Embed Code": "",
+        "Full Case Study Text": "",
+        "Full Case Study LinkedIn Post Information (post text, comments & emails)": "",
+        "Problem Section Video File": "",
         "Problem Section Video Length": "",
         "Problem Section Video Transcript": "",
-        "Solutions Section Video": "",
+        "Solutions Section Video File": "",
         "Solutions Section Video Length": "",
         "Solutions Section Video Transcript": "",
-        "Results Section Video": "",
+        "Results Section Video File": "",
         "Results Section Video Length": "",
         "Results Section Video Transcript": ""
     });
+
     const [fullEpisodeFullCaseStudyEditIndex, setFullEpisodeFullCaseStudyEditIndex] = useState(null);
 
     // Full Episode One Page Case Study
     const [fullEpisodeOnePageCaseStudyEntries, setFullEpisodeOnePageCaseStudyEntries] = useState([]);
     const [currentFullEpisodeOnePageCaseStudy, setCurrentFullEpisodeOnePageCaseStudy] = useState({
-        "Interactive Experience": "",
-        "One Page Text": "",
-        "Sales Email": "",
-        "One Page Video": "",
-        "Length": "",
-        "Transcript": ""
+        "One Page Case Study Interactive Link": "",
+        "One Page Case Study Website URL": "",
+        "One Page Case Study Embed Code": ""
     });
+
     const [fullEpisodeOnePageCaseStudyEditIndex, setFullEpisodeOnePageCaseStudyEditIndex] = useState(null);
 
     // Full Episode Other Case Study
@@ -1867,12 +2156,64 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     });
     const [fullEpisodeChallengeQuestionsEditIndex, setFullEpisodeChallengeQuestionsEditIndex] = useState(null);
 
+    // ICP Advice Report
+    const [icpAdviceReportEntries, setIcpAdviceReportEntries] = useState([]);
+    const [currentIcpAdviceReport, setCurrentIcpAdviceReport] = useState({
+        "ICP Advice Post-Podcast Video File": "",
+        "ICP Advice Post-Podcast Video Length": "",
+        "ICP Advice Post-Podcast Video Transcript": "",
+        "ICP Advice Report": "",
+    });
+    const [icpAdviceReportEditIndex, setIcpAdviceReportEditIndex] = useState(null);
+
+    // SQL Analysis Report
+    const [sqlAnalysisReportEntries, setSqlAnalysisReportEntries] = useState([]);
+    const [currentSqlAnalysisReport, setCurrentSqlAnalysisReport] = useState({
+        "SQL Analysis Post-Podcast Video File": "",
+        "SQL Analysis Post-Podcast Video Length": "",
+        "SQL Analysis Post-Podcast Video Transcript": "",
+        "SQL Analysis Report": ""
+    });
+    const [sqlAnalysisReportEditIndex, setSqlAnalysisReportEditIndex] = useState(null);
+
+    // Challenge Questions
+    const [challengeQuestionsEntries, setChallengeQuestionsEntries] = useState([]);
+    const [currentChallengeQuestions, setCurrentChallengeQuestions] = useState({
+        "Challenge Questions Prep Call Video File": "",
+        "Challenge Questions Prep Call Video Length": "",
+        "Challenge Questions Prep Call Video Transcript": "",
+        "Challenge Questions Report": ""
+    });
+    const [challengeQuestionsEditIndex, setChallengeQuestionsEditIndex] = useState(null);
+
+    // Add these state variables with the other state declarations
+    // eBook
+    const [eBookEntries, setEBookEntries] = useState([]);
+    const [currentEBook, setCurrentEBook] = useState({
+        "eBook Interactive Link": "",
+        "eBook Website URL": "",
+        "eBook Embed Code": "",
+        "eBook Text": "",
+        "eBook LinkedIn Post Information (post text, comments & emails)": ""
+    });
+    const [eBookEditIndex, setEBookEditIndex] = useState(null);
+
+    // Guest Challenge Report Text
+    const [guestChallengeReportEntries, setGuestChallengeReportEntries] = useState([]);
+    const [currentGuestChallengeReport, setCurrentGuestChallengeReport] = useState({
+        "Multi-Guest Challenge Report Interactive Link": "",
+        "Multi-Guest Challenge Report Website URL": "",
+        "Multi-Guest Challenge Report Embed Code": "",
+        "Multi-Guest Challenge Report Text": "",
+        "Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)": ""
+    });
+    const [guestChallengeReportEditIndex, setGuestChallengeReportEditIndex] = useState(null);
     const [currentRowId, setCurrentRowId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const avatarInputRef = useRef(null);
     const [currentStep, setCurrentStep] = useState(1);
-    const totalSteps = 3;
+    const totalSteps = 5;
 
     const handleNextStep = async (nextStep) => {
         setIsSaving(true);
@@ -1909,20 +2250,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setIsSaving(false);
         }
     };
-    const FULL_EPISODE_KEYS = [
-        "DETAILS_FULL_EPISODES",
-        "FULL_EPISODE_VIDEO",
-        "FULL_EPISODE_EXTENDED_CONTENT",
-        "FULL_EPISODE_HIGHLIGHT_VIDEO",
-        "FULL_EPISODE_INTRODUCTION_VIDEO",
-        "FULL_EPISODE_QA_VIDEOS",
-        "FULL_EPISODE_PODBOOK",
-        "FULL_EPISODE_FULL_CASE_STUDY",
-        "FULL_EPISODE_ONE_PAGE_CASE_STUDY",
-        "FULL_EPISODE_OTHER_CASE_STUDY",
-        "FULL_EPISODE_ICP_ADVICE",
-        "FULL_EPISODE_CHALLENGE_QUESTIONS"
-    ];
+
 
     const saveStepData = async (rowId) => {
         let stepData = {};
@@ -2011,33 +2339,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     stepData.FULL_EPISODE_PODBOOK = newFullEpisodePodbookEntries;
                 }
 
-                if (fullEpisodeFullCaseStudyEntries.length > 0) {
-                    stepData.FULL_EPISODE_FULL_CASE_STUDY = fullEpisodeFullCaseStudyEntries;
-                }
-                if (Object.values(currentFullEpisodeFullCaseStudy).some(val => val !== "")) {
-                    const newFullEpisodeFullCaseStudyEntries = [...fullEpisodeFullCaseStudyEntries, currentFullEpisodeFullCaseStudy];
-                    handleAddFullEpisodeFullCaseStudy();
-                    stepData.FULL_EPISODE_FULL_CASE_STUDY = newFullEpisodeFullCaseStudyEntries;
-                }
-
-                if (fullEpisodeOnePageCaseStudyEntries.length > 0) {
-                    stepData.FULL_EPISODE_ONE_PAGE_CASE_STUDY = fullEpisodeOnePageCaseStudyEntries;
-                }
-                if (Object.values(currentFullEpisodeOnePageCaseStudy).some(val => val !== "")) {
-                    const newFullEpisodeOnePageCaseStudyEntries = [...fullEpisodeOnePageCaseStudyEntries, currentFullEpisodeOnePageCaseStudy];
-                    handleAddFullEpisodeOnePageCaseStudy();
-                    stepData.FULL_EPISODE_ONE_PAGE_CASE_STUDY = newFullEpisodeOnePageCaseStudyEntries;
-                }
-
-                if (fullEpisodeOtherCaseStudyEntries.length > 0) {
-                    stepData.FULL_EPISODE_OTHER_CASE_STUDY = fullEpisodeOtherCaseStudyEntries;
-                }
-                if (Object.values(currentFullEpisodeOtherCaseStudy).some(val => val !== "")) {
-                    const newFullEpisodeOtherCaseStudyEntries = [...fullEpisodeOtherCaseStudyEntries, currentFullEpisodeOtherCaseStudy];
-                    handleAddFullEpisodeOtherCaseStudy();
-                    stepData.FULL_EPISODE_OTHER_CASE_STUDY = newFullEpisodeOtherCaseStudyEntries;
-                }
-
                 if (fullEpisodeICPAdviceEntries.length > 0) {
                     stepData.FULL_EPISODE_ICP_ADVICE = fullEpisodeICPAdviceEntries;
                 }
@@ -2058,16 +2359,75 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 break;
 
             case 4: // Additional Projects step
-                if (additionalProjectEntries.length > 0) {
-                    stepData.Additional_Guest_Projects = additionalProjectEntries;
+                if (fullEpisodeFullCaseStudyEntries.length > 0) {
+                    stepData.FULL_EPISODE_FULL_CASE_STUDY = fullEpisodeFullCaseStudyEntries;
                 }
-                // Also save any current additional project data that hasn't been added yet
-                if (Object.values(currentAdditionalProject).some(val => val !== "")) {
-                    const newAdditionalProjectEntries = [...additionalProjectEntries, currentAdditionalProject];
-                    handleAddAdditionalProject();
-                    stepData.Additional_Guest_Projects = newAdditionalProjectEntries;
+                if (Object.values(currentFullEpisodeFullCaseStudy).some(val => val !== "")) {
+                    const newFullEpisodeFullCaseStudyEntries = [...fullEpisodeFullCaseStudyEntries, currentFullEpisodeFullCaseStudy];
+                    handleAddFullEpisodeFullCaseStudy();
+                    stepData.FULL_EPISODE_FULL_CASE_STUDY = newFullEpisodeFullCaseStudyEntries;
+                }
+
+                if (fullEpisodeOnePageCaseStudyEntries.length > 0) {
+                    stepData.FULL_EPISODE_ONE_PAGE_CASE_STUDY = fullEpisodeOnePageCaseStudyEntries;
+                }
+                if (Object.values(currentFullEpisodeOnePageCaseStudy).some(val => val !== "")) {
+                    const newFullEpisodeOnePageCaseStudyEntries = [...fullEpisodeOnePageCaseStudyEntries, currentFullEpisodeOnePageCaseStudy];
+                    handleAddFullEpisodeOnePageCaseStudy();
+                    stepData.FULL_EPISODE_ONE_PAGE_CASE_STUDY = newFullEpisodeOnePageCaseStudyEntries;
+                }
+                // Add eBook data
+                if (eBookEntries.length > 0) {
+                    stepData.eBook = eBookEntries;
+                }
+                if (Object.values(currentEBook).some(val => val !== "")) {
+                    const newEBookEntries = [...eBookEntries, currentEBook];
+                    handleAddEBook();
+                    stepData.eBook = newEBookEntries;
+                }
+
+                // Add Guest Challenge Report data
+                if (guestChallengeReportEntries.length > 0) {
+                    stepData['Multi-Guest_Challenge_Report_Text'] = guestChallengeReportEntries;
+                }
+                if (Object.values(currentGuestChallengeReport).some(val => val !== "")) {
+                    const newGuestChallengeReportEntries = [...guestChallengeReportEntries, currentGuestChallengeReport];
+                    handleAddGuestChallengeReport();
+                    stepData['Multi-Guest_Challenge_Report_Text'] = newGuestChallengeReportEntries;
                 }
                 break;
+
+            // Step 5: Reports
+            case 5:
+                if (icpAdviceReportEntries.length > 0) {
+                    stepData.ICP_Advice_Report = icpAdviceReportEntries;
+                }
+                if (Object.values(currentIcpAdviceReport).some(val => val !== "")) {
+                    const newIcpAdviceReportEntries = [...icpAdviceReportEntries, currentIcpAdviceReport];
+                    handleAddIcpAdviceReport();
+                    stepData.ICP_Advice_Report = newIcpAdviceReportEntries;
+                }
+
+                if (sqlAnalysisReportEntries.length > 0) {
+                    stepData.SQL_Analysis_Report = sqlAnalysisReportEntries;
+                }
+                if (Object.values(currentSqlAnalysisReport).some(val => val !== "")) {
+                    const newSqlAnalysisReportEntries = [...sqlAnalysisReportEntries, currentSqlAnalysisReport];
+                    handleAddSqlAnalysisReport();
+                    stepData.SQL_Analysis_Report = newSqlAnalysisReportEntries;
+                }
+
+                if (challengeQuestionsEntries.length > 0) {
+                    stepData.Challenge_Questions = challengeQuestionsEntries;
+                }
+                if (Object.values(currentChallengeQuestions).some(val => val !== "")) {
+                    const newChallengeQuestionsEntries = [...challengeQuestionsEntries, currentChallengeQuestions];
+                    handleAddChallengeQuestions();
+                    stepData.Challenge_Questions = newChallengeQuestionsEntries;
+                }
+                break;
+
+
 
             default:
                 break;
@@ -2095,6 +2455,69 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             setCurrentStep(currentStep - 1);
         }
     };
+
+    // Add these normalization functions with the other normalization functions
+    function normalizeEBook(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeEBook(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "eBook Interactive Link": item["eBook Interactive Link"] || "",
+                "eBook Website URL": item["eBook Website URL"] || "",
+                "eBook Embed Code": item["eBook Embed Code"] || "",
+                "eBook Text": item["eBook Text"] || "",
+                "eBook LinkedIn Post Information (post text, comments & emails)": item["eBook LinkedIn Post Information (post text, comments & emails)"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "eBook Interactive Link": data["eBook Interactive Link"] || "",
+                "eBook Website URL": data["eBook Website URL"] || "",
+                "eBook Embed Code": data["eBook Embed Code"] || "",
+                "eBook Text": data["eBook Text"] || "",
+                "eBook LinkedIn Post Information (post text, comments & emails)": data["eBook LinkedIn Post Information (post text, comments & emails)"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeGuestChallengeReport(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeGuestChallengeReport(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Multi-Guest Challenge Report Interactive Link": item["Multi-Guest Challenge Report Interactive Link"] || "",
+                "Multi-Guest Challenge Report Website URL": item["Multi-Guest Challenge Report Website URL"] || "",
+                "Multi-Guest Challenge Report Embed Code": item["Multi-Guest Challenge Report Embed Code"] || "",
+                "Multi-Guest Challenge Report Text": item["Multi-Guest Challenge Report Text"] || "",
+                "Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)": item["Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Multi-Guest Challenge Report Interactive Link": data["Multi-Guest Challenge Report Interactive Link"] || "",
+                "Multi-Guest Challenge Report Website URL": data["Multi-Guest Challenge Report Website URL"] || "",
+                "Multi-Guest Challenge Report Embed Code": data["Multi-Guest Challenge Report Embed Code"] || "",
+                "Multi-Guest Challenge Report Text": data["Multi-Guest Challenge Report Text"] || "",
+                "Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)": data["Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)"] || ""
+            }];
+        }
+        return [];
+    }
 
     const normalizeVideoType = (data) => {
         if (!data) return [];
@@ -2467,7 +2890,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Episode Title": item["Episode Title"] || "",
                 "Date Recorded": item["Date Recorded"] || "",
                 "Category": item["Category"] || "",
-                "Description": item["Description"] || "",
+                "Short Episode Description": item["Short Episode Description"] || "",
+                "Long Episode Description": item["Long Episode Description"] || "",
                 "Formate": item["Formate"] || "",
                 "Short and Long-Tail SEO Keywords": item["Short and Long-Tail SEO Keywords"] || "",
                 "All Asset Folder": item["All Asset Folder"] || ""
@@ -2480,7 +2904,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Episode Title": data["Episode Title"] || "",
                 "Date Recorded": data["Date Recorded"] || "",
                 "Category": data["Category"] || "",
-                "Description": data["Description"] || "",
+                "Short Episode Description": data["Short Episode Description"] || "",
+                "Long Episode Description": data["Long Episode Description"] || "",
                 "Formate": data["Formate"] || "",
                 "Short and Long-Tail SEO Keywords": data["Short and Long-Tail SEO Keywords"] || "",
                 "All Asset Folder": data["All Asset Folder"] || ""
@@ -2501,28 +2926,33 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         if (Array.isArray(data)) {
             return data.map(item => ({
-                "Video File": item["Video File"] || "",
-                "Audio File": item["Audio File"] || "",
-                "YouTube URL": item["YouTube URL"] || "",
-                "Full Episode Details": item["Full Episode Details"] || "",
-                "Transcript": item["Transcript"] || "",
-                "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
-                "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
-                "Emails Marketing": item["Emails Marketing"] || "",
-                "Emails Sales": item["Emails Sales"] || ""
+                "Full Episode Video Title": item["Full Episode Video Title"] || "",
+                "Full Episode Video Length": item["Full Episode Video Length"] || "",
+                "Full Episode Video Description": item["Full Episode Video Description"] || "",
+                "Full Episode Audio File": item["Full Episode Audio File"] || "",
+                "Full Episode YouTube URL": item["Full Episode YouTube URL"] || "",
+                // "Full Episode Details": item["Full Episode Details"] || "",
+                "Unedited Full Episode Transcript": item["Unedited Full Episode Transcript"] || "",
+                "Provocative Statements": item["Provocative Statements"] || "",
+                "Custom Requests": item["Custom Requests"] || "",
+                // "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
+                // "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
+                // "Emails Marketing": item["Emails Marketing"] || "",
+                // "Emails Sales": item["Emails Sales"] || ""
             }));
         }
         if (typeof data === 'object') {
             return [{
-                "Video File": data["Video File"] || "",
-                "Audio File": data["Audio File"] || "",
-                "YouTube URL": data["YouTube URL"] || "",
-                "Full Episode Details": data["Full Episode Details"] || "",
-                "Transcript": data["Transcript"] || "",
-                "LinkedIn Post Text": data["LinkedIn Post Text"] || "",
-                "LinkedIn Executive Comments": data["LinkedIn Executive Comments"] || "",
-                "Emails Marketing": data["Emails Marketing"] || "",
-                "Emails Sales": data["Emails Sales"] || ""
+                "Full Episode Video Title": data["Full Episode Video Title"] || "",
+                "Full Episode Video Length": data["Full Episode Video Length"] || "",
+                "Full Episode Video Description": data["Full Episode Video Description"] || "",
+                "Full Episode Audio File": data["Full Episode Audio File"] || "",
+                "Full Episode YouTube URL": data["Full Episode YouTube URL"] || "",
+                // "Full Episode Details": data["Full Episode Details"] || "",
+                "Unedited Full Episode Transcript": data["Unedited Full Episode Transcript"] || "",
+                "Edited Full Episode Transcript": data["Edited Full Episode Transcript"] || "",
+                "Provocative Statements": data["Provocative Statements"] || "",
+                "Custom Requests": data["Custom Requests"] || "",
             }];
         }
         return [];
@@ -2551,7 +2981,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
                 "Emails Marketing": item["Emails Marketing"] || "",
                 "Emails Sales": item["Emails Sales"] || "",
-                "Quote Card": item["Quote Card"] || ""
+                "Full Episode Quote Card": item["Full Episode Quote Card"] || ""
             }));
         }
         if (typeof data === 'object') {
@@ -2567,7 +2997,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "LinkedIn Executive Comments": data["LinkedIn Executive Comments"] || "",
                 "Emails Marketing": data["Emails Marketing"] || "",
                 "Emails Sales": data["Emails Sales"] || "",
-                "Quote Card": data["Quote Card"] || ""
+                "Full Episode Quote Card": data["Full Episode Quote Card"] || ""
             }];
         }
         return [];
@@ -2585,26 +3015,29 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         if (Array.isArray(data)) {
             return data.map(item => ({
-                "Video File": item["Video File"] || "",
-                "YouTube URL": item["YouTube URL"] || "",
-                "Transcript": item["Transcript"] || "",
-                "Highlights Video Details": item["Highlights Video Details"] || "",
-                "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
-                "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
-                "Emails Marketing": item["Emails Marketing"] || "",
-                "Emails Sales": item["Emails Sales"] || ""
+                "Highlight Video Title": item["Highlight Video Title"] || "",
+                "Highlight Video Length": item["Highlight Video Length"] || "",
+                "Highlight Video Description": item["Highlight Video Description"] || "",
+                "Highlight Video File": item["Highlight Video File"] || "",
+                " HighlightYouTube URL": item["YHighlight ouTube URL"] || "",
+                "Highlight Video Transcript": item["Highlight Video Transcript"] || "",
+                "Highlights Video LinkedIn Post Information (post text, comments & emails)": item["Highlights Video LinkedIn Post Information (post text, comments & emails)"] || "",
+                // "Highlights Video Details": item["Highlights Video Details"] || "",
+                // "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
+                // "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
+                // "Emails Marketing": item["Emails Marketing"] || "",
+                // "Emails Sales": item["Emails Sales"] || ""
             }));
         }
         if (typeof data === 'object') {
             return [{
-                "Video File": data["Video File"] || "",
-                "YouTube URL": data["YouTube URL"] || "",
-                "Transcript": data["Transcript"] || "",
-                "Highlights Video Details": data["Highlights Video Details"] || "",
-                "LinkedIn Post Text": data["LinkedIn Post Text"] || "",
-                "LinkedIn Executive Comments": data["LinkedIn Executive Comments"] || "",
-                "Emails Marketing": data["Emails Marketing"] || "",
-                "Emails Sales": data["Emails Sales"] || ""
+                "Highlight Video Title": data["Highlight Video Title"] || "",
+                "Highlight Video Length": data["Highlight Video Length"] || "",
+                "Highlight Video Description": data["Highlight Video Description"] || "",
+                "Highlight Video File": data["Highlight Video File"] || "",
+                " HighlightYouTube URL": data["YHighlight ouTube URL"] || "",
+                "Highlight Video Transcript": data["Highlight Video Transcript"] || "",
+                "Highlights Video LinkedIn Post Information (post text, comments & emails)": data["Highlights Video LinkedIn Post Information (post text, comments & emails)"] || "",
             }];
         }
         return [];
@@ -2622,20 +3055,26 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         if (Array.isArray(data)) {
             return data.map(item => ({
-                "Video File": item["Video File"] || "",
-                "YouTube URL": item["YouTube URL"] || "",
-                "Transcript": item["Transcript"] || "",
-                "Instruction Video Details": item["Instruction Video Details"] || ""
+                "Introduction Video Title": item["Introduction Video Title"] || "",
+                "Introduction Video Length": item["Introduction Video Length"] || "",
+                "Introduction Video Description": item["Introduction Video Description"] || "",
+                "Introduction Video File": item["Introduction Video File"] || "",
+                "Introduction Video YouTube URL": item["Introduction Video YouTube URL"] || "",
+                "Introduction Video Transcript": item["Introduction Video Transcript"] || ""
             }));
         }
+
         if (typeof data === 'object') {
             return [{
-                "Video File": data["Video File"] || "",
-                "YouTube URL": data["YouTube URL"] || "",
-                "Transcript": data["Transcript"] || "",
-                "Instruction Video Details": data["Instruction Video Details"] || ""
+                "Introduction Video Title": data["Introduction Video Title"] || "",
+                "Introduction Video Length": data["Introduction Video Length"] || "",
+                "Introduction Video Description": data["Introduction Video Description"] || "",
+                "Introduction Video File": data["Introduction Video File"] || "",
+                "Introduction Video YouTube URL": data["Introduction Video YouTube URL"] || "",
+                "Introduction Video Transcript": data["Introduction Video Transcript"] || ""
             }];
         }
+
         return [];
     }
 
@@ -2651,42 +3090,44 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         if (Array.isArray(data)) {
             return data.map(item => ({
+                "QAV1 Video Title": item["QAV1 Video Title"] || "",
+                "QAV1 Video Length": item["QAV1 Video Length"] || "",
+                "QAV1 Video Description": item["QAV1 Video Description"] || "",
+                "QAV1 Video Quote": item["QAV1 Video Quote"] || "",
+                "QAV1 Video Hashtags": item["QAV1 Video Hashtags"] || "",
+                "QAV1 Video LinkedIn Post Information (post text, comments & emails)":
+                    item["QAV1 Video LinkedIn Post Information (post text, comments & emails)"] || "",
                 "QAV1 Video File": item["QAV1 Video File"] || "",
                 "QAV1 YouTube URL": item["QAV1 YouTube URL"] || "",
-                "QAV1 Transcript": item["QAV1 Transcript"] || "",
-                "QAV1 QA Video Details": item["QAV1 QA Video Details"] || "",
-                "Extended Content Article URL": item["Extended Content Article URL"] || "",
-                "Extended Content Article Text": item["Extended Content Article Text"] || "",
-                "Extended Content YouTube Short Video File": item["Extended Content YouTube Short Video File"] || "",
-                "Extended Content YouTube Short URL": item["Extended Content YouTube Short URL"] || "",
-                "Extended Content YouTube Short Transcript": item["Extended Content YouTube Short Transcript"] || "",
-                "Extended Content LinkedIn Video File": item["Extended Content LinkedIn Video File"] || "",
-                "Extended Content LinkedIn Video Transcript": item["Extended Content LinkedIn Video Transcript"] || "",
-                "LinkedIn Post Text": item["LinkedIn Post Text"] || "",
-                "LinkedIn Executive Comments": item["LinkedIn Executive Comments"] || "",
-                "Emails Marketing": item["Emails Marketing"] || "",
-                "Emails Sales": item["Emails Sales"] || "",
-                "Quote Card": item["Quote Card"] || ""
+                "QAV1 Video Transcript": item["QAV1 Video Transcript"] || "",
+                "QAV1 Article URL": item["QAV1 Article URL"] || "",
+                "QAV1 Article Text": item["QAV1 Article Text"] || "",
+                "QAV1 YouTube Short Video File": item["QAV1 YouTube Short Video File"] || "",
+                "QAV1 YouTube Short URL": item["QAV1 YouTube Short URL"] || "",
+                "QAV1 YouTube Short Transcript": item["QAV1 YouTube Short Transcript"] || "",
+                "QAV1 LinkedIn Short Video File": item["QAV1 LinkedIn Short Video File"] || "",
+                "QAV1 Quote Card": item["QAV1 Quote Card"] || ""
             }));
         }
         if (typeof data === 'object') {
             return [{
+                "QAV1 Video Title": data["QAV1 Video Title"] || "",
+                "QAV1 Video Length": data["QAV1 Video Length"] || "",
+                "QAV1 Video Description": data["QAV1 Video Description"] || "",
+                "QAV1 Video Quote": data["QAV1 Video Quote"] || "",
+                "QAV1 Video Hashtags": data["QAV1 Video Hashtags"] || "",
+                "QAV1 Video LinkedIn Post Information (post text, comments & emails)":
+                    data["QAV1 Video LinkedIn Post Information (post text, comments & emails)"] || "",
                 "QAV1 Video File": data["QAV1 Video File"] || "",
                 "QAV1 YouTube URL": data["QAV1 YouTube URL"] || "",
-                "QAV1 Transcript": data["QAV1 Transcript"] || "",
-                "QAV1 QA Video Details": data["QAV1 QA Video Details"] || "",
-                "Extended Content Article URL": data["Extended Content Article URL"] || "",
-                "Extended Content Article Text": data["Extended Content Article Text"] || "",
-                "Extended Content YouTube Short Video File": data["Extended Content YouTube Short Video File"] || "",
-                "Extended Content YouTube Short URL": data["Extended Content YouTube Short URL"] || "",
-                "Extended Content YouTube Short Transcript": data["Extended Content YouTube Short Transcript"] || "",
-                "Extended Content LinkedIn Video File": data["Extended Content LinkedIn Video File"] || "",
-                "Extended Content LinkedIn Video Transcript": data["Extended Content LinkedIn Video Transcript"] || "",
-                "LinkedIn Post Text": data["LinkedIn Post Text"] || "",
-                "LinkedIn Executive Comments": data["LinkedIn Executive Comments"] || "",
-                "Emails Marketing": data["Emails Marketing"] || "",
-                "Emails Sales": data["Emails Sales"] || "",
-                "Quote Card": data["Quote Card"] || ""
+                "QAV1 Video Transcript": data["QAV1 Video Transcript"] || "",
+                "QAV1 Article URL": data["QAV1 Article URL"] || "",
+                "QAV1 Article Text": data["QAV1 Article Text"] || "",
+                "QAV1 YouTube Short Video File": data["QAV1 YouTube Short Video File"] || "",
+                "QAV1 YouTube Short URL": data["QAV1 YouTube Short URL"] || "",
+                "QAV1 YouTube Short Transcript": data["QAV1 YouTube Short Transcript"] || "",
+                "QAV1 LinkedIn Short Video File": data["QAV1 LinkedIn Short Video File"] || "",
+                "QAV1 Quote Card": data["QAV1 Quote Card"] || ""
             }];
         }
         return [];
@@ -2704,20 +3145,24 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         if (Array.isArray(data)) {
             return data.map(item => ({
-                "Interactive Experience": item["Interactive Experience"] || "",
-                "Website URL": item["Website URL"] || "",
-                "Embed Code": item["Embed Code"] || "",
-                "Loom Folder": item["Loom Folder"] || ""
+                "Podbook Interactive Link": item["Podbook Interactive Link"] || "",
+                "Podbook Website URL": item["Podbook Website URL"] || "",
+                "Podbook Embed Code": item["Podbook Embed Code"] || "",
+                "Podbook Presentation": item["Podbook Presentation"] || "",
+                "Podbook Loom Folder": item["Podbook Loom Folder"] || ""
             }));
         }
+
         if (typeof data === 'object') {
             return [{
-                "Interactive Experience": data["Interactive Experience"] || "",
-                "Website URL": data["Website URL"] || "",
-                "Embed Code": data["Embed Code"] || "",
-                "Loom Folder": data["Loom Folder"] || ""
+                "Podbook Interactive Link": data["Podbook Interactive Link"] || "",
+                "Podbook Website URL": data["Podbook Website URL"] || "",
+                "Podbook Embed Code": data["Podbook Embed Code"] || "",
+                "Podbook Presentation": data["Podbook Presentation"] || "",
+                "Podbook Loom Folder": data["Podbook Loom Folder"] || ""
             }];
         }
+
         return [];
     }
 
@@ -2733,36 +3178,41 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         if (Array.isArray(data)) {
             return data.map(item => ({
-                "Interactive Experience": item["Interactive Experience"] || "",
-                "Case Study Text": item["Case Study Text"] || "",
-                "Sales Email": item["Sales Email"] || "",
-                "Problem Section Video": item["Problem Section Video"] || "",
+                "Full Case Study Interactive Link": item["Full Case Study Interactive Link"] || "",
+                "Full Case Study Website URL": item["Full Case Study Website URL"] || "",
+                "Full Case Study Embed Code": item["Full Case Study Embed Code"] || "",
+                "Full Case Study Text": item["Full Case Study Text"] || "",
+                "Full Case Study LinkedIn Post Information (post text, comments & emails)": item["Full Case Study LinkedIn Post Information (post text, comments & emails)"] || "",
+                "Problem Section Video File": item["Problem Section Video File"] || "",
                 "Problem Section Video Length": item["Problem Section Video Length"] || "",
                 "Problem Section Video Transcript": item["Problem Section Video Transcript"] || "",
-                "Solutions Section Video": item["Solutions Section Video"] || "",
+                "Solutions Section Video File": item["Solutions Section Video File"] || "",
                 "Solutions Section Video Length": item["Solutions Section Video Length"] || "",
                 "Solutions Section Video Transcript": item["Solutions Section Video Transcript"] || "",
-                "Results Section Video": item["Results Section Video"] || "",
+                "Results Section Video File": item["Results Section Video File"] || "",
                 "Results Section Video Length": item["Results Section Video Length"] || "",
                 "Results Section Video Transcript": item["Results Section Video Transcript"] || ""
             }));
         }
         if (typeof data === 'object') {
             return [{
-                "Interactive Experience": data["Interactive Experience"] || "",
-                "Case Study Text": data["Case Study Text"] || "",
-                "Sales Email": data["Sales Email"] || "",
-                "Problem Section Video": data["Problem Section Video"] || "",
+                "Full Case Study Interactive Link": data["Full Case Study Interactive Link"] || "",
+                "Full Case Study Website URL": data["Full Case Study Website URL"] || "",
+                "Full Case Study Embed Code": data["Full Case Study Embed Code"] || "",
+                "Full Case Study Text": data["Full Case Study Text"] || "",
+                "Full Case Study LinkedIn Post Information (post text, comments & emails)": data["Full Case Study LinkedIn Post Information (post text, comments & emails)"] || "",
+                "Problem Section Video File": data["Problem Section Video File"] || "",
                 "Problem Section Video Length": data["Problem Section Video Length"] || "",
                 "Problem Section Video Transcript": data["Problem Section Video Transcript"] || "",
-                "Solutions Section Video": data["Solutions Section Video"] || "",
+                "Solutions Section Video File": data["Solutions Section Video File"] || "",
                 "Solutions Section Video Length": data["Solutions Section Video Length"] || "",
                 "Solutions Section Video Transcript": data["Solutions Section Video Transcript"] || "",
-                "Results Section Video": data["Results Section Video"] || "",
+                "Results Section Video File": data["Results Section Video File"] || "",
                 "Results Section Video Length": data["Results Section Video Length"] || "",
                 "Results Section Video Transcript": data["Results Section Video Transcript"] || ""
             }];
         }
+
         return [];
     }
 
@@ -2778,24 +3228,19 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
         if (Array.isArray(data)) {
             return data.map(item => ({
-                "Interactive Experience": item["Interactive Experience"] || "",
-                "One Page Text": item["One Page Text"] || "",
-                "Sales Email": item["Sales Email"] || "",
-                "One Page Video": item["One Page Video"] || "",
-                "Length": item["Length"] || "",
-                "Transcript": item["Transcript"] || ""
+                "One Page Case Study Interactive Link": item["One Page Case Study Interactive Link"] || "",
+                "One Page Case Study Website URL": item["One Page Case Study Website URL"] || "",
+                "One Page Case Study Embed Code": item["One Page Case Study Embed Code"] || ""
             }));
         }
         if (typeof data === 'object') {
             return [{
-                "Interactive Experience": data["Interactive Experience"] || "",
-                "One Page Text": data["One Page Text"] || "",
-                "Sales Email": data["Sales Email"] || "",
-                "One Page Video": data["One Page Video"] || "",
-                "Length": data["Length"] || "",
-                "Transcript": data["Transcript"] || ""
+                "One Page Case Study Interactive Link": data["One Page Case Study Interactive Link"] || "",
+                "One Page Case Study Website URL": data["One Page Case Study Website URL"] || "",
+                "One Page Case Study Embed Code": data["One Page Case Study Embed Code"] || ""
             }];
         }
+
         return [];
     }
 
@@ -2891,9 +3336,182 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         return [];
     }
 
+    function normalizeIcpAdviceReport(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeIcpAdviceReport(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "ICP Advice Post-Podcast Video File": item["ICP Advice Post-Podcast Video File"] || "",
+                "ICP Advice Post-Podcast Video Length": item["ICP Advice Post-Podcast Video Length"] || "",
+                "ICP Advice Post-Podcast Video Transcript": item["ICP Advice Post-Podcast Video Transcript"] || "",
+                "ICP Advice Report": item["ICP Advice Report"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            // Ensure we're not accidentally picking up SQL Analysis Report data
+            if (data["SQL Analysis Post-Podcast Video File"]) {
+                return []; // This is SQL Analysis data, not ICP Advice
+            }
+            return [{
+                "ICP Advice Post-Podcast Video File": data["ICP Advice Post-Podcast Video File"] || "",
+                "ICP Advice Post-Podcast Video Length": data["ICP Advice Post-Podcast Video Length"] || "",
+                "ICP Advice Post-Podcast Video Transcript": data["ICP Advice Post-Podcast Video Transcript"] || "",
+                "ICP Advice Report": data["ICP Advice Report"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeSqlAnalysisReport(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeSqlAnalysisReport(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "SQL Analysis Post-Podcast Video File": item["SQL Analysis Post-Podcast Video File"] || "",
+                "SQL Analysis Post-Podcast Video Length": item["SQL Analysis Post-Podcast Video Length"] || "",
+                "SQL Analysis Post-Podcast Video Transcript": item["SQL Analysis Post-Podcast Video Transcript"] || "",
+                "SQL Analysis Report": item["SQL Analysis Report"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            // Ensure we're not accidentally picking up Challenge Questions data
+            if (data["Challenge Questions Prep Call Video File"]) {
+                return []; // This is Challenge Questions data, not SQL Analysis
+            }
+            return [{
+                "SQL Analysis Post-Podcast Video File": data["SQL Analysis Post-Podcast Video File"] || "",
+                "SQL Analysis Post-Podcast Video Length": data["SQL Analysis Post-Podcast Video Length"] || "",
+                "SQL Analysis Post-Podcast Video Transcript": data["SQL Analysis Post-Podcast Video Transcript"] || "",
+                "SQL Analysis Report": data["SQL Analysis Report"] || ""
+            }];
+        }
+        return [];
+    }
+
+    function normalizeChallengeQuestions(data) {
+        if (!data) return [];
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data);
+                return normalizeChallengeQuestions(parsed);
+            } catch {
+                return [];
+            }
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => ({
+                "Challenge Questions Prep Call Video File": item["Challenge Questions Prep Call Video File"] || "",
+                "Challenge Questions Prep Call Video Length": item["Challenge Questions Prep Call Video Length"] || "",
+                "Challenge Questions Prep Call Video Transcript": item["Challenge Questions Prep Call Video Transcript"] || "",
+                "Challenge Questions Report": item["Challenge Questions Report"] || ""
+            }));
+        }
+        if (typeof data === 'object') {
+            return [{
+                "Challenge Questions Prep Call Video File": data["Challenge Questions Prep Call Video File"] || "",
+                "Challenge Questions Prep Call Video Length": data["Challenge Questions Prep Call Video Length"] || "",
+                "Challenge Questions Prep Call Video Transcript": data["Challenge Questions Prep Call Video Transcript"] || "",
+                "Challenge Questions Report": data["Challenge Questions Report"] || ""
+            }];
+        }
+        return [];
+    }
+
     useEffect(() => {
         if (entityData?.id) {
             const matchedData = themesRank?.find(item => item.id == entityData.id);
+
+
+            // Add this in the useEffect that loads entityData
+            // eBook
+            const eBookData = matchedData?.eBook;
+            if (eBookData) {
+                try {
+                    setEBookEntries(normalizeEBook(eBookData));
+                } catch (e) {
+                    console.error("Error parsing eBook data:", e);
+                    setEBookEntries([]);
+                }
+            } else {
+                setEBookEntries([]);
+            }
+
+            // Guest Challenge Report
+            const guestChallengeReportData = matchedData['Multi-Guest_Challenge_Report_Text'];
+            if (guestChallengeReportData) {
+                try {
+                    setGuestChallengeReportEntries(normalizeGuestChallengeReport(guestChallengeReportData));
+                } catch (e) {
+                    console.error("Error parsing Guest Challenge Report data:", e);
+                    setGuestChallengeReportEntries([]);
+                }
+            } else {
+                setGuestChallengeReportEntries([]);
+            }
+            // ICP Advice Report - ensure it's not picking up SQL data
+            const icpAdviceReportData = matchedData?.ICP_Advice_Report;
+            if (icpAdviceReportData) {
+                try {
+                    const normalized = normalizeIcpAdviceReport(icpAdviceReportData);
+                    // Filter out any entries that might contain SQL data
+                    const filtered = normalized.filter(item =>
+                        !item["SQL Analysis Post-Podcast Video File"] &&
+                        !item["SQL Analysis Report"]
+                    );
+                    setIcpAdviceReportEntries(filtered);
+                } catch (e) {
+                    console.error("Error parsing ICP Advice Report data:", e);
+                    setIcpAdviceReportEntries([]);
+                }
+            } else {
+                setIcpAdviceReportEntries([]);
+            }
+
+            // SQL Analysis Report - ensure it's not picking up Challenge data
+            const sqlAnalysisReportData = matchedData?.SQL_Analysis_Report;
+            if (sqlAnalysisReportData) {
+                try {
+                    const normalized = normalizeSqlAnalysisReport(sqlAnalysisReportData);
+                    // Filter out any entries that might contain Challenge data
+                    const filtered = normalized.filter(item =>
+                        !item["Challenge Questions Prep Call Video File"] &&
+                        !item["Challenge Questions Report"]
+                    );
+                    setSqlAnalysisReportEntries(filtered);
+                } catch (e) {
+                    console.error("Error parsing SQL Analysis Report data:", e);
+                    setSqlAnalysisReportEntries([]);
+                }
+            } else {
+                setSqlAnalysisReportEntries([]);
+            }
+
+            // Challenge Questions
+            const challengeQuestionsData = matchedData?.Challenge_Questions;
+            if (challengeQuestionsData) {
+                try {
+                    setChallengeQuestionsEntries(normalizeChallengeQuestions(challengeQuestionsData));
+                } catch (e) {
+                    console.error("Error parsing Challenge Questions data:", e);
+                    setChallengeQuestionsEntries([]);
+                }
+            } else {
+                setChallengeQuestionsEntries([]);
+            }
 
 
             const emailData = matchedData?.Emails;
@@ -3479,7 +4097,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     ...(fullEpisodeOnePageCaseStudyEntries.length > 0 && { full_episode_one_page_case_study: fullEpisodeOnePageCaseStudyEntries }),
                     ...(fullEpisodeOtherCaseStudyEntries.length > 0 && { full_episode_other_case_study: fullEpisodeOtherCaseStudyEntries }),
                     ...(fullEpisodeICPAdviceEntries.length > 0 && { full_episode_icp_advice: fullEpisodeICPAdviceEntries }),
-                    ...(fullEpisodeChallengeQuestionsEntries.length > 0 && { full_episode_challenge_questions: fullEpisodeChallengeQuestionsEntries })
+                    ...(fullEpisodeChallengeQuestionsEntries.length > 0 && { full_episode_challenge_questions: fullEpisodeChallengeQuestionsEntries }),
+                    ...(icpAdviceReportEntries.length > 0 && { ICP_Advice_Report: icpAdviceReportEntries }),
+                    ...(sqlAnalysisReportEntries.length > 0 && { SQL_Analysis_Report: sqlAnalysisReportEntries }),
+                    ...(challengeQuestionsEntries.length > 0 && { Challenge_Questions: challengeQuestionsEntries }),
+                    ...(eBookEntries.length > 0 && { eBook: eBookEntries }),
+                    ...(guestChallengeReportEntries.length > 0 && { 'Multi-Guest_Challenge_Report_Text': guestChallengeReportEntries }),
                 };
 
                 const formattedValue = isDashboardForm ? formattedValuesDashboard : {
@@ -3633,6 +4256,18 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     formattedValues.FULL_EPISODE_CHALLENGE_QUESTIONS = formik.values?.FULL_EPISODE_CHALLENGE_QUESTIONS?.value || formik.values.FULL_EPISODE_CHALLENGE_QUESTIONS || null;
                 }
 
+                if (formattedValues.ICP_Advice_Report) {
+                    formattedValues.ICP_Advice_Report = formik.values?.ICP_Advice_Report?.value || formik.values.ICP_Advice_Report || null;
+                }
+
+                if (formattedValues.SQL_Analysis_Report) {
+                    formattedValues.SQL_Analysis_Report = formik.values?.SQL_Analysis_Report?.value || formik.values.SQL_Analysis_Report || null;
+                }
+
+                if (formattedValues.Challenge_Questions) {
+                    formattedValues.Challenge_Questions = formik.values?.Challenge_Questions?.value || formik.values.Challenge_Questions || null;
+                }
+
                 // Only include fields the current table supports (based on displayFields)
                 try {
                     const allowedKeys = new Set((displayFields || []).map(f => f.key));
@@ -3758,6 +4393,107 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setMentionedQuotes(mentionedQuotes.filter((_, i) => i !== index));
     };
 
+    // eBook Handlers
+    const handleAddEBook = () => {
+        const newEntry = { ...currentEBook };
+
+        if (eBookEditIndex !== null) {
+            const updated = [...eBookEntries];
+            updated[eBookEditIndex] = newEntry;
+            setEBookEntries(updated);
+            setEBookEditIndex(null);
+        } else {
+            setEBookEntries([...eBookEntries, newEntry]);
+        }
+
+        setCurrentEBook({
+            "eBook Interactive Link": "",
+            "eBook Website URL": "",
+            "eBook Embed Code": "",
+            "eBook Text": "",
+            "eBook LinkedIn Post Information (post text, comments & emails)": ""
+        });
+    };
+
+    const handleEditEBook = (index) => {
+        const entry = eBookEntries[index];
+        setCurrentEBook({
+            "eBook Interactive Link": entry["eBook Interactive Link"] || "",
+            "eBook Website URL": entry["eBook Website URL"] || "",
+            "eBook Embed Code": entry["eBook Embed Code"] || "",
+            "eBook Text": entry["eBook Text"] || "",
+            "eBook LinkedIn Post Information (post text, comments & emails)": entry["eBook LinkedIn Post Information (post text, comments & emails)"] || ""
+        });
+        setEBookEditIndex(index);
+    };
+
+    const handleRemoveEBook = (index) => {
+        const updated = eBookEntries.filter((_, i) => i !== index);
+        setEBookEntries(updated);
+        if (eBookEditIndex === index) {
+            setCurrentEBook({
+                "eBook Interactive Link": "",
+                "eBook Website URL": "",
+                "eBook Embed Code": "",
+                "eBook Text": "",
+                "eBook LinkedIn Post Information (post text, comments & emails)": ""
+            });
+            setEBookEditIndex(null);
+        } else if (eBookEditIndex > index) {
+            setEBookEditIndex(eBookEditIndex - 1);
+        }
+    };
+
+    // Guest Challenge Report Handlers
+    const handleAddGuestChallengeReport = () => {
+        const newEntry = { ...currentGuestChallengeReport };
+
+        if (guestChallengeReportEditIndex !== null) {
+            const updated = [...guestChallengeReportEntries];
+            updated[guestChallengeReportEditIndex] = newEntry;
+            setGuestChallengeReportEntries(updated);
+            setGuestChallengeReportEditIndex(null);
+        } else {
+            setGuestChallengeReportEntries([...guestChallengeReportEntries, newEntry]);
+        }
+
+        setCurrentGuestChallengeReport({
+            "Multi-Guest Challenge Report Interactive Link": "",
+            "Multi-Guest Challenge Report Website URL": "",
+            "Multi-Guest Challenge Report Embed Code": "",
+            "Multi-Guest Challenge Report Text": "",
+            "Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)": ""
+        });
+    };
+
+    const handleEditGuestChallengeReport = (index) => {
+        const entry = guestChallengeReportEntries[index];
+        setCurrentGuestChallengeReport({
+            "Multi-Guest Challenge Report Interactive Link": entry["Multi-Guest Challenge Report Interactive Link"] || "",
+            "Multi-Guest Challenge Report Website URL": entry["Multi-Guest Challenge Report Website URL"] || "",
+            "Multi-Guest Challenge Report Embed Code": entry["Multi-Guest Challenge Report Embed Code"] || "",
+            "Multi-Guest Challenge Report Text": entry["Multi-Guest Challenge Report Text"] || "",
+            "Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)": entry["Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)"] || ""
+        });
+        setGuestChallengeReportEditIndex(index);
+    };
+
+    const handleRemoveGuestChallengeReport = (index) => {
+        const updated = guestChallengeReportEntries.filter((_, i) => i !== index);
+        setGuestChallengeReportEntries(updated);
+        if (guestChallengeReportEditIndex === index) {
+            setCurrentGuestChallengeReport({
+                "Multi-Guest Challenge Report Interactive Link": "",
+                "Multi-Guest Challenge Report Website URL": "",
+                "Multi-Guest Challenge Report Embed Code": "",
+                "Multi-Guest Challenge Report Text": "",
+                "Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)": ""
+            });
+            setGuestChallengeReportEditIndex(null);
+        } else if (guestChallengeReportEditIndex > index) {
+            setGuestChallengeReportEditIndex(guestChallengeReportEditIndex - 1);
+        }
+    };
     useEffect(() => {
         if ('Mentioned_Quotes' in formik.values) {
             formik.setFieldValue('Mentioned_Quotes', mentionedQuotes.length > 0 ? mentionedQuotes : null);
@@ -3828,6 +4564,23 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         if ('FULL_EPISODE_CHALLENGE_QUESTIONS' in formik.values) {
             formik.setFieldValue('FULL_EPISODE_CHALLENGE_QUESTIONS', fullEpisodeChallengeQuestionsEntries.length > 0 ? fullEpisodeChallengeQuestionsEntries : null);
         }
+        if ('ICP_Advice_Report' in formik.values) {
+            formik.setFieldValue('ICP_Advice_Report', icpAdviceReportEntries.length > 0 ? icpAdviceReportEntries : null);
+        }
+        if ('SQL_Analysis_Report' in formik.values) {
+            formik.setFieldValue('SQL_Analysis_Report', sqlAnalysisReportEntries.length > 0 ? sqlAnalysisReportEntries : null);
+        }
+        if ('Challenge_Questions' in formik.values) {
+            formik.setFieldValue('Challenge_Questions', challengeQuestionsEntries.length > 0 ? challengeQuestionsEntries : null);
+        }
+        if ('eBook' in formik.values) {
+            formik.setFieldValue('eBook', eBookEntries.length > 0 ? eBookEntries : null);
+        }
+
+        if ('Multi-Guest_Challenge_Report_Text' in formik.values) {
+            formik.setFieldValue('Multi-Guest_Challenge_Report_Text', guestChallengeReportEntries.length > 0 ? guestChallengeReportEntries : null);
+        }
+
 
     }, [
         themeEntries,
@@ -4050,7 +4803,152 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
     };
 
+    // ICP Advice Report Handlers
+    const handleAddIcpAdviceReport = () => {
+        const newEntry = { ...currentIcpAdviceReport };
 
+        if (icpAdviceReportEditIndex !== null) {
+            const updated = [...icpAdviceReportEntries];
+            updated[icpAdviceReportEditIndex] = newEntry;
+            setIcpAdviceReportEntries(updated);
+            setIcpAdviceReportEditIndex(null);
+        } else {
+            setIcpAdviceReportEntries([...icpAdviceReportEntries, newEntry]);
+        }
+
+        setCurrentIcpAdviceReport({
+            "ICP Advice Post-Podcast Video File": "",
+            "ICP Advice Post-Podcast Video Length": "",
+            "ICP Advice Post-Podcast Video Transcript": "",
+            "ICP Advice Report": "",
+            "VoC FILE": ""
+        });
+    };
+
+    const handleEditIcpAdviceReport = (index) => {
+        const entry = icpAdviceReportEntries[index];
+        setCurrentIcpAdviceReport({
+            "ICP Advice Post-Podcast Video File": entry["ICP Advice Post-Podcast Video File"] || "",
+            "ICP Advice Post-Podcast Video Length": entry["ICP Advice Post-Podcast Video Length"] || "",
+            "ICP Advice Post-Podcast Video Transcript": entry["ICP Advice Post-Podcast Video Transcript"] || "",
+            "ICP Advice Report": entry["ICP Advice Report"] || "",
+            "VoC FILE": entry["VoC FILE"] || ""
+        });
+        setIcpAdviceReportEditIndex(index);
+    };
+
+    const handleRemoveIcpAdviceReport = (index) => {
+        const updated = icpAdviceReportEntries.filter((_, i) => i !== index);
+        setIcpAdviceReportEntries(updated);
+        if (icpAdviceReportEditIndex === index) {
+            setCurrentIcpAdviceReport({
+                "ICP Advice Post-Podcast Video File": "",
+                "ICP Advice Post-Podcast Video Length": "",
+                "ICP Advice Post-Podcast Video Transcript": "",
+                "ICP Advice Report": "",
+                "VoC FILE": ""
+            });
+            setIcpAdviceReportEditIndex(null);
+        } else if (icpAdviceReportEditIndex > index) {
+            setIcpAdviceReportEditIndex(icpAdviceReportEditIndex - 1);
+        }
+    };
+
+    // SQL Analysis Report Handlers
+    const handleAddSqlAnalysisReport = () => {
+        const newEntry = { ...currentSqlAnalysisReport };
+
+        if (sqlAnalysisReportEditIndex !== null) {
+            const updated = [...sqlAnalysisReportEntries];
+            updated[sqlAnalysisReportEditIndex] = newEntry;
+            setSqlAnalysisReportEntries(updated);
+            setSqlAnalysisReportEditIndex(null);
+        } else {
+            setSqlAnalysisReportEntries([...sqlAnalysisReportEntries, newEntry]);
+        }
+
+        setCurrentSqlAnalysisReport({
+            "SQL Analysis Post-Podcast Video File": "",
+            "SQL Analysis Post-Podcast Video Length": "",
+            "SQL Analysis Post-Podcast Video Transcript": "",
+            "SQL Analysis Report": ""
+        });
+    };
+
+    const handleEditSqlAnalysisReport = (index) => {
+        const entry = sqlAnalysisReportEntries[index];
+        setCurrentSqlAnalysisReport({
+            "SQL Analysis Post-Podcast Video File": entry["SQL Analysis Post-Podcast Video File"] || "",
+            "SQL Analysis Post-Podcast Video Length": entry["SQL Analysis Post-Podcast Video Length"] || "",
+            "SQL Analysis Post-Podcast Video Transcript": entry["SQL Analysis Post-Podcast Video Transcript"] || "",
+            "SQL Analysis Report": entry["SQL Analysis Report"] || ""
+        });
+        setSqlAnalysisReportEditIndex(index);
+    };
+
+    const handleRemoveSqlAnalysisReport = (index) => {
+        const updated = sqlAnalysisReportEntries.filter((_, i) => i !== index);
+        setSqlAnalysisReportEntries(updated);
+        if (sqlAnalysisReportEditIndex === index) {
+            setCurrentSqlAnalysisReport({
+                "SQL Analysis Post-Podcast Video File": "",
+                "SQL Analysis Post-Podcast Video Length": "",
+                "SQL Analysis Post-Podcast Video Transcript": "",
+                "SQL Analysis Report": ""
+            });
+            setSqlAnalysisReportEditIndex(null);
+        } else if (sqlAnalysisReportEditIndex > index) {
+            setSqlAnalysisReportEditIndex(sqlAnalysisReportEditIndex - 1);
+        }
+    };
+
+    // Challenge Questions Handlers
+    const handleAddChallengeQuestions = () => {
+        const newEntry = { ...currentChallengeQuestions };
+
+        if (challengeQuestionsEditIndex !== null) {
+            const updated = [...challengeQuestionsEntries];
+            updated[challengeQuestionsEditIndex] = newEntry;
+            setChallengeQuestionsEntries(updated);
+            setChallengeQuestionsEditIndex(null);
+        } else {
+            setChallengeQuestionsEntries([...challengeQuestionsEntries, newEntry]);
+        }
+
+        setCurrentChallengeQuestions({
+            "Challenge Questions Prep Call Video File": "",
+            "Challenge Questions Prep Call Video Length": "",
+            "Challenge Questions Prep Call Video Transcript": "",
+            "Challenge Questions Report": ""
+        });
+    };
+
+    const handleEditChallengeQuestions = (index) => {
+        const entry = challengeQuestionsEntries[index];
+        setCurrentChallengeQuestions({
+            "Challenge Questions Prep Call Video File": entry["Challenge Questions Prep Call Video File"] || "",
+            "Challenge Questions Prep Call Video Length": entry["Challenge Questions Prep Call Video Length"] || "",
+            "Challenge Questions Prep Call Video Transcript": entry["Challenge Questions Prep Call Video Transcript"] || "",
+            "Challenge Questions Report": entry["Challenge Questions Report"] || ""
+        });
+        setChallengeQuestionsEditIndex(index);
+    };
+
+    const handleRemoveChallengeQuestions = (index) => {
+        const updated = challengeQuestionsEntries.filter((_, i) => i !== index);
+        setChallengeQuestionsEntries(updated);
+        if (challengeQuestionsEditIndex === index) {
+            setCurrentChallengeQuestions({
+                "Challenge Questions Prep Call Video File": "",
+                "Challenge Questions Prep Call Video Length": "",
+                "Challenge Questions Prep Call Video Transcript": "",
+                "Challenge Questions Report": ""
+            });
+            setChallengeQuestionsEditIndex(null);
+        } else if (challengeQuestionsEditIndex > index) {
+            setChallengeQuestionsEditIndex(challengeQuestionsEditIndex - 1);
+        }
+    };
     // Challenges handlers
     const handleAddChallenges = () => {
         // if (!currentChallenges || !currentChallengesRanking || !currentChallengesJustification) {
@@ -4635,7 +5533,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Episode Title": "",
             "Date Recorded": "",
             "Category": "",
-            "Description": "",
+            "Short Episode Description": "",
+            "Long Episode Description": "",
             "Formate": "",
             "Short and Long-Tail SEO Keywords": "",
             "All Asset Folder": ""
@@ -4650,7 +5549,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "Episode Title": entry["Episode Title"] || "",
             "Date Recorded": entry["Date Recorded"] || "",
             "Category": entry["Category"] || "",
-            "Description": entry["Description"] || "",
+            "Short Episode Description": entry["Short Episode Description"] || "",
+            "Long Episode Description": entry["Long Episode Description"] || "",
             "Formate": entry["Formate"] || "",
             "Short and Long-Tail SEO Keywords": entry["Short and Long-Tail SEO Keywords"] || "",
             "All Asset Folder": entry["All Asset Folder"] || ""
@@ -4668,7 +5568,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "Episode Title": "",
                 "Date Recorded": "",
                 "Category": "",
-                "Description": "",
+                "Short Episode Description": "",
+                "Long Episode Description": "",
                 "Formate": "",
                 "Short and Long-Tail SEO Keywords": "",
                 "All Asset Folder": ""
@@ -4699,30 +5600,37 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
 
         setCurrentFullEpisodeVideo({
-            "Video File": "",
-            "Audio File": "",
-            "YouTube URL": "",
-            "Full Episode Details": "",
-            "Transcript": "",
-            "LinkedIn Post Text": "",
-            "LinkedIn Executive Comments": "",
-            "Emails Marketing": "",
-            "Emails Sales": ""
+            "Full Episode Video Title": "",
+            "Full Episode Video Length": "",
+            "Full Episode Video Description": "",
+            "Full Episode Video File": "",
+            "Full Episode Audio File": "",
+            "Full Episode YouTube URL": "",
+            // "Full Episode Details",
+            "Unedited Full Episode Transcript": "",
+            "Edited Full Episode Transcript": "",
+            "Provocative Statements": "",
+            "Custom Requests": "",
         });
     };
 
     const handleEditFullEpisodeVideo = (index) => {
         const entry = fullEpisodeVideoEntries[index];
         setCurrentFullEpisodeVideo({
-            "Video File": entry["Video File"] || "",
-            "Audio File": entry["Audio File"] || "",
-            "YouTube URL": entry["YouTube URL"] || "",
-            "Full Episode Details": entry["Full Episode Details"] || "",
-            "Transcript": entry["Transcript"] || "",
-            "LinkedIn Post Text": entry["LinkedIn Post Text"] || "",
-            "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
-            "Emails Marketing": entry["Emails Marketing"] || "",
-            "Emails Sales": entry["Emails Sales"] || ""
+            "Full Episode Video Title": entry["Full Episode Video Title"] || "",
+            "Full Episode Video Length": entry["Full Episode Video Length"] || "",
+            "Full Episode Video Description": entry["Full Episode Video Description"] || "",
+            "Full Episode Audio File": entry["Full Episode Audio File"] || "",
+            "Full Episode YouTube URL": entry["Full Episode YouTube URL"] || "",
+            // "Full Episode Details": entry["Full Episode Details"] || "",
+            "Unedited Full Episode Transcript": entry["Unedited Full Episode Transcript"] || "",
+            "Edited Full Episode Transcript": entry["Edited Full Episode Transcript"] || "",
+            "Provocative Statements": entry["Provocative Statements"] || "",
+            "Custom Requests": entry["Custom Requests"] || "",
+            // "LinkedIn Post Text": entry["LinkedIn Post Text"] || "",
+            // "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
+            // "Emails Marketing": entry["Emails Marketing"] || "",
+            // "Emails Sales": entry["Emails Sales"] || ""
         });
         setFullEpisodeVideoEditIndex(index);
     };
@@ -4732,15 +5640,17 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setFullEpisodeVideoEntries(updated);
         if (fullEpisodeVideoEditIndex === index) {
             setCurrentFullEpisodeVideo({
-                "Video File": "",
-                "Audio File": "",
-                "YouTube URL": "",
-                "Full Episode Details": "",
-                "Transcript": "",
-                "LinkedIn Post Text": "",
-                "LinkedIn Executive Comments": "",
-                "Emails Marketing": "",
-                "Emails Sales": ""
+                "Full Episode Video Title": "",
+                "Full Episode Video Length": "",
+                "Full Episode Video Description": "",
+                "Full Episode Video File": "",
+                "Full Episode Audio File": "",
+                "Full Episode YouTube URL": "",
+                // "Full Episode Details",
+                "Unedited Full Episode Transcript": "",
+                "Edited Full Episode Transcript": "",
+                "Provocative Statements": "",
+                "Custom Requests": ""
             });
             setFullEpisodeVideoEditIndex(null);
         } else if (fullEpisodeVideoEditIndex > index) {
@@ -4781,7 +5691,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "LinkedIn Executive Comments": "",
             "Emails Marketing": "",
             "Emails Sales": "",
-            "Quote Card": ""
+            "Full Episode Quote Card": ""
         });
     };
 
@@ -4799,7 +5709,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
             "Emails Marketing": entry["Emails Marketing"] || "",
             "Emails Sales": entry["Emails Sales"] || "",
-            "Quote Card": entry["Quote Card"] || ""
+            "Full Episode Quote Card": entry["Full Episode Quote Card"] || ""
         });
         setFullEpisodeExtendedContentEditIndex(index);
     };
@@ -4820,7 +5730,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 "LinkedIn Executive Comments": "",
                 "Emails Marketing": "",
                 "Emails Sales": "",
-                "Quote Card": ""
+                "Full Episode Quote Card": ""
             });
             setFullEpisodeExtendedContentEditIndex(null);
         } else if (fullEpisodeExtendedContentEditIndex > index) {
@@ -4850,14 +5760,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
 
         setCurrentFullEpisodeHighlightVideo({
-            "Video File": "",
-            "YouTube URL": "",
-            "Transcript": "",
-            "Highlights Video Details": "",
-            "LinkedIn Post Text": "",
-            "LinkedIn Executive Comments": "",
-            "Emails Marketing": "",
-            "Emails Sales": ""
+            "Highlight Video Title": "",
+            "Highlight Video Length": "",
+            "Highlight Video Description": "",
+            "Highlight Video File": "",
+            "Highlight YouTube URL": "",
+            "Highlight Video Transcript": "",
+            "Highlights Video LinkedIn Post Information (post text, comments & emails)": ""
 
         });
     };
@@ -4865,14 +5774,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     const handleEditFullEpisodeHighlightVideo = (index) => {
         const entry = fullEpisodeHighlightVideoEntries[index];
         setCurrentFullEpisodeHighlightVideo({
-            "Video File": entry["Video File"] || "",
-            "YouTube URL": entry["YouTube URL"] || "",
-            "Transcript": entry["Transcript"] || "",
-            "Highlights Video Details": entry["Highlights Video Details"] || "",
-            "LinkedIn Post Text": entry["LinkedIn Post Text"] || "",
-            "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
-            "Emails Marketing": entry["Emails Marketing"] || "",
-            "Emails Sales": entry["Emails Sales"] || ""
+            "Highlight Video Title": entry["Highlight Video Title"] || "",
+            "Highlight Video Length": entry["Highlight Video Length"] || "",
+            "Highlight Video Description": entry["Highlight Video Description"] || "",
+            "Highlight Video File": entry["Highlight Video File"] || "",
+            " HighlightYouTube URL": entry["YHighlight ouTube URL"] || "",
+            "Highlight Video Transcript": entry["Highlight Video Transcript"] || "",
+            "Highlights Video LinkedIn Post Information (post text, comments & emails)": entry["Highlights Video LinkedIn Post Information (post text, comments & emails)"] || "",
 
         });
         setFullEpisodeHighlightVideoEditIndex(index);
@@ -4883,14 +5791,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setFullEpisodeHighlightVideoEntries(updated);
         if (fullEpisodeHighlightVideoEditIndex === index) {
             setCurrentFullEpisodeHighlightVideo({
-                "Video File": "",
-                "YouTube URL": "",
-                "Transcript": "",
-                "Highlights Video Details": "",
-                "LinkedIn Post Text": "",
-                "LinkedIn Executive Comments": "",
-                "Emails Marketing": "",
-                "Emails Sales": ""
+                "Highlight Video Title": "",
+                "Highlight Video Length": "",
+                "Highlight Video Description": "",
+                "Highlight Video File": "",
+                "Highlight YouTube URL": "",
+                "Highlight Video Transcript": "",
+                "Highlights Video LinkedIn Post Information (post text, comments & emails)": ""
 
             });
             setFullEpisodeHighlightVideoEditIndex(null);
@@ -4919,20 +5826,24 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
 
         setCurrentFullEpisodeIntroductionVideo({
-            "Video File": "",
-            "YouTube URL": "",
-            "Transcript": "",
-            "Instruction Video Details": ""
+            "Introduction Video Title": "",
+            "Introduction Video Length": "",
+            "Introduction Video Description": "",
+            "Introduction Video File": "",
+            "Introduction Video YouTube URL": "",
+            "Introduction Video Transcript": "",
         });
     };
 
     const handleEditFullEpisodeIntroductionVideo = (index) => {
         const entry = fullEpisodeIntroductionVideoEntries[index];
         setCurrentFullEpisodeIntroductionVideo({
-            "Video File": entry["Video File"] || "",
-            "YouTube URL": entry["YouTube URL"] || "",
-            "Transcript": entry["Transcript"] || "",
-            "Instruction Video Details": entry["Instruction Video Details"] || ""
+            "Introduction Video Title": entry["Introduction Video Title"] || "",
+            "Introduction Video Length": entry["Introduction Video Length"] || "",
+            "Introduction Video Description": entry["Introduction Video Description"] || "",
+            "Introduction Video File": entry["Introduction Video File"] || "",
+            "Introduction Video YouTube URL": entry["Introduction Video YouTube URL"] || "",
+            "Introduction Video Transcript": entry["Introduction Video Transcript"] || ""
         });
         setFullEpisodeIntroductionVideoEditIndex(index);
     };
@@ -4942,10 +5853,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setFullEpisodeIntroductionVideoEntries(updated);
         if (fullEpisodeIntroductionVideoEditIndex === index) {
             setCurrentFullEpisodeIntroductionVideo({
-                "Video File": "",
-                "YouTube URL": "",
-                "Transcript": "",
-                "Instruction Video Details": ""
+                "Introduction Video Title": "",
+                "Introduction Video Length": "",
+                "Introduction Video Description": "",
+                "Introduction Video File": "",
+                "Introduction Video YouTube URL": "",
+                "Introduction Video Transcript": "",
             });
             setFullEpisodeIntroductionVideoEditIndex(null);
         } else if (fullEpisodeIntroductionVideoEditIndex > index) {
@@ -4954,6 +5867,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     };
 
     // Full Episode QA Videos Handlers
+    const [qavLabelIndex, setQavLabelIndex] = useState(1);
+    const getDisplayQavLabel = (label) => label.replace('QAV1', `QAV${qavLabelIndex}`);
     const handleAddFullEpisodeQAVideos = () => {
         // if (!currentFullEpisodeQAVideos["QAV1 Video File"] &&
         //     !currentFullEpisodeQAVideos["QAV1 YouTube URL"]) {
@@ -4968,74 +5883,80 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             updated[fullEpisodeQAVideosEditIndex] = newEntry;
             setFullEpisodeQAVideosEntries(updated);
             setFullEpisodeQAVideosEditIndex(null);
+            setQavLabelIndex(updated.length + 1);
         } else {
-            setFullEpisodeQAVideosEntries([...fullEpisodeQAVideosEntries, newEntry]);
+            const next = [...fullEpisodeQAVideosEntries, newEntry];
+            setFullEpisodeQAVideosEntries(next);
+            setQavLabelIndex(next.length + 1);
         }
 
         setCurrentFullEpisodeQAVideos({
+            "QAV1 Video Title": "",
+            "QAV1 Video Length": "",
+            "QAV1 Video Description": "",
+            "QAV1 Video Quote": "",
+            "QAV1 Video Hashtags": "",
+            "QAV1 Video LinkedIn Post Information (post text, comments & emails)": "",
             "QAV1 Video File": "",
             "QAV1 YouTube URL": "",
-            "QAV1 Transcript": "",
-            "QAV1 QA Video Details": "",
-            "Extended Content Article URL": "",
-            "Extended Content Article Text": "",
-            "Extended Content YouTube Short Video File": "",
-            "Extended Content YouTube Short URL": "",
-            "Extended Content YouTube Short Transcript": "",
-            "Extended Content LinkedIn Video File": "",
-            "Extended Content LinkedIn Video Transcript": "",
-            "LinkedIn Post Text": "",
-            "LinkedIn Executive Comments": "",
-            "Emails Marketing": "",
-            "Emails Sales": "",
-            "Quote Card": ""
+            "QAV1 Video Transcript": "",
+            "QAV1 Article URL": "",
+            "QAV1 Article Text": "",
+            "QAV1 YouTube Short Video File": "",
+            "QAV1 YouTube Short URL": "",
+            "QAV1 YouTube Short Transcript": "",
+            "QAV1 LinkedIn Short Video File": "",
+            "QAV1 Quote Card": ""
         });
     };
 
     const handleEditFullEpisodeQAVideos = (index) => {
         const entry = fullEpisodeQAVideosEntries[index];
         setCurrentFullEpisodeQAVideos({
+            "QAV1 Video Title": entry["QAV1 Video Title"] || "",
+            "QAV1 Video Length": entry["QAV1 Video Length"] || "",
+            "QAV1 Video Description": entry["QAV1 Video Description"] || "",
+            "QAV1 Video Quote": entry["QAV1 Video Quote"] || "",
+            "QAV1 Video Hashtags": entry["QAV1 Video Hashtags"] || "",
+            "QAV1 Video LinkedIn Post Information (post text, comments & emails)":
+                entry["QAV1 Video LinkedIn Post Information (post text, comments & emails)"] || "",
             "QAV1 Video File": entry["QAV1 Video File"] || "",
             "QAV1 YouTube URL": entry["QAV1 YouTube URL"] || "",
-            "QAV1 Transcript": entry["QAV1 Transcript"] || "",
-            "QAV1 QA Video Details": entry["QAV1 QA Video Details"] || "",
-            "Extended Content Article URL": entry["Extended Content Article URL"] || "",
-            "Extended Content Article Text": entry["Extended Content Article Text"] || "",
-            "Extended Content YouTube Short Video File": entry["Extended Content YouTube Short Video File"] || "",
-            "Extended Content YouTube Short URL": entry["Extended Content YouTube Short URL"] || "",
-            "Extended Content YouTube Short Transcript": entry["Extended Content YouTube Short Transcript"] || "",
-            "Extended Content LinkedIn Video File": entry["Extended Content LinkedIn Video File"] || "",
-            "Extended Content LinkedIn Video Transcript": entry["Extended Content LinkedIn Video Transcript"] || "",
-            "LinkedIn Post Text": entry["LinkedIn Post Text"] || "",
-            "LinkedIn Executive Comments": entry["LinkedIn Executive Comments"] || "",
-            "Emails Marketing": entry["Emails Marketing"] || "",
-            "Emails Sales": entry["Emails Sales"] || "",
-            "Quote Card": entry["Quote Card"] || ""
+            "QAV1 Video Transcript": entry["QAV1 Video Transcript"] || "",
+            "QAV1 Article URL": entry["QAV1 Article URL"] || "",
+            "QAV1 Article Text": entry["QAV1 Article Text"] || "",
+            "QAV1 YouTube Short Video File": entry["QAV1 YouTube Short Video File"] || "",
+            "QAV1 YouTube Short URL": entry["QAV1 YouTube Short URL"] || "",
+            "QAV1 YouTube Short Transcript": entry["QAV1 YouTube Short Transcript"] || "",
+            "QAV1 LinkedIn Short Video File": entry["QAV1 LinkedIn Short Video File"] || "",
+            "QAV1 Quote Card": entry["QAV1 Quote Card"] || ""
         });
         setFullEpisodeQAVideosEditIndex(index);
+        setQavLabelIndex(index + 1);
     };
 
     const handleRemoveFullEpisodeQAVideos = (index) => {
         const updated = fullEpisodeQAVideosEntries.filter((_, i) => i !== index);
         setFullEpisodeQAVideosEntries(updated);
+        setQavLabelIndex(updated.length + 1);
         if (fullEpisodeQAVideosEditIndex === index) {
             setCurrentFullEpisodeQAVideos({
+                "QAV1 Video Title": "",
+                "QAV1 Video Length": "",
+                "QAV1 Video Description": "",
+                "QAV1 Video Quote": "",
+                "QAV1 Video Hashtags": "",
+                "QAV1 Video LinkedIn Post Information (post text, comments & emails)": "",
                 "QAV1 Video File": "",
                 "QAV1 YouTube URL": "",
-                "QAV1 Transcript": "",
-                "QAV1 QA Video Details": "",
-                "Extended Content Article URL": "",
-                "Extended Content Article Text": "",
-                "Extended Content YouTube Short Video File": "",
-                "Extended Content YouTube Short URL": "",
-                "Extended Content YouTube Short Transcript": "",
-                "Extended Content LinkedIn Video File": "",
-                "Extended Content LinkedIn Video Transcript": "",
-                "LinkedIn Post Text": "",
-                "LinkedIn Executive Comments": "",
-                "Emails Marketing": "",
-                "Emails Sales": "",
-                "Quote Card": ""
+                "QAV1 Video Transcript": "",
+                "QAV1 Article URL": "",
+                "QAV1 Article Text": "",
+                "QAV1 YouTube Short Video File": "",
+                "QAV1 YouTube Short URL": "",
+                "QAV1 YouTube Short Transcript": "",
+                "QAV1 LinkedIn Short Video File": "",
+                "QAV1 Quote Card": ""
             });
             setFullEpisodeQAVideosEditIndex(null);
         } else if (fullEpisodeQAVideosEditIndex > index) {
@@ -5063,20 +5984,24 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
 
         setCurrentFullEpisodePodbook({
-            "Interactive Experience": "",
-            "Website URL": "",
-            "Embed Code": "",
-            "Loom Folder": ""
+
+            "Podbook Interactive Link": "",
+            "Podbook Website URL": "",
+            "Podbook Embed Code": "",
+            "Podbook Presentation": "",
+            "Podbook Loom Folder": ""
+
         });
     };
 
     const handleEditFullEpisodePodbook = (index) => {
         const entry = fullEpisodePodbookEntries[index];
         setCurrentFullEpisodePodbook({
-            "Interactive Experience": entry["Interactive Experience"] || "",
-            "Website URL": entry["Website URL"] || "",
-            "Embed Code": entry["Embed Code"] || "",
-            "Loom Folder": entry["Loom Folder"] || ""
+            "Podbook Interactive Link": entry["Podbook Interactive Link"] || "",
+            "Podbook Website URL": entry["Podbook Website URL"] || "",
+            "Podbook Embed Code": entry["Podbook Embed Code"] || "",
+            "Podbook Presentation": entry["Podbook Presentation"] || "",
+            "Podbook Loom Folder": entry["Podbook Loom Folder"] || ""
         });
         setFullEpisodePodbookEditIndex(index);
     };
@@ -5086,10 +6011,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setFullEpisodePodbookEntries(updated);
         if (fullEpisodePodbookEditIndex === index) {
             setCurrentFullEpisodePodbook({
-                "Interactive Experience": "",
-                "Website URL": "",
-                "Embed Code": "",
-                "Loom Folder": ""
+                "Podbook Interactive Link": "",
+                "Podbook Website URL": "",
+                "Podbook Embed Code": "",
+                "Podbook Presentation": "",
+                "Podbook Loom Folder": ""
             });
             setFullEpisodePodbookEditIndex(null);
         } else if (fullEpisodePodbookEditIndex > index) {
@@ -5117,37 +6043,43 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         }
 
         setCurrentFullEpisodeFullCaseStudy({
-            "Interactive Experience": "",
-            "Case Study Text": "",
-            "Sales Email": "",
-            "Problem Section Video": "",
+            "Full Case Study Interactive Link": "",
+            "Full Case Study Website URL": "",
+            "Full Case Study Embed Code": "",
+            "Full Case Study Text": "",
+            "Full Case Study LinkedIn Post Information (post text, comments & emails)": "",
+            "Problem Section Video File": "",
             "Problem Section Video Length": "",
             "Problem Section Video Transcript": "",
-            "Solutions Section Video": "",
+            "Solutions Section Video File": "",
             "Solutions Section Video Length": "",
             "Solutions Section Video Transcript": "",
-            "Results Section Video": "",
+            "Results Section Video File": "",
             "Results Section Video Length": "",
             "Results Section Video Transcript": ""
         });
+
     };
 
     const handleEditFullEpisodeFullCaseStudy = (index) => {
         const entry = fullEpisodeFullCaseStudyEntries[index];
         setCurrentFullEpisodeFullCaseStudy({
-            "Interactive Experience": entry["Interactive Experience"] || "",
-            "Case Study Text": entry["Case Study Text"] || "",
-            "Sales Email": entry["Sales Email"] || "",
-            "Problem Section Video": entry["Problem Section Video"] || "",
+            "Full Case Study Interactive Link": entry["Full Case Study Interactive Link"] || "",
+            "Full Case Study Website URL": entry["Full Case Study Website URL"] || "",
+            "Full Case Study Embed Code": entry["Full Case Study Embed Code"] || "",
+            "Full Case Study Text": entry["Full Case Study Text"] || "",
+            "Full Case Study LinkedIn Post Information (post text, comments & emails)": entry["Full Case Study LinkedIn Post Information (post text, comments & emails)"] || "",
+            "Problem Section Video File": entry["Problem Section Video File"] || "",
             "Problem Section Video Length": entry["Problem Section Video Length"] || "",
             "Problem Section Video Transcript": entry["Problem Section Video Transcript"] || "",
-            "Solutions Section Video": entry["Solutions Section Video"] || "",
+            "Solutions Section Video File": entry["Solutions Section Video File"] || "",
             "Solutions Section Video Length": entry["Solutions Section Video Length"] || "",
             "Solutions Section Video Transcript": entry["Solutions Section Video Transcript"] || "",
-            "Results Section Video": entry["Results Section Video"] || "",
+            "Results Section Video File": entry["Results Section Video File"] || "",
             "Results Section Video Length": entry["Results Section Video Length"] || "",
             "Results Section Video Transcript": entry["Results Section Video Transcript"] || ""
         });
+
         setFullEpisodeFullCaseStudyEditIndex(index);
     };
 
@@ -5155,17 +6087,20 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         const updated = fullEpisodeFullCaseStudyEntries.filter((_, i) => i !== index);
         setFullEpisodeFullCaseStudyEntries(updated);
         if (fullEpisodeFullCaseStudyEditIndex === index) {
+
             setCurrentFullEpisodeFullCaseStudy({
-                "Interactive Experience": "",
-                "Case Study Text": "",
-                "Sales Email": "",
-                "Problem Section Video": "",
+                "Full Case Study Interactive Link": "",
+                "Full Case Study Website URL": "",
+                "Full Case Study Embed Code": "",
+                "Full Case Study Text": "",
+                "Full Case Study LinkedIn Post Information (post text, comments & emails)": "",
+                "Problem Section Video File": "",
                 "Problem Section Video Length": "",
                 "Problem Section Video Transcript": "",
-                "Solutions Section Video": "",
+                "Solutions Section Video File": "",
                 "Solutions Section Video Length": "",
                 "Solutions Section Video Transcript": "",
-                "Results Section Video": "",
+                "Results Section Video File": "",
                 "Results Section Video Length": "",
                 "Results Section Video Transcript": ""
             });
@@ -5193,27 +6128,22 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         } else {
             setFullEpisodeOnePageCaseStudyEntries([...fullEpisodeOnePageCaseStudyEntries, newEntry]);
         }
-
         setCurrentFullEpisodeOnePageCaseStudy({
-            "Interactive Experience": "",
-            "One Page Text": "",
-            "Sales Email": "",
-            "One Page Video": "",
-            "Length": "",
-            "Transcript": ""
+            "One Page Case Study Interactive Link": "",
+            "One Page Case Study Website URL": "",
+            "One Page Case Study Embed Code": ""
         });
+
     };
 
     const handleEditFullEpisodeOnePageCaseStudy = (index) => {
         const entry = fullEpisodeOnePageCaseStudyEntries[index];
         setCurrentFullEpisodeOnePageCaseStudy({
-            "Interactive Experience": entry["Interactive Experience"] || "",
-            "One Page Text": entry["One Page Text"] || "",
-            "Sales Email": entry["Sales Email"] || "",
-            "One Page Video": entry["One Page Video"] || "",
-            "Length": entry["Length"] || "",
-            "Transcript": entry["Transcript"] || ""
+            "One Page Case Study Interactive Link": entry["One Page Case Study Interactive Link"] || "",
+            "One Page Case Study Website URL": entry["One Page Case Study Website URL"] || "",
+            "One Page Case Study Embed Code": entry["One Page Case Study Embed Code"] || ""
         });
+
         setFullEpisodeOnePageCaseStudyEditIndex(index);
     };
 
@@ -5222,12 +6152,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         setFullEpisodeOnePageCaseStudyEntries(updated);
         if (fullEpisodeOnePageCaseStudyEditIndex === index) {
             setCurrentFullEpisodeOnePageCaseStudy({
-                "Interactive Experience": "",
-                "One Page Text": "",
-                "Sales Email": "",
-                "One Page Video": "",
-                "Length": "",
-                "Transcript": ""
+                "One Page Case Study Interactive Link": "",
+                "One Page Case Study Website URL": "",
+                "One Page Case Study Embed Code": ""
             });
             setFullEpisodeOnePageCaseStudyEditIndex(null);
         } else if (fullEpisodeOnePageCaseStudyEditIndex > index) {
@@ -5236,64 +6163,64 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
     };
 
     // Full Episode Other Case Study Handlers
-    const handleAddFullEpisodeOtherCaseStudy = () => {
-        // if (!currentFullEpisodeOtherCaseStudy["Other Case Study Interactive Experience"] &&
-        //     !currentFullEpisodeOtherCaseStudy["Case Study Text"]) {
-        //     ShowCustomToast("Please fill at least Interactive Experience or Case Study Text", "error");
-        //     return;
-        // }
+    // const handleAddFullEpisodeOtherCaseStudy = () => {
+    //     // if (!currentFullEpisodeOtherCaseStudy["Other Case Study Interactive Experience"] &&
+    //     //     !currentFullEpisodeOtherCaseStudy["Case Study Text"]) {
+    //     //     ShowCustomToast("Please fill at least Interactive Experience or Case Study Text", "error");
+    //     //     return;
+    //     // }
 
-        const newEntry = { ...currentFullEpisodeOtherCaseStudy };
+    //     const newEntry = { ...currentFullEpisodeOtherCaseStudy };
 
-        if (fullEpisodeOtherCaseStudyEditIndex !== null) {
-            const updated = [...fullEpisodeOtherCaseStudyEntries];
-            updated[fullEpisodeOtherCaseStudyEditIndex] = newEntry;
-            setFullEpisodeOtherCaseStudyEntries(updated);
-            setFullEpisodeOtherCaseStudyEditIndex(null);
-        } else {
-            setFullEpisodeOtherCaseStudyEntries([...fullEpisodeOtherCaseStudyEntries, newEntry]);
-        }
+    //     if (fullEpisodeOtherCaseStudyEditIndex !== null) {
+    //         const updated = [...fullEpisodeOtherCaseStudyEntries];
+    //         updated[fullEpisodeOtherCaseStudyEditIndex] = newEntry;
+    //         setFullEpisodeOtherCaseStudyEntries(updated);
+    //         setFullEpisodeOtherCaseStudyEditIndex(null);
+    //     } else {
+    //         setFullEpisodeOtherCaseStudyEntries([...fullEpisodeOtherCaseStudyEntries, newEntry]);
+    //     }
 
-        setCurrentFullEpisodeOtherCaseStudy({
-            "Other Case Study Interactive Experience": "",
-            "Case Study Text": "",
-            "Sales Email": "",
-            "Other Case Study Video": "",
-            "Other Case Study Video Length": "",
-            "Other Case Study Video Transcript": ""
-        });
-    };
+    //     setCurrentFullEpisodeOtherCaseStudy({
+    //         "Other Case Study Interactive Experience": "",
+    //         "Case Study Text": "",
+    //         "Sales Email": "",
+    //         "Other Case Study Video": "",
+    //         "Other Case Study Video Length": "",
+    //         "Other Case Study Video Transcript": ""
+    //     });
+    // };
 
-    const handleEditFullEpisodeOtherCaseStudy = (index) => {
-        const entry = fullEpisodeOtherCaseStudyEntries[index];
-        setCurrentFullEpisodeOtherCaseStudy({
-            "Other Case Study Interactive Experience": entry["Other Case Study Interactive Experience"] || "",
-            "Case Study Text": entry["Case Study Text"] || "",
-            "Sales Email": entry["Sales Email"] || "",
-            "Other Case Study Video": entry["Other Case Study Video"] || "",
-            "Other Case Study Video Length": entry["Other Case Study Video Length"] || "",
-            "Other Case Study Video Transcript": entry["Other Case Study Video Transcript"] || ""
-        });
-        setFullEpisodeOtherCaseStudyEditIndex(index);
-    };
+    // const handleEditFullEpisodeOtherCaseStudy = (index) => {
+    //     const entry = fullEpisodeOtherCaseStudyEntries[index];
+    //     setCurrentFullEpisodeOtherCaseStudy({
+    //         "Other Case Study Interactive Experience": entry["Other Case Study Interactive Experience"] || "",
+    //         "Case Study Text": entry["Case Study Text"] || "",
+    //         "Sales Email": entry["Sales Email"] || "",
+    //         "Other Case Study Video": entry["Other Case Study Video"] || "",
+    //         "Other Case Study Video Length": entry["Other Case Study Video Length"] || "",
+    //         "Other Case Study Video Transcript": entry["Other Case Study Video Transcript"] || ""
+    //     });
+    //     setFullEpisodeOtherCaseStudyEditIndex(index);
+    // };
 
-    const handleRemoveFullEpisodeOtherCaseStudy = (index) => {
-        const updated = fullEpisodeOtherCaseStudyEntries.filter((_, i) => i !== index);
-        setFullEpisodeOtherCaseStudyEntries(updated);
-        if (fullEpisodeOtherCaseStudyEditIndex === index) {
-            setCurrentFullEpisodeOtherCaseStudy({
-                "Other Case Study Interactive Experience": "",
-                "Case Study Text": "",
-                "Sales Email": "",
-                "Other Case Study Video": "",
-                "Other Case Study Video Length": "",
-                "Other Case Study Video Transcript": ""
-            });
-            setFullEpisodeOtherCaseStudyEditIndex(null);
-        } else if (fullEpisodeOtherCaseStudyEditIndex > index) {
-            setFullEpisodeOtherCaseStudyEditIndex(fullEpisodeOtherCaseStudyEditIndex - 1);
-        }
-    };
+    // const handleRemoveFullEpisodeOtherCaseStudy = (index) => {
+    //     const updated = fullEpisodeOtherCaseStudyEntries.filter((_, i) => i !== index);
+    //     setFullEpisodeOtherCaseStudyEntries(updated);
+    //     if (fullEpisodeOtherCaseStudyEditIndex === index) {
+    //         setCurrentFullEpisodeOtherCaseStudy({
+    //             "Other Case Study Interactive Experience": "",
+    //             "Case Study Text": "",
+    //             "Sales Email": "",
+    //             "Other Case Study Video": "",
+    //             "Other Case Study Video Length": "",
+    //             "Other Case Study Video Transcript": ""
+    //         });
+    //         setFullEpisodeOtherCaseStudyEditIndex(null);
+    //     } else if (fullEpisodeOtherCaseStudyEditIndex > index) {
+    //         setFullEpisodeOtherCaseStudyEditIndex(fullEpisodeOtherCaseStudyEditIndex - 1);
+    //     }
+    // };
 
     // Full Episode ICP Advice Handlers
     const handleAddFullEpisodeICPAdvice = () => {
@@ -5410,7 +6337,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         if (Object.values(currentGuest).some(val => val !== "")) {
             const newGuest = await handleAddGuest();
             addHandlers.push(newGuest);
-          }
+        }
 
         if (Object.values(currentPrepCall).some(val => val !== "")) {
             addHandlers.push(handleAddPrepCall());
@@ -5456,9 +6383,6 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
             addHandlers.push(handleAddFullEpisodeOnePageCaseStudy());
         }
 
-        if (Object.values(currentFullEpisodeOtherCaseStudy).some(val => val !== "")) {
-            addHandlers.push(handleAddFullEpisodeOtherCaseStudy());
-        }
 
         if (Object.values(currentFullEpisodeICPAdvice).some(val => val !== "")) {
             addHandlers.push(handleAddFullEpisodeICPAdvice());
@@ -5466,6 +6390,26 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
 
         if (Object.values(currentFullEpisodeChallengeQuestions).some(val => val !== "")) {
             addHandlers.push(handleAddFullEpisodeChallengeQuestions());
+        }
+        // Add report section handlers
+        if (Object.values(currentIcpAdviceReport).some(val => val !== "")) {
+            addHandlers.push(handleAddIcpAdviceReport());
+        }
+
+        if (Object.values(currentSqlAnalysisReport).some(val => val !== "")) {
+            addHandlers.push(handleAddSqlAnalysisReport());
+        }
+
+        if (Object.values(currentChallengeQuestions).some(val => val !== "")) {
+            addHandlers.push(handleAddChallengeQuestions());
+        }
+
+        if (Object.values(currentEBook).some(val => val !== "")) {
+            addHandlers.push(handleAddEBook());
+        }
+
+        if (Object.values(currentGuestChallengeReport).some(val => val !== "")) {
+            addHandlers.push(handleAddGuestChallengeReport());
         }
 
         // Wait for all handlers to complete and capture results
@@ -5543,6 +6487,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                 FULL_EPISODE_OTHER_CASE_STUDY: fullEpisodeOtherCaseStudyEntries.length > 0 ? fullEpisodeOtherCaseStudyEntries : null,
                 FULL_EPISODE_ICP_ADVICE: fullEpisodeICPAdviceEntries.length > 0 ? fullEpisodeICPAdviceEntries : null,
                 FULL_EPISODE_CHALLENGE_QUESTIONS: fullEpisodeChallengeQuestionsEntries.length > 0 ? fullEpisodeChallengeQuestionsEntries : null,
+                ICP_Advice_Report: icpAdviceReportEntries.length > 0 ? icpAdviceReportEntries : null,
+                SQL_Analysis_Report: sqlAnalysisReportEntries.length > 0 ? sqlAnalysisReportEntries : null,
+                Challenge_Questions: challengeQuestionsEntries.length > 0 ? challengeQuestionsEntries : null,
+                eBook: eBookEntries.length > 0 ? eBookEntries : null,
+                'Multi-Guest_Challenge_Report_Text': guestChallengeReportEntries.length > 0 ? guestChallengeReportEntries : null,
+
             });
 
             // Ensure Formik state is committed before submit
@@ -5561,12 +6511,150 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
         // }, 0);
 
     };
-
+// Custom placeholder mapping based on your detailed field descriptions
     const customPlaceholders = {
-        Tracker: "Enter Tracker Link",
-        "LinkedIn Profile": "Enter LinkedIn Profile Link",
-        Dossier: "Enter Dossier Link"
+        // Guest Fields
+        "Avatar": "Choose File > No File Chosen",
+        "Persona": "Select Persona",
+        "Guest": "Enter the guest's full name",
+        "Guest Title": "Enter the guest's title as shown on LinkedIn",
+        "Guest Company": "Enter the guest's company name",
+        "Guest's LinkedIn Profile": "Enter the link to the guest's personal profile on LinkedIn",
+        "Guest Industry": "Enter the guest's industry as shown within their LinkedIn company page's ABOUT section",
+        "Industry Vertical": "Select Industry Vertical. Leave blank if unknown",
+        "Guest's Tracker": "Enter the link. Copy from the browser when the pop-up is in view",
+        "Guest's Dossier": "Enter the 'share' link to the dossier document. Leave blank if not created",
+
+        // Prep Call Fields
+        "Unedited Prep Call Video": "Enter the 'Share' link to the Unedited Prep Call Video",
+        "Unedited Prep Call Transcript": "Enter the 'Share' link to the Unedited Prep Call Transcript",
+        "Discussion Guide": "Enter the 'Share' link to the Discussion Guide",
+
+        // Full Episode Details
+        "Episode ID": "Enter Content Strategies Internal Episode ID",
+        "Episode Number": "Enter Episode Number",
+        "Episode Title": "Enter Episode Title",
+        "Date Recorded": "mm/dd/yyyy",
+        "Category": "Podcasts",
+        "Short Episode Description": "Copy and paste the short episode description here",
+        "Long Episode Description": "Copy and paste the long description here",
+        "Formate": "Multi-Media",
+        "Short and Long-Tail SEO Keywords": "Copy and paste keywords, separated by a comma",
+        "All Asset Folder": "Enter the link to the All-Asset Folder on the client's server",
+
+        // Full Episode Video
+        "Full Episode Video Title": "Copy and paste the video title here",
+        "Full Episode Video Length": "Enter the video length here (Example: 31:42)",
+        "Full Episode Video Description": "Copy and paste the short video description here",
+        "Full Episode Video File": "Enter the 'share' link to the video's file",
+        "Full Episode Audio File": "Enter the 'share' link to the audio file",
+        "Full Episode YouTube URL": "Enter the video's YouTube link",
+        "Unedited Full Episode Transcript": "Enter the 'share' link to the unedited transcript",
+        "Edited Full Episode Transcript": "Enter the 'share' link to the edited transcript",
+        "Provocative Statements": "Enter the 'share' link to the document",
+        "Custom Requests": "Enter the 'share' link to the document",
+
+        // Extended Content
+        "Article URL": "Enter the link to the article on the client's website",
+        "Article Text": "Enter the 'share' link to the article's Google Doc",
+        "Full Episode Quote Card": "Enter the 'share' link to the Quote Card image",
+
+        // Highlight Video
+        "Highlight Video Title": "Copy and paste the video title here",
+        "Highlight Video Length": "Enter the video length here (Example: 3:18)",
+        "Highlight Video Description": "Copy and paste the video description here",
+        "Highlight Video File": "Enter the 'share' link to the video's file",
+        "Highlight YouTube URL": "Enter the video's YouTube link",
+        "Highlight Video Transcript": "Enter the 'share' link to the video's transcript",
+        "Highlights Video LinkedIn Post Information (post text, comments & emails)": "Enter the 'share' link to the LinkedIn Post Text/Comments/Emails document",
+
+        // Introduction Video
+        "Introduction Video Title": "Copy and paste the video title here",
+        "Introduction Video Length": "Enter the video length here (Example: 3:18)",
+        "Introduction Video Description": "Copy and paste the video description here",
+        "Introduction Video File": "Enter the 'share' link to the video's file",
+        "Introduction Video YouTube URL": "Enter the video's YouTube link",
+        "Introduction Video Transcript": "Enter the 'share' link to the video's transcript",
+
+        // Q&A Videos
+        "QAV1 Video Title": "Copy and paste the video title here",
+        "QAV1 Video Length": "Enter the video length here (Example: 3:18)",
+        "QAV1 Video Description": "Copy and paste the video description here",
+        "QAV1 Video Quote": "Copy and paste the video quote here",
+        "QAV1 Video Hashtags": "Copy and paste the video hashtags here",
+        "QAV1 Video LinkedIn Post Information (post text, comments & emails)": "Coming soon: a button to auto-create this document",
+        "QAV1 Video File": "Enter the 'share' link to the video's file",
+        "QAV1 YouTube URL": "Enter the video's YouTube link",
+        "QAV1 Video Transcript": "Enter the 'share' link to the video's transcript",
+        "QAV1 Article URL": "Enter the link to the article on the client's website. Leave blank if not created",
+        "QAV1 Article Text": "Enter the 'share' link to the article's Google Doc. Leave blank if not created",
+        "QAV1 YouTube Short Video File": "Enter the 'share' link to the video's file. Leave blank if not created",
+        "QAV1 YouTube Short URL": "Enter the video's YouTube link. Leave blank if not created",
+        "QAV1 YouTube Short Transcript": "Enter the 'share' link to the video's transcript. Leave blank if not created",
+        "QAV1 LinkedIn Short Video File": "Enter the 'share' link to the video's file. Leave blank if not created",
+        "QAV1 Quote Card": "Enter the 'share' link to the Quote Card image. Leave blank if not created",
+
+        // Podbook
+        "Podbook Interactive Link": "Enter the link to the experience hosted on Relayto",
+        "Podbook Website URL": "Enter the link to the podbook on the client's website",
+        "Podbook Embed Code": "Copy and paste the embed code found through Relayto",
+        "Podbook Presentation": "Enter the link to the PowerPoint or Google Slides used to make the Podbook",
+        "Podbook Loom Folder": "Enter the link to the Loom folder containing all the videos used in the Podbook",
+
+        // Full Case Study
+        "Full Case Study Interactive Link": "Enter the link to the experience hosted on Relayto",
+        "Full Case Study Website URL": "Enter the link to the podbook on the client's website",
+        "Full Case Study Embed Code": "Copy and paste the embed code found through Relayto",
+        "Full Case Study Text": "Enter the 'Share' link to the Full Case Study text document",
+        "Full Case Study LinkedIn Post Information (post text, comments & emails)": "Coming soon: a button to auto-create this document",
+        "Problem Section Video File": "Enter the 'share' link to the video's file",
+        "Problem Section Video Length": "Enter the video length here (Example: 1:38)",
+        "Problem Section Video Transcript": "Enter the 'share' link to the problem section video's transcript",
+        "Solutions Section Video File": "Enter the 'share' link to the video's file",
+        "Solutions Section Video Length": "Enter the video length here (Example: 1:38)",
+        "Solutions Section Video Transcript": "Enter the 'share' link to the solution section video's transcript",
+        "Results Section Video File": "Enter the 'share' link to the video's file",
+        "Results Section Video Length": "Enter the video length here (Example: 1:38)",
+        "Results Section Video Transcript": "Enter the 'share' link to the solution section video's transcript",
+
+        // One Page Case Study
+        "One Page Case Study Interactive Link": "Enter the link to the experience hosted on Relayto",
+        "One Page Case Study Website URL": "Enter the link to the podbook on the client's website",
+        "One Page Case Study Embed Code": "Copy and paste the embed code found through Relayto",
+
+        // eBook
+        "eBook Interactive Link": "Enter the link to the experience hosted on Relayto",
+        "eBook Website URL": "Enter the link to the eBook on the client's website",
+        "eBook Embed Code": "Copy and paste the embed code found through Relayto",
+        "eBook Text": "Enter the 'Share' link to the eBook text document",
+        "eBook LinkedIn Post Information (post text, comments & emails)": "Coming soon: a button to auto-create this document",
+
+        // Multi-Guest Challenge Report
+        "Multi-Guest Challenge Report Interactive Link": "Enter the link to the experience hosted on Relayto",
+        "Multi-Guest Challenge Report Website URL": "Enter the link to the eBook on the client's website",
+        "Multi-Guest Challenge Report Embed Code": "Copy and paste the embed code found through Relayto",
+        "Multi-Guest Challenge Report Text": "Enter the 'Share' link to the eBook text document",
+        "Multi-Guest Challenge Report LinkedIn Post Information (post text, comments & emails)": "Coming soon: a button to auto-create this document",
+
+        // ICP Advice Report
+        "ICP Advice Post-Podcast Video File": "Enter the 'share' link to the video's file",
+        "ICP Advice Post-Podcast Video Length": "Enter the video length here (Example: 1:38)",
+        "ICP Advice Post-Podcast Video Transcript": "Enter the 'share' link to the ICP Advice Post-Podcast video's transcript",
+        "ICP Advice Report": "Enter the 'share' link to the report document. Leave blank if not created",
+
+        // SQL Analysis Report
+        "SQL Analysis Post-Podcast Video File": "Enter the 'share' link to the video's file",
+        "SQL Analysis Post-Podcast Video Length": "Enter the video length here (Example: 1:38)",
+        "SQL Analysis Post-Podcast Video Transcript": "Enter the 'share' link to the SQL Analysis Post-Podcast video's transcript",
+        "SQL Analysis Report": "Enter the 'share' link to the report document. Leave blank if not created",
+
+        // Challenge Questions
+        "Challenge Questions Prep Call Video File": "Enter the 'share' link to the video's file",
+        "Challenge Questions Prep Call Video Length": "Enter the video length here (Example: 1:38)",
+        "Challenge Questions Prep Call Video Transcript": "Enter the 'share' link to the Challenge Questions Prep Call video transcript",
+        "Challenge Questions Report": "Enter the 'share' link to the report document. Leave blank if not created"
     };
+
 
 
     return (
@@ -5580,14 +6668,14 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                     </h2>
 
                     <form onSubmit={formik.handleSubmit} className=" rounded-lg p-4 -mt-[10px]">
-                        <div className="max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+                        <div className="max-h-[60vh] overflow-y-auto pr-2">
                             {displayFields.some(field =>
                                 ['Guest', 'Prep_Call', 'Additional_Guest_Projects', 'Emails',
                                     'FULL_EPISODE_VIDEO', 'FULL_EPISODE_HIGHLIGHT_VIDEO',
                                     'FULL_EPISODE_INTRODUCTION_VIDEO', 'FULL_EPISODE_QA_VIDEOS',
                                     'FULL_EPISODE_PODBOOK', 'FULL_EPISODE_FULL_CASE_STUDY',
                                     'FULL_EPISODE_ONE_PAGE_CASE_STUDY', 'FULL_EPISODE_OTHER_CASE_STUDY',
-                                    'FULL_EPISODE_ICP_ADVICE', 'FULL_EPISODE_CHALLENGE_QUESTIONS'].includes(field.key)
+                                    'FULL_EPISODE_ICP_ADVICE', 'FULL_EPISODE_CHALLENGE_QUESTIONS', 'ICP_Advice_Report', 'SQL_Analysis_Report', 'Challenge_Questions', 'eBook', 'Multi-Guest_Challenge_Report_Text'].includes(field.key)
                             ) && (
                                     <>
                                         {/* Multi-step form container */}
@@ -5595,21 +6683,29 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                             {/* Step indicator - moved outside and only shown once */}
                                             <div className="flex justify-center sticky top-0 z-[9999]">
                                                 <div className="flex space-x-4 -mb-2">
-                                                    {[1, 2, 3, 4].map((stepNumber) => (
-                                                        <button
-                                                            key={stepNumber}
-                                                            type="button"
-                                                            onClick={() => setCurrentStep(stepNumber)}
-                                                            className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium ${currentStep === stepNumber
-                                                                ? 'bg-blue-600 text-white'
-                                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                                }`}
-                                                        >
-                                                            {stepNumber}
-                                                        </button>
+                                                    {[
+                                                        { step: 1, label: "Guest Details" },
+                                                        { step: 2, label: "Prep Calls" },
+                                                        { step: 3, label: "Full Episodes" },
+                                                        { step: 4, label: "Special Projects" },
+                                                        { step: 5, label: "Reports" },
+                                                    ].map(({ step, label }) => (
+                                                        <Tooltip key={step} content={label}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setCurrentStep(step)}
+                                                                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium ${currentStep === step
+                                                                    ? "bg-blue-600 text-white"
+                                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                                    }`}
+                                                            >
+                                                                {step}
+                                                            </button>
+                                                        </Tooltip>
                                                     ))}
                                                 </div>
                                             </div>
+
 
                                             <hr className="border-t border-gray-300 -mx-2" />
                                             {/* Step 1: Guest Information */}
@@ -5659,7 +6755,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                             id="persona-select"
                                                                             options={OPTIONS['Persona'] || []}
                                                                             value={currentGuest[fieldKey] || ""}
-                                                                            isMulti={true}
+                                                                            isMulti={false}
                                                                             onChange={(value) => setCurrentGuest(prev => ({
                                                                                 ...prev,
                                                                                 [fieldKey]: value
@@ -5750,7 +6846,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                             [fieldKey]: e.target.value
                                                                         }))}
                                                                         className="w-full p-2 border rounded"
-                                                                        placeholder={`Enter ${fieldKey}`}
+                                                                        placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
                                                                     />
                                                                 </div>
                                                             ))}
@@ -5845,13 +6941,13 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                         [fieldKey]: e.target.value
                                                                                     }))}
                                                                                     className="w-full p-2 border rounded"
-                                                                                    placeholder={`Enter ${fieldKey}`}
+                                                                                    placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
                                                                                 />
                                                                             )}
                                                                         </div>
                                                                     ))}
 
-                                                                    {(fullEpisodeDetailsEntries.length === 0 || fullEpisodeDetailsEditIndex !== null) && (
+                                                                    {/* {(fullEpisodeDetailsEntries.length === 0 || fullEpisodeDetailsEditIndex !== null) && (
                                                                         <div className="flex justify-end">
                                                                             <CustomButton
                                                                                 type="button"
@@ -5862,7 +6958,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                 {fullEpisodeDetailsEditIndex !== null ? "Update Full Episode Details" : "Add Full Episode Details"}
                                                                             </CustomButton>
                                                                         </div>
-                                                                    )}
+                                                                    )} */}
                                                                 </div>
 
                                                                 {fullEpisodeDetailsEntries.length > 0 && (
@@ -5899,11 +6995,11 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                     [fieldKey]: e.target.value
                                                                                 }))}
                                                                                 className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
                                                                             />
                                                                         </div>
                                                                     ))}
-
+                                                                    {/* 
                                                                     {(fullEpisodeVideoEntries.length === 0 || fullEpisodeVideoEditIndex !== null) && (
                                                                         <div className="flex justify-end">
                                                                             <CustomButton
@@ -5915,7 +7011,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                 {fullEpisodeVideoEditIndex !== null ? "Update Full Episode Video" : "Add Full Episode Video"}
                                                                             </CustomButton>
                                                                         </div>
-                                                                    )}
+                                                                    )} */}
                                                                 </div>
 
                                                                 {fullEpisodeVideoEntries.length > 0 && (
@@ -5952,12 +7048,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                     [fieldKey]: e.target.value
                                                                                 }))}
                                                                                 className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
                                                                             />
                                                                         </div>
                                                                     ))}
 
-                                                                    {(fullEpisodeExtendedContentEntries.length === 0 || fullEpisodeExtendedContentEditIndex !== null) && (
+                                                                    {/* {(fullEpisodeExtendedContentEntries.length === 0 || fullEpisodeExtendedContentEditIndex !== null) && (
                                                                         <div className="flex justify-end">
                                                                             <CustomButton
                                                                                 type="button"
@@ -5968,7 +7064,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                 {fullEpisodeExtendedContentEditIndex !== null ? "Update Extended Content" : "Add Extended Content"}
                                                                             </CustomButton>
                                                                         </div>
-                                                                    )}
+                                                                    )} */}
                                                                 </div>
 
                                                                 {fullEpisodeExtendedContentEntries.length > 0 && (
@@ -6005,12 +7101,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                     [fieldKey]: e.target.value
                                                                                 }))}
                                                                                 className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
                                                                             />
                                                                         </div>
                                                                     ))}
 
-                                                                    {(fullEpisodeHighlightVideoEntries.length === 0 || fullEpisodeHighlightVideoEditIndex !== null) && (
+                                                                    {/* {(fullEpisodeHighlightVideoEntries.length === 0 || fullEpisodeHighlightVideoEditIndex !== null) && (
                                                                         <div className="flex justify-end">
                                                                             <CustomButton
                                                                                 type="button"
@@ -6021,7 +7117,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                 {fullEpisodeHighlightVideoEditIndex !== null ? "Update Highlight Video" : "Add Highlight Video"}
                                                                             </CustomButton>
                                                                         </div>
-                                                                    )}
+                                                                    )} */}
                                                                 </div>
 
                                                                 {fullEpisodeHighlightVideoEntries.length > 0 && (
@@ -6058,12 +7154,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                     [fieldKey]: e.target.value
                                                                                 }))}
                                                                                 className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
                                                                             />
                                                                         </div>
                                                                     ))}
 
-                                                                    {(fullEpisodeIntroductionVideoEntries.length === 0 || fullEpisodeIntroductionVideoEditIndex !== null) && (
+                                                                    {/* {(fullEpisodeIntroductionVideoEntries.length === 0 || fullEpisodeIntroductionVideoEditIndex !== null) && (
                                                                         <div className="flex justify-end">
                                                                             <CustomButton
                                                                                 type="button"
@@ -6074,7 +7170,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                 {fullEpisodeIntroductionVideoEditIndex !== null ? "Update Introduction Video" : "Add Introduction Video"}
                                                                             </CustomButton>
                                                                         </div>
-                                                                    )}
+                                                                    )} */}
                                                                 </div>
 
                                                                 {fullEpisodeIntroductionVideoEntries.length > 0 && (
@@ -6101,7 +7197,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                     {FULL_EPISODE_QA_VIDEOS.map(fieldKey => (
                                                                         <div key={fieldKey}>
                                                                             <label className="block font-semibold text-sm mb-1">
-                                                                                {fieldKey}:
+                                                                                {getDisplayQavLabel(fieldKey)}:
                                                                             </label>
                                                                             <CustomInput
                                                                                 type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
@@ -6111,7 +7207,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                     [fieldKey]: e.target.value
                                                                                 }))}
                                                                                 className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
                                                                             />
                                                                         </div>
                                                                     ))}
@@ -6164,12 +7260,12 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                     [fieldKey]: e.target.value
                                                                                 }))}
                                                                                 className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
                                                                             />
                                                                         </div>
                                                                     ))}
 
-                                                                    {(fullEpisodePodbookEntries.length === 0 || fullEpisodePodbookEditIndex !== null) && (
+                                                                    {/* {(fullEpisodePodbookEntries.length === 0 || fullEpisodePodbookEditIndex !== null) && (
                                                                         <div className="flex justify-end">
                                                                             <CustomButton
                                                                                 type="button"
@@ -6180,7 +7276,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                                 {fullEpisodePodbookEditIndex !== null ? "Update Podbook" : "Add Podbook"}
                                                                             </CustomButton>
                                                                         </div>
-                                                                    )}
+                                                                    )} */}
                                                                 </div>
 
                                                                 {fullEpisodePodbookEntries.length > 0 && (
@@ -6199,170 +7295,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        {/* FULL_EPISODE_FULL_CASE_STUDY */}
-                                                        <div>
-                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Full Case Study:</h2>
 
-                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                                <div className="grid grid-cols-1 gap-4">
-                                                                    {FULL_EPISODE_FULL_CASE_STUDY.map(fieldKey => (
-                                                                        <div key={fieldKey}>
-                                                                            <label className="block font-semibold text-sm mb-1">
-                                                                                {fieldKey}:
-                                                                            </label>
-                                                                            <CustomInput
-                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
-                                                                                value={currentFullEpisodeFullCaseStudy[fieldKey] || ""}
-                                                                                onChange={(e) => setCurrentFullEpisodeFullCaseStudy(prev => ({
-                                                                                    ...prev,
-                                                                                    [fieldKey]: e.target.value
-                                                                                }))}
-                                                                                className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-
-                                                                    {(fullEpisodeFullCaseStudyEntries.length === 0 || fullEpisodeFullCaseStudyEditIndex !== null) && (
-                                                                        <div className="flex justify-end">
-                                                                            <CustomButton
-                                                                                type="button"
-                                                                                onClick={handleAddFullEpisodeFullCaseStudy}
-                                                                                className="flex items-center gap-1"
-                                                                            >
-                                                                                <PlusIcon className="h-4 w-4" />
-                                                                                {fullEpisodeFullCaseStudyEditIndex !== null ? "Update Full Case Study" : "Add Full Case Study"}
-                                                                            </CustomButton>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-
-                                                                {fullEpisodeFullCaseStudyEntries.length > 0 && (
-                                                                    <div className="mt-4">
-                                                                        <h4 className="font-medium text-sm mb-2">Added Full Case Studies:</h4>
-                                                                        {fullEpisodeFullCaseStudyEntries.map((entry, index) => (
-                                                                            <FullEpisodeFullCaseStudyEntry
-                                                                                key={index}
-                                                                                index={index}
-                                                                                caseStudy={entry}
-                                                                                onEdit={handleEditFullEpisodeFullCaseStudy}
-                                                                                onRemove={handleRemoveFullEpisodeFullCaseStudy}
-                                                                            />
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        {/* FULL_EPISODE_ONE_PAGE_CASE_STUDY */}
-                                                        <div>
-                                                            <h2 className="text-md font-semibold mb-2 -mt-2">One Page Case Study:</h2>
-
-                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                                <div className="grid grid-cols-1 gap-4">
-                                                                    {FULL_EPISODE_ONE_PAGE_CASE_STUDY.map(fieldKey => (
-                                                                        <div key={fieldKey}>
-                                                                            <label className="block font-semibold text-sm mb-1">
-                                                                                {fieldKey}:
-                                                                            </label>
-                                                                            <CustomInput
-                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
-                                                                                value={currentFullEpisodeOnePageCaseStudy[fieldKey] || ""}
-                                                                                onChange={(e) => setCurrentFullEpisodeOnePageCaseStudy(prev => ({
-                                                                                    ...prev,
-                                                                                    [fieldKey]: e.target.value
-                                                                                }))}
-                                                                                className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-
-                                                                    {(fullEpisodeOnePageCaseStudyEntries.length === 0 || fullEpisodeOnePageCaseStudyEditIndex !== null) && (
-                                                                        <div className="flex justify-end">
-                                                                            <CustomButton
-                                                                                type="button"
-                                                                                onClick={handleAddFullEpisodeOnePageCaseStudy}
-                                                                                className="flex items-center gap-1"
-                                                                            >
-                                                                                <PlusIcon className="h-4 w-4" />
-                                                                                {fullEpisodeOnePageCaseStudyEditIndex !== null ? "Update One Page Case Study" : "Add One Page Case Study"}
-                                                                            </CustomButton>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-
-                                                                {fullEpisodeOnePageCaseStudyEntries.length > 0 && (
-                                                                    <div className="mt-4">
-                                                                        <h4 className="font-medium text-sm mb-2">Added One Page Case Studies:</h4>
-                                                                        {fullEpisodeOnePageCaseStudyEntries.map((entry, index) => (
-                                                                            <FullEpisodeOnePageCaseStudyEntry
-                                                                                key={index}
-                                                                                index={index}
-                                                                                caseStudy={entry}
-                                                                                onEdit={handleEditFullEpisodeOnePageCaseStudy}
-                                                                                onRemove={handleRemoveFullEpisodeOnePageCaseStudy}
-                                                                            />
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        {/* FULL_EPISODE_OTHER_CASE_STUDY */}
-                                                        <div>
-                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Other Case Study:</h2>
-
-                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                                <div className="grid grid-cols-1 gap-4">
-                                                                    {FULL_EPISODE_OTHER_CASE_STUDY.map(fieldKey => (
-                                                                        <div key={fieldKey}>
-                                                                            <label className="block font-semibold text-sm mb-1">
-                                                                                {fieldKey}:
-                                                                            </label>
-                                                                            <CustomInput
-                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Folder') ? "url" : "text"}
-                                                                                value={currentFullEpisodeOtherCaseStudy[fieldKey] || ""}
-                                                                                onChange={(e) => setCurrentFullEpisodeOtherCaseStudy(prev => ({
-                                                                                    ...prev,
-                                                                                    [fieldKey]: e.target.value
-                                                                                }))}
-                                                                                className="w-full p-2 border rounded"
-                                                                                placeholder={`Enter ${fieldKey}`}
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-
-                                                                    {(fullEpisodeOtherCaseStudyEntries.length === 0 || fullEpisodeOtherCaseStudyEditIndex !== null) && (
-                                                                        <div className="flex justify-end">
-                                                                            <CustomButton
-                                                                                type="button"
-                                                                                onClick={handleAddFullEpisodeOtherCaseStudy}
-                                                                                className="flex items-center gap-1"
-                                                                            >
-                                                                                <PlusIcon className="h-4 w-4" />
-                                                                                {fullEpisodeOtherCaseStudyEditIndex !== null ? "Update Other Case Study" : "Add Other Case Study"}
-                                                                            </CustomButton>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-
-                                                                {fullEpisodeOtherCaseStudyEntries.length > 0 && (
-                                                                    <div className="mt-4">
-                                                                        <h4 className="font-medium text-sm mb-2">Added Other Case Studies:</h4>
-                                                                        {fullEpisodeOtherCaseStudyEntries.map((entry, index) => (
-                                                                            <FullEpisodeOtherCaseStudyEntry
-                                                                                key={index}
-                                                                                index={index}
-                                                                                caseStudy={entry}
-                                                                                onEdit={handleEditFullEpisodeOtherCaseStudy}
-                                                                                onRemove={handleRemoveFullEpisodeOtherCaseStudy}
-                                                                            />
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
                                                         {/* FULL_EPISODE_ICP_ADVICE */}
-                                                        <div>
+                                                        {/* <div>
                                                             <h2 className="text-md font-semibold mb-2 -mt-2">ICP Advice:</h2>
 
                                                             <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -6414,9 +7349,9 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                        </div>
+                                                        </div> */}
                                                         {/* FULL_EPISODE_CHALLENGE_QUESTIONS */}
-                                                        <div>
+                                                        {/* <div>
                                                             <h2 className="text-md font-semibold mb-2 -mt-2">Challenge Questions:</h2>
 
                                                             <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
@@ -6468,7 +7403,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                        </div>
+                                                        </div> */}
                                                         {/* Navigation */}
                                                         <div className="flex justify-end w-full gap-2 -mt-4 -mb-6">
                                                             <CustomButton
@@ -6484,7 +7419,7 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                                     onClick={() => handleNextStep(4)}
                                                                     className=" text-white px-4 py-2 rounded"
                                                                 >
-                                                                    {isSaving ? 'Saving...' : '  Next: Additional Projects'}
+                                                                    {isSaving ? 'Saving...' : '  Next: Special Projects'}
                                                                 </CustomButton>
                                                             </div>
                                                         </div>
@@ -6493,80 +7428,468 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                                 </div>
                                             )}
 
-                                            {/* Step 4: Additional Projects */}
+                                            {/* Step 4: Special Projects */}
                                             {currentStep === 4 && (
                                                 <div>
-                                                    <h3 className="text-lg font-semibold mb-2 -mt-4">Additional Guest Project Details:</h3>
-                                                    <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
-                                                        <div className="grid grid-cols-1 gap-4">
-                                                            {Additional_Guest_Projects.map(fieldKey => (
-                                                                <div key={fieldKey}>
-                                                                    <label className="block font-semibold text-sm mb-1">
-                                                                        {fieldKey}:
-                                                                    </label>
-                                                                    <CustomInput
-                                                                        type="url"
-                                                                        value={currentAdditionalProject[fieldKey] || ""}
-                                                                        onChange={(e) => setCurrentAdditionalProject(prev => ({
-                                                                            ...prev,
-                                                                            [fieldKey]: e.target.value
-                                                                        }))}
-                                                                        className="w-full p-2 border rounded"
-                                                                        placeholder={`Enter ${fieldKey} URL`}
-                                                                    />
+                                                    <h3 className="text-lg font-semibold mb-2 -mt-4">Special Projects:</h3>
+                                                    <div className="border rounded-lg p-6 shadow-sm">
+                                                        {/* FULL_EPISODE_FULL_CASE_STUDY */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Full Case Study:</h2>
+
+                                                            <div
+                                                                className="border rounded-lg p-4 mb-4"
+                                                                style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}
+                                                            >
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_FULL_CASE_STUDY.map((fieldKey) => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={
+                                                                                    fieldKey.includes("URL") ||
+                                                                                        fieldKey.includes("Link") ||
+                                                                                        fieldKey.includes("Folder")
+                                                                                        ? "url"
+                                                                                        : "text"
+                                                                                }
+                                                                                value={currentFullEpisodeFullCaseStudy[fieldKey] || ""}
+                                                                                onChange={(e) =>
+                                                                                    setCurrentFullEpisodeFullCaseStudy((prev) => ({
+                                                                                        ...prev,
+                                                                                        [fieldKey]: e.target.value,
+                                                                                    }))
+                                                                                }
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {/* {(fullEpisodeFullCaseStudyEntries.length === 0 ||
+                                                                     fullEpisodeFullCaseStudyEditIndex !== null) && (
+                                                                         <div className="flex justify-end">
+                                                                             <CustomButton
+                                                                                 type="button"
+                                                                                 onClick={handleAddFullEpisodeFullCaseStudy}
+                                                                                 className="flex items-center gap-1"
+                                                                             >
+                                                                                 <PlusIcon className="h-4 w-4" />
+                                                                                 {fullEpisodeFullCaseStudyEditIndex !== null
+                                                                                     ? "Update Full Case Study"
+                                                                                     : "Add Full Case Study"}
+                                                                             </CustomButton>
+                                                                         </div>
+                                                                     )} */}
                                                                 </div>
-                                                            ))}
-                                                            {/* {(additionalProjectEntries.length === 0 || additionalProjectEditIndex !== null) && (
-                                                                <div className="flex justify-end">
-                                                                    <CustomButton
-                                                                        type="button"
-                                                                        onClick={handleAddAdditionalProject}
-                                                                        className="flex items-center gap-1"
-                                                                    >
-                                                                        <PlusIcon className="h-4 w-4" />
-                                                                        {additionalProjectEditIndex !== null ? "Update Additional Guest Project" : "Add Additional Guest Project"}
-                                                                    </CustomButton>
-                                                                </div>
-                                                            )} */}
+
+                                                                {fullEpisodeFullCaseStudyEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">
+                                                                            Added Full Case Studies:
+                                                                        </h4>
+                                                                        {fullEpisodeFullCaseStudyEntries.map((entry, index) => (
+                                                                            <FullEpisodeFullCaseStudyEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                caseStudy={entry}
+                                                                                onEdit={handleEditFullEpisodeFullCaseStudy}
+                                                                                onRemove={handleRemoveFullEpisodeFullCaseStudy}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
 
-                                                        {additionalProjectEntries.length > 0 && (
-                                                            <div className="mt-4">
-                                                                <h4 className="font-medium text-sm mb-2">Added Additional Guest Project:</h4>
-                                                                {additionalProjectEntries.map((entry, index) => (
-                                                                    <AdditionalProjectEntry
-                                                                        key={index}
-                                                                        index={index}
-                                                                        project={entry}
-                                                                        onEdit={handleEditAdditionalProject}
-                                                                        onRemove={handleRemoveAdditionalProject}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                        {/* FULL_EPISODE_ONE_PAGE_CASE_STUDY */}
+                                                        <div className="mt-2">
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">
+                                                                One Page Case Study:
+                                                            </h2>
 
-                                                        <div className="flex justify-end w-full gap-2 -mb-4">
+                                                            <div
+                                                                className="border rounded-lg p-4 mb-4"
+                                                                style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}
+                                                            >
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {FULL_EPISODE_ONE_PAGE_CASE_STUDY.map((fieldKey) => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={
+                                                                                    fieldKey.includes("URL") ||
+                                                                                        fieldKey.includes("Link") ||
+                                                                                        fieldKey.includes("Folder")
+                                                                                        ? "url"
+                                                                                        : "text"
+                                                                                }
+                                                                                value={currentFullEpisodeOnePageCaseStudy[fieldKey] || ""}
+                                                                                onChange={(e) =>
+                                                                                    setCurrentFullEpisodeOnePageCaseStudy((prev) => ({
+                                                                                        ...prev,
+                                                                                        [fieldKey]: e.target.value,
+                                                                                    }))
+                                                                                }
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {/* {(fullEpisodeOnePageCaseStudyEntries.length === 0 ||
+                                                                     fullEpisodeOnePageCaseStudyEditIndex !== null) && (
+                                                                         <div className="flex justify-end">
+                                                                             <CustomButton
+                                                                                 type="button"
+                                                                                 onClick={handleAddFullEpisodeOnePageCaseStudy}
+                                                                                 className="flex items-center gap-1"
+                                                                             >
+                                                                                 <PlusIcon className="h-4 w-4" />
+                                                                                 {fullEpisodeOnePageCaseStudyEditIndex !== null
+                                                                                     ? "Update One Page Case Study"
+                                                                                     : "Add One Page Case Study"}
+                                                                             </CustomButton>
+                                                                         </div>
+                                                                     )} */}
+                                                                </div>
+
+                                                                {fullEpisodeOnePageCaseStudyEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">
+                                                                            Added One Page Case Studies:
+                                                                        </h4>
+                                                                        {fullEpisodeOnePageCaseStudyEntries.map((entry, index) => (
+                                                                            <FullEpisodeOnePageCaseStudyEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                caseStudy={entry}
+                                                                                onEdit={handleEditFullEpisodeOnePageCaseStudy}
+                                                                                onRemove={handleRemoveFullEpisodeOnePageCaseStudy}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* eBook */}
+                                                        <div className="mt-2">
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">eBook:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {eBook.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Embed Code') ? "url" : "text"}
+                                                                                value={currentEBook[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentEBook(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {/* {(eBookEntries.length === 0 || eBookEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddEBook}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {eBookEditIndex !== null ? "Update eBook" : "Add eBook"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )} */}
+                                                                </div>
+
+                                                                {eBookEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added eBooks:</h4>
+                                                                        {eBookEntries.map((entry, index) => (
+                                                                            <EBookEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                eBook={entry}
+                                                                                onEdit={handleEditEBook}
+                                                                                onRemove={handleRemoveEBook}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Guest Challenge Report Text */}
+                                                        <div className="mt-2">
+                                                            <h2 className="text-md font-semibold mb-2 -mt-2">Multi-Guest Challenge Report:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {Guest_Challenge_Report_Text.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('Embed Code') ? "url" : "text"}
+                                                                                value={currentGuestChallengeReport[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentGuestChallengeReport(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {/* {(guestChallengeReportEntries.length === 0 || guestChallengeReportEditIndex !== null) && (
+                                                                        <div className="flex justify-end">
+                                                                            <CustomButton
+                                                                                type="button"
+                                                                                onClick={handleAddGuestChallengeReport}
+                                                                                className="flex items-center gap-1"
+                                                                            >
+                                                                                <PlusIcon className="h-4 w-4" />
+                                                                                {guestChallengeReportEditIndex !== null ? "Update Guest Challenge Report" : "Add Guest Challenge Report"}
+                                                                            </CustomButton>
+                                                                        </div>
+                                                                    )} */}
+                                                                </div>
+
+                                                                {guestChallengeReportEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Guest Challenge Reports:</h4>
+                                                                        {guestChallengeReportEntries.map((entry, index) => (
+                                                                            <GuestChallengeReportEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                report={entry}
+                                                                                onEdit={handleEditGuestChallengeReport}
+                                                                                onRemove={handleRemoveGuestChallengeReport}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {/* Navigation */}
+                                                    <div className="flex justify-end w-full gap-2 -mb-4">
+                                                        <CustomButton
+                                                            type="button"
+                                                            onClick={() => setCurrentStep(3)}
+                                                            className="w-40 bg-gray-500 hover:bg-gray-600  text-white px-4 py-2 rounded"
+                                                        >
+                                                            Back: Full Episodes
+                                                        </CustomButton>
+                                                        <div className="space-x-2">
                                                             <CustomButton
                                                                 type="button"
-                                                                onClick={() => setCurrentStep(3)}
-                                                                className="w-40 bg-gray-500 hover:bg-gray-600  text-white px-4 py-2 rounded"
+                                                                onClick={() => handleNextStep(5)}
+                                                                className=" text-white px-4 py-2 rounded"
                                                             >
-                                                                Back: Full Episodes
+                                                                {isSaving ? 'Saving...' : '  Next: Reports'}
                                                             </CustomButton>
-                                                            {/* <div className="space-x-2">
-                                                                <CustomButton
-                                                                    type="button"
-                                                                    onClick={() => handleNextStep(4)}
-                                                                    className=" text-white px-4 py-2 rounded"
-                                                                >
-                                                                    {isSaving ? 'Saving...' : ''}
-                                                                </CustomButton>
-                                                            </div> */}
                                                         </div>
                                                     </div>
                                                 </div>
 
+
                                             )}
+
+                                            {/* Step 5: Reports */}
+                                            {currentStep === 5 && (
+                                                <div>
+                                                    <h3 className="text-lg font-semibold mb-2 -mt-4">Reports:</h3>
+
+                                                    {/* ICP Advice Report */}
+                                                    <div className="border rounded-lg p-6 shadow-sm">
+                                                        <h2 className="text-md font-semibold mb-2 -mt-2">ICP Advice Report:</h2>
+                                                        <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                            <div className="grid grid-cols-1 gap-4">
+                                                                {ICP_Advice_Report.map(fieldKey => (
+                                                                    <div key={fieldKey}>
+                                                                        <label className="block font-semibold text-sm mb-1">
+                                                                            {fieldKey}:
+                                                                        </label>
+                                                                        <CustomInput
+                                                                            type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('File') || fieldKey.includes('Video') ? "url" : "text"}
+                                                                            value={currentIcpAdviceReport[fieldKey] || ""}
+                                                                            onChange={(e) => setCurrentIcpAdviceReport(prev => ({
+                                                                                ...prev,
+                                                                                [fieldKey]: e.target.value
+                                                                            }))}
+                                                                            className="w-full p-2 border rounded"
+                                                                            placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
+                                                                        />
+                                                                    </div>
+                                                                ))}
+
+                                                                {/* {(icpAdviceReportEntries.length === 0 || icpAdviceReportEditIndex !== null) && (
+                                                                    <div className="flex justify-end">
+                                                                        <CustomButton
+                                                                            type="button"
+                                                                            onClick={handleAddIcpAdviceReport}
+                                                                            className="flex items-center gap-1"
+                                                                        >
+                                                                            <PlusIcon className="h-4 w-4" />
+                                                                            {icpAdviceReportEditIndex !== null ? "Update ICP Advice Report" : "Add ICP Advice Report"}
+                                                                        </CustomButton>
+                                                                    </div>
+                                                                )} */}
+                                                            </div>
+
+                                                            {icpAdviceReportEntries.length > 0 && (
+                                                                <div className="mt-4">
+                                                                    <h4 className="font-medium text-sm mb-2">Added ICP Advice Reports:</h4>
+                                                                    {icpAdviceReportEntries.map((entry, index) => (
+                                                                        <IcpAdviceReportEntry
+                                                                            key={index}
+                                                                            index={index}
+                                                                            report={entry}
+                                                                            onEdit={handleEditIcpAdviceReport}
+                                                                            onRemove={handleRemoveIcpAdviceReport}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+
+                                                        {/* SQL Analysis Report */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2 mt-4">SQL Analysis Report:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {SQL_Analysis_Report.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('File') || fieldKey.includes('Video') ? "url" : "text"}
+                                                                                value={currentSqlAnalysisReport[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentSqlAnalysisReport(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {/* {(sqlAnalysisReportEntries.length === 0 || sqlAnalysisReportEditIndex !== null) && (
+                                                                    <div className="flex justify-end">
+                                                                        <CustomButton
+                                                                            type="button"
+                                                                            onClick={handleAddSqlAnalysisReport}
+                                                                            className="flex items-center gap-1"
+                                                                        >
+                                                                            <PlusIcon className="h-4 w-4" />
+                                                                            {sqlAnalysisReportEditIndex !== null ? "Update SQL Analysis Report" : "Add SQL Analysis Report"}
+                                                                        </CustomButton>
+                                                                    </div>
+                                                                )} */}
+                                                                </div>
+
+                                                                {sqlAnalysisReportEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added SQL Analysis Reports:</h4>
+                                                                        {sqlAnalysisReportEntries.map((entry, index) => (
+                                                                            <SqlAnalysisReportEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                report={entry}
+                                                                                onEdit={handleEditSqlAnalysisReport}
+                                                                                onRemove={handleRemoveSqlAnalysisReport}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Challenge Questions */}
+                                                        <div>
+                                                            <h2 className="text-md font-semibold mb-2">Challenge Questions:</h2>
+                                                            <div className="border rounded-lg p-4 mb-4" style={{ backgroundColor: appColors.primaryColor, color: appColors.textColor }}>
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {Challenge_Questions.map(fieldKey => (
+                                                                        <div key={fieldKey}>
+                                                                            <label className="block font-semibold text-sm mb-1">
+                                                                                {fieldKey}:
+                                                                            </label>
+                                                                            <CustomInput
+                                                                                type={fieldKey.includes('URL') || fieldKey.includes('Link') || fieldKey.includes('File') || fieldKey.includes('Video') ? "url" : "text"}
+                                                                                value={currentChallengeQuestions[fieldKey] || ""}
+                                                                                onChange={(e) => setCurrentChallengeQuestions(prev => ({
+                                                                                    ...prev,
+                                                                                    [fieldKey]: e.target.value
+                                                                                }))}
+                                                                                className="w-full p-2 border rounded"
+                                                                                placeholder={customPlaceholders[fieldKey] || `Enter ${fieldKey}`}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+
+                                                                    {/* {(challengeQuestionsEntries.length === 0 || challengeQuestionsEditIndex !== null) && (
+                                                                    <div className="flex justify-end">
+                                                                        <CustomButton
+                                                                            type="button"
+                                                                            onClick={handleAddChallengeQuestions}
+                                                                            className="flex items-center gap-1"
+                                                                        >
+                                                                            <PlusIcon className="h-4 w-4" />
+                                                                            {challengeQuestionsEditIndex !== null ? "Update Challenge Questions" : "Add Challenge Questions"}
+                                                                        </CustomButton>
+                                                                    </div>
+                                                                )} */}
+                                                                </div>
+
+                                                                {challengeQuestionsEntries.length > 0 && (
+                                                                    <div className="mt-4">
+                                                                        <h4 className="font-medium text-sm mb-2">Added Challenge Questions:</h4>
+                                                                        {challengeQuestionsEntries.map((entry, index) => (
+                                                                            <ChallengeQuestionsEntry
+                                                                                key={index}
+                                                                                index={index}
+                                                                                challenges={entry}
+                                                                                onEdit={handleEditChallengeQuestions}
+                                                                                onRemove={handleRemoveChallengeQuestions}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {/* Navigation */}
+                                                    <div className="flex justify-end w-full gap-2 mt-2 -mb-6">
+                                                        <CustomButton
+                                                            type="button"
+                                                            onClick={() => setCurrentStep(4)}
+                                                            className="w-45 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                                                        >
+                                                            Back: Special Projects
+                                                        </CustomButton>
+                                                    </div>
+                                                </div>
+                                            )}
+
+
 
                                             {/* Step 5: Emails */}
                                             {/* {currentStep === 5 && (
@@ -6687,7 +8010,8 @@ const CustomCrudForm = ({ onClose, onSubmit, entityData, isEditMode = false, dis
                                         'FULL_EPISODE_INTRODUCTION_VIDEO', 'FULL_EPISODE_QA_VIDEOS',
                                         'FULL_EPISODE_PODBOOK', 'FULL_EPISODE_FULL_CASE_STUDY',
                                         'FULL_EPISODE_ONE_PAGE_CASE_STUDY', 'FULL_EPISODE_OTHER_CASE_STUDY',
-                                        'FULL_EPISODE_ICP_ADVICE', 'FULL_EPISODE_CHALLENGE_QUESTIONS', 'Video_ID', 'DETAILS_FULL_EPISODES', 'FULL_EPISODE_EXTENDED_CONTENT'
+                                        'FULL_EPISODE_ICP_ADVICE', 'FULL_EPISODE_CHALLENGE_QUESTIONS', 'Video_ID', 'DETAILS_FULL_EPISODES',
+                                        'FULL_EPISODE_EXTENDED_CONTENT', 'ICP_Advice_Report', 'SQL_Analysis_Report', 'Challenge_Questions', 'eBook', 'Multi-Guest_Challenge_Report_Text'
                                     ].includes(field.key) ? (
 
                                         !(

@@ -263,6 +263,11 @@ const Dashboard = () => {
     { label: "Full Episodes Other Case Study", key: "FULL_EPISODE_OTHER_CASE_STUDY", placeholder: "Enter Full Episodes Other Case Study" },
     { label: "Full Episodes ICP Advice", key: "FULL_EPISODE_ICP_ADVICE", placeholder: "Enter Full Episodes ICP Advice" },
     { label: "Full Episodes Challenge Questions", key: "FULL_EPISODE_CHALLENGE_QUESTIONS", placeholder: "Enter Full Episodes Challenge Questions" },
+    { label: "ICP Advice Report", key: "ICP_Advice_Report", placeholder: "Enter ICP Advice Report" },
+    { label: "SQL Analysis Report", key: "SQL_Analysis_Report", placeholder: "Enter SQL Analysis Report" },
+    { label: "Challenge Questions", key: "Challenge_Questions", placeholder: "Enter Challenge Questions" },
+    { label: "eBook", key: "eBook", placeholder: "Enter eBook" },
+    { label: "Multi-Guest Challenge Report Text", key: "Multi-Guest_Challenge_Report_Text", placeholder: "Enter Multi-Guest Challenge Report Text" },
 
     // { label: "Guest Title", key: "Guest Title", placeholder: "Enter Guest Title" },
     // { label: "Guest Company", key: "Guest Company", placeholder: "Enter Guest Company" },
