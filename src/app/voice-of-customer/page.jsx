@@ -867,7 +867,7 @@ const Dashboard = () => {
         onPress: async () => {
           try {
             const response = await supabase
-              .from("content_details_duplicate")
+              .from("voice_of_customer")
               .delete()
               .eq("id", Id);
 
@@ -875,7 +875,7 @@ const Dashboard = () => {
               throw new Error(response.error.message);
             }
             const { count, error: countError } = await supabase
-              .from("content_details_duplicate")
+              .from("voice_of_customer")
               .select("*", { count: "exact", head: true });
 
             if (countError) throw countError;
@@ -886,7 +886,7 @@ const Dashboard = () => {
             }
 
             const { data, error } = await supabase
-              .from("content_details_duplicate")
+              .from("voice_of_customer")
               .select("*")
               .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
               .order('id_order', { ascending: false });
@@ -1220,7 +1220,7 @@ const Dashboard = () => {
           setCurrentPage={setCurrentPage}
           fetchUsers={fetchUsers}
           themesRank={themesRank}
-          tableName="content_details_duplicate"
+          tableName="voice_of_customer"
           createRecord="Create Record"
           updateRecord="Edit Record"
           formatedValueDashboard={true}
